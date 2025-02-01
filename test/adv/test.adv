@@ -1,0 +1,49 @@
+/*
+	This is a test adventure file
+	It is not intended to be used as a real adventure but to test the compiler/parser
+
+	Author: queru (github.com/queru) 2025
+
+	Notes:
+		- The adv files should be written in UTF-8 encoding.
+		- Comments are written using the // symbol, the rest of the line is ignored.
+		- Multiline comments are written using the /* and */ symbols, but should start at the beginning of the line.
+		- The compiler will ignore empty lines or lines starting with a comment.
+		- All the keywords are case insensitive.
+		- The labels and variable namesare case sensitive. Labels cannot be duplicated in or between sections.
+		- Includes are relative to the current file, they points the compiler inmediately to the file to the file and
+		  returns to the current file after processing it.
+		- All the variables are global, they can be accessed from any part of the code but they are declared and
+		  initialized in the 'VARS' section.
+		- Variables are strongly typed but type is infered from the declaration:
+			v = 10 (int)
+			v = 1.5 (float)
+			v = "aventure" (string)
+			v = true (bool)
+			v = false (bool)
+			v = "Hello, $1.\nWelcome to $2.\n" (string with interpolated arguments)
+		- Ints and floats are signed 32 or 64 bits long, depending on the architecture.
+		- Sections are: VARS, WORDS, MESSAGES, SYSMESSAGES, OBJECTS, LOCATIONS, PROCESS TABLES.
+*/
+
+/* One line multiline comment */
+// Double comment // Hello
+// Mixed /* comments */
+/* Double multiline */ /* comments */
+
+// Beginning of the file
+// We will begin with some variable declarations
+
+SECTION VARS
+
+testTrue  = true // bool
+testFalse = false // bool
+number    = 10 // int
+number2   = 20 // int
+aFloat    = 1.5 // float
+name      = "The New Quill Adventure Writing System" // string
+hello     = "Hello, %s.\nWelcome to %s.\n" // string with interpolated arguments
+
+INCLUDE "words.inc.adv" // include another file
+INCLUDE "sysmsg.inc.adv"
+INCLUDE "usermsg.inc.adv"
