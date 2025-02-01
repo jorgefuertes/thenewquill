@@ -18,4 +18,4 @@ See [LICENSE](LICENSE) for more information.
 
 ## Author
 
-[Jorge Fuertes](https://github.com/jorgefuertes)
+[Jorge Fuertes](https://github.com/jorgefuertes) AKA Queru.
