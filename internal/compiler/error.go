@@ -1,6 +1,8 @@
 package compiler
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type compilerError struct {
 	filename string
@@ -9,15 +11,16 @@ type compilerError struct {
 	msgs     []string
 }
 
-func (e compilerError) Error() string {
+func (e compilerError) Dump() string {
 	output := ""
 
 	if len(e.stack) > 0 {
-		output += "...\n"
 		for _, l := range e.stack {
+			if l.n == e.l.n {
+				break
+			}
 			output += fmt.Sprintf("[%05d] %s\n", l.n, l.text)
 		}
-		output += "...\n"
 	}
 
 	output += fmt.Sprintf("[ERROR] 🔻 compiling file: '%s'\n[%05d] %s", e.filename, e.l.n, e.l.text)
@@ -26,6 +29,10 @@ func (e compilerError) Error() string {
 	}
 
 	return output
+}
+
+func (e compilerError) Error() string {
+	return e.msgs[0]
 }
 
 func newCompilerError(msg string) compilerError {
@@ -60,4 +67,14 @@ func (e compilerError) AddErr(err error) compilerError {
 	e.msgs = append(e.msgs, err.Error())
 
 	return e
+}
+
+func (e compilerError) Is(err error) bool {
+	for _, msg := range e.msgs {
+		if msg == err.Error() {
+			return true
+		}
+	}
+
+	return false
 }

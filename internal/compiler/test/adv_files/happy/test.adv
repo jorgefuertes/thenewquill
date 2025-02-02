@@ -2,6 +2,8 @@
 	This is a test adventure file
 	It is not intended to be used as a real adventure but to test the compiler/parser
 
+	Do not modify this file, it is used for testing purposes only and the test suite depends on it
+
 	Author: queru (github.com/queru) 2025
 */
 
@@ -21,8 +23,9 @@ number    = 10 // int
 number2   = 20 // int
 aFloat    = 1.5 // float
 name      = "The New Quill Adventure Writing System" // string
-hello     = "Hello, %s.\nWelcome to %s.\n" // string with interpolated arguments
+hello     = "Hello, _.\nWelcome to _.\n" // string with interpolated arguments
 
 INCLUDE "words.inc.adv" // include another file
 INCLUDE "sysmsg.inc.adv"
 INCLUDE "usermsg.inc.adv"
+INCLUDE "locations.inc.adv"

@@ -9,9 +9,9 @@ import (
 )
 
 func main() {
-	a, err := compiler.Compile("test/adv/test.adv")
+	a, err := compiler.Compile("internal/compiler/test/adv_files/happy/test.adv")
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println("Compilation error:", err.Error())
 
 		os.Exit(1)
 	}

@@ -26,9 +26,9 @@ func TestStore(t *testing.T) {
 	// number
 	st.Set("foo", 123)
 	require.True(t, st.IsSet("foo"))
-	require.Equal(t, 123.0, st.GetNumber("foo"))
-	require.Greater(t, st.GetNumber("foo"), float64(20))
-	require.Zero(t, st.GetNumber("foo2"))
+	require.Equal(t, 123, st.GetInt("foo"))
+	require.Equal(t, 123.0, st.GetFloat("foo"))
+	require.Zero(t, st.GetInt("foo2"))
 
 	// bool
 	st.Set("foo", true)
@@ -38,8 +38,8 @@ func TestStore(t *testing.T) {
 
 	st.Set("foo", 3.14)
 	require.True(t, st.IsSet("foo"))
-	require.Equal(t, 3.14, st.GetNumber("foo"))
-	require.Zero(t, st.GetNumber("foo2"))
+	require.Equal(t, 3.14, st.GetFloat("foo"))
+	require.Zero(t, st.GetFloat("foo2"))
 
 	st.Unset("foo")
 	require.False(t, st.IsSet("foo"))

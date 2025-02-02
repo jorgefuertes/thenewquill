@@ -2,6 +2,7 @@ package compiler
 
 import (
 	"bufio"
+	"fmt"
 	"os"
 	"path/filepath"
 
@@ -14,6 +15,10 @@ func Compile(filename string) (*adventure.Adventure, error) {
 	st := newStatus()
 
 	err := compileFile(st, filename, a)
+	cErr, ok := err.(compilerError)
+	if ok {
+		fmt.Println(cErr.Dump())
+	}
 
 	return a, err
 }
@@ -33,17 +38,25 @@ func compileFile(st *status, filename string, a *adventure.Adventure) error {
 		n++
 		l := newLine(scanner.Text(), n)
 
-		// comments and blank lines are ignored
+		if l.isBlank() {
+			continue
+		}
+
+		st.appendStack(l)
+
+		if l.isOneLineComment() {
+			continue
+		}
+
+		// comments are ignored
 		if l.isCommentBegin() && !st.comment.isOn() {
 			st.setComment(l)
-			st.appendStack(l)
 
 			continue
 		}
 
-		if l.isCommentEnd() && st.comment.isOn() {
+		if st.comment.isOn() && l.isCommentEnd() {
 			st.unsetComment()
-			st.appendStack(l)
 
 			continue
 		}
@@ -51,12 +64,6 @@ func compileFile(st *status, filename string, a *adventure.Adventure) error {
 		if st.comment.isOn() {
 			continue
 		}
-
-		if l.isBlank() {
-			continue
-		}
-
-		st.appendStack(l)
 
 		// follow includes
 		f, ok := l.toInClude()

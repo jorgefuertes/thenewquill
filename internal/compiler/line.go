@@ -2,6 +2,7 @@ package compiler
 
 import (
 	"regexp"
+	"strconv"
 	"strings"
 
 	"thenewquill/internal/adventure/msg"
@@ -23,16 +24,15 @@ func newLine(text string, n int) line {
 }
 
 func (l line) optimized() string {
-	spaceRg := regexp.MustCompile(`\s+`)
-	commentRg := regexp.MustCompile(`//.*|/\*.*\*\/`)
+	commentRg := regexp.MustCompile(`(//.*|/\*.*)$`)
 
-	return strings.TrimSpace(spaceRg.ReplaceAllString(commentRg.ReplaceAllString(l.text, ""), " "))
+	return strings.TrimSpace(commentRg.ReplaceAllString(l.text, ""))
 }
 
 func (l line) isCommentBegin() bool {
-	re := regexp.MustCompile(`\s*/\*`)
+	re := regexp.MustCompile(`^\s*/\*`)
 
-	return re.MatchString(l.optimized())
+	return re.MatchString(l.text)
 }
 
 func (l line) isCommentEnd() bool {
@@ -42,7 +42,15 @@ func (l line) isCommentEnd() bool {
 }
 
 func (l line) isBlank() bool {
-	return l.optimized() == ""
+	blankRg := regexp.MustCompile(`^\s*$`)
+
+	return blankRg.MatchString(l.text)
+}
+
+func (l line) isOneLineComment() bool {
+	commentRg := regexp.MustCompile(`^\s*(/\*.*\*/|//.*)\s*$`)
+
+	return commentRg.MatchString(l.text)
 }
 
 func (l line) toInClude() (string, bool) {
@@ -65,8 +73,8 @@ func (l line) toSection() (section, bool) {
 	return sectionFromString(re.FindStringSubmatch(l.optimized())[1]), true
 }
 
-func (l line) toVar() (string, string, bool) {
-	re := regexp.MustCompile(`^(\w+)\s*=\s*(.*)$`)
+func (l line) toVar() (string, any, bool) {
+	re := regexp.MustCompile(`^(\w+)\s*=\s*"?((?:[^"]|.\\")+)"?$`)
 
 	o := l.optimized()
 
@@ -74,7 +82,32 @@ func (l line) toVar() (string, string, bool) {
 		return "", "", false
 	}
 
-	return re.FindStringSubmatch(o)[1], re.FindStringSubmatch(o)[2], true
+	name := re.FindStringSubmatch(o)[1]
+	valueStr := re.FindStringSubmatch(o)[2]
+
+	floatRg := regexp.MustCompile(`^(\d+\.\d+)$`)
+	intRg := regexp.MustCompile(`^(\d+)$`)
+	boolRg := regexp.MustCompile(`^(true|false)$`)
+
+	if floatRg.MatchString(valueStr) {
+		value, _ := strconv.ParseFloat(valueStr, 64)
+
+		return name, value, true
+	}
+
+	if intRg.MatchString(valueStr) {
+		value, _ := strconv.ParseInt(valueStr, 10, 64)
+
+		return name, value, true
+	}
+
+	if boolRg.MatchString(valueStr) {
+		value, _ := strconv.ParseBool(valueStr)
+
+		return name, value, true
+	}
+
+	return name, valueStr, true
 }
 
 func (l line) toWord() (voc.Word, bool) {
