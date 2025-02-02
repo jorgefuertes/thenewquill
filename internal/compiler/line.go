@@ -109,17 +109,34 @@ func (l line) toWord() (voc.Word, bool) {
 }
 
 func (l line) toMsg(t msg.MsgType) (msg.Msg, bool) {
-	re := regexp.MustCompile(`^([0-9\p{L}-_]+):\s+["^(\\")]{1}(.+)["^(\\")]{1}$`)
-	o := l.optimized()
+	re := regexp.MustCompile(`(?s)^([0-9\p{L}-_]+):\s+["^(\\")]{1}(.+)["^(\\")]{1}$`)
 
-	if !re.MatchString(o) {
+	if !re.MatchString(l.text) {
 		return msg.Msg{}, false
 	}
 
-	parts := re.FindStringSubmatch(o)
+	parts := re.FindStringSubmatch(l.text)
 	if len(parts) != 3 {
 		return msg.Msg{}, false
 	}
 
 	return msg.Msg{Type: t, Label: parts[1], Text: parts[2]}, true
+}
+
+func (l line) getIndent() string {
+	re := regexp.MustCompile(`^(\s+)`)
+
+	if !re.MatchString(l.text) {
+		return ""
+	}
+
+	return re.FindStringSubmatch(l.text)[1]
+}
+
+func (l line) isMultilineBegin() bool {
+	return multilineBeginRg.MatchString(l.text)
+}
+
+func (l line) isMultilineEnd() bool {
+	return multilineEndRg.MatchString(l.text)
 }

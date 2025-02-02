@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"os"
 	"path/filepath"
-	"regexp"
 
 	"thenewquill/internal/adventure"
 	"thenewquill/internal/adventure/msg"
@@ -35,25 +34,29 @@ func compileFile(st *status, filename string, a *adventure.Adventure) error {
 		l := newLine(scanner.Text(), n)
 
 		// comments and blank lines are ignored
-		if l.isCommentBegin() && !st.inComment {
+		if l.isCommentBegin() && !st.comment.isOn() {
 			st.setComment(l)
+			st.appendStack(l)
 
 			continue
 		}
 
-		if l.isCommentEnd() && st.inComment {
+		if l.isCommentEnd() && st.comment.isOn() {
 			st.unsetComment()
+			st.appendStack(l)
 
 			continue
 		}
 
-		if st.inComment {
+		if st.comment.isOn() {
 			continue
 		}
 
 		if l.isBlank() {
 			continue
 		}
+
+		st.appendStack(l)
 
 		// follow includes
 		f, ok := l.toInClude()
@@ -65,32 +68,27 @@ func compileFile(st *status, filename string, a *adventure.Adventure) error {
 					return cErr
 				}
 
-				return ErrCannotOpenIncludedFile.WithLine(l).WithFilename(filename).AddErr(err)
+				return ErrCannotOpenIncludedFile.WithStack(st.stack).WithLine(l).WithFilename(filename).AddErr(err)
 			}
 
 			continue
 		}
 
-		// multiline end
-		if st.inMulti {
-			multilineEndRg := regexp.MustCompile(`^(\s*)"""`)
-			if multilineEndRg.MatchString(l.text) {
-				l = st.getMultiLine()
-				l.text += `"`
-				l.n = n
-				st.unsetMultiLine()
-			} else {
-				st.appendMultiLine(l)
+		// multiline begin
+		if l.isMultilineBegin() && !st.multiLine.isOn() {
+			st.startMultiLine(l)
 
-				continue
-			}
+			continue
 		}
 
-		// mline begin
-		multilineBeginRg := regexp.MustCompile(`("""(\s*))$`)
-		if multilineBeginRg.MatchString(l.text) {
-			l.text = multilineBeginRg.ReplaceAllString(l.text, `"`)
-			st.setMultiLine(l)
+		// multiline end
+		if l.isMultilineEnd() && st.multiLine.isOn() {
+			l = st.joinAnClearMultiLine()
+		}
+
+		// feed the multiline
+		if st.multiLine.isOn() {
+			st.appendMultiLine(l)
 
 			continue
 		}
@@ -112,34 +110,34 @@ func compileFile(st *status, filename string, a *adventure.Adventure) error {
 				continue
 			}
 
-			return ErrWrongVariableDeclaration.WithLine(l).WithFilename(filename)
+			return ErrWrongVariableDeclaration.WithStack(st.stack).WithLine(l).WithFilename(filename)
 		case sectionWords:
 			w, ok := l.toWord()
 			if !ok {
-				return ErrWrongWordDeclaration.WithLine(l).WithFilename(filename)
+				return ErrWrongWordDeclaration.WithStack(st.stack).WithLine(l).WithFilename(filename)
 			}
 
 			err := a.Vocabulary.Add(w.Label, w.Type, w.Synonyms...)
 			if err != nil {
-				return ErrWrongWordDeclaration.AddErr(err).WithLine(l).WithFilename(filename)
+				return ErrWrongWordDeclaration.WithStack(st.stack).AddErr(err).WithLine(l).WithFilename(filename)
 			}
 
 			continue
 		case sectionSysMsg:
 			m, ok := l.toMsg(msg.SystemMsg)
 			if !ok {
-				return ErrWrongMessageDeclaration.WithLine(l).WithFilename(filename)
+				return ErrWrongMessageDeclaration.WithStack(st.stack).WithLine(l).WithFilename(filename)
 			}
 
 			if err := a.Messages.Add(m); err != nil {
-				return ErrWrongMessageDeclaration.AddErr(err).WithLine(l).WithFilename(filename)
+				return ErrWrongMessageDeclaration.WithStack(st.stack).AddErr(err).WithLine(l).WithFilename(filename)
 			}
 
 			continue
 		case sectionUserMsgs:
 			m, ok := l.toMsg(msg.UserMsg)
 			if !ok {
-				return ErrWrongMessageDeclaration.WithLine(l).WithFilename(filename)
+				return ErrWrongMessageDeclaration.WithStack(st.stack).WithLine(l).WithFilename(filename)
 			}
 
 			a.Messages.Add(m)
@@ -152,21 +150,21 @@ func compileFile(st *status, filename string, a *adventure.Adventure) error {
 		case sectionProcs:
 			// TODO
 		default:
-			return ErrOutOfSection.WithLine(l).WithFilename(filename)
+			return ErrOutOfSection.WithStack(st.stack).WithLine(l).WithFilename(filename)
 		}
 
 		// unmatched line
-		return ErrUnknownDeclaration.WithLine(l).WithFilename(filename)
+		return ErrUnknownDeclaration.WithStack(st.stack).WithLine(l).WithFilename(filename)
 	}
 
 	// check if there is an unclosed comment
-	if st.inComment {
-		return ErrUnclosedComment.WithLine(st.getLastLine()).WithFilename(filename)
+	if st.comment.isOn() {
+		return ErrUnclosedComment.WithStack(st.stack).WithLine(st.comment.lines[0]).WithFilename(filename)
 	}
 
 	// unclosed multiline
-	if st.inMulti {
-		return ErrUnclosedMultiline.WithLine(st.multiLine).WithFilename(filename)
+	if st.multiLine.isOn() {
+		return ErrUnclosedMultiline.WithStack(st.stack).WithLine(st.multiLine.lines[0]).WithFilename(filename)
 	}
 
 	return nil

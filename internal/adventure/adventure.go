@@ -29,7 +29,8 @@ func New() *Adventure {
 }
 
 func (a *Adventure) Dump() {
+	fmt.Println("--- MESSAGES DUMP ---")
 	for _, m := range a.Messages {
-		fmt.Printf("[%s] %s: %s\n", m.Type, m.Label, m.Text)
+		fmt.Println(m.Dump())
 	}
 }

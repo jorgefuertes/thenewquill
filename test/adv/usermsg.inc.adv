@@ -2,11 +2,11 @@ SECTION USER MESSAGES
 
 test:  "This is a test message."
 test2: "This is another \"test\" message."
-unclosed: "This is a message with an unclosed string."
 multiline: """
 	This is a message with a heredoc string.
 	Line 2.
 	Line 3.
 	Line 4 without carrige return \
 	at the end.
+		Line 5 and this line is indented.
 	"""
