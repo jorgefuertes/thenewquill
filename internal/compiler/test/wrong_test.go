@@ -9,9 +9,22 @@ import (
 )
 
 func TestWrongFiles(t *testing.T) {
-	filename := "adv_files/wrong/unclosed_comment.adv"
+	testCases := []struct {
+		name          string
+		filename      string
+		expectedError error
+	}{
+		{"unclosed comment", "adv_files/wrong/unclosed_comment.adv", compiler.ErrUnclosedComment},
+		{"unclosed string", "adv_files/wrong/unclosed_string.adv", compiler.ErrUnclosedMultiline},
+	}
 
-	_, err := compiler.Compile(filename)
-	require.Error(t, err)
-	require.ErrorIs(t, err, compiler.ErrUnclosedComment)
+	t.Run("test wrong files", func(t *testing.T) {
+		for _, tc := range testCases {
+			t.Run(tc.name, func(t *testing.T) {
+				_, err := compiler.Compile(tc.filename)
+				require.Error(t, err)
+				require.ErrorIs(t, err, tc.expectedError)
+			})
+		}
+	})
 }

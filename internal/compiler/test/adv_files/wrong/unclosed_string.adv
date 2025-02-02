@@ -1,0 +1,8 @@
+// Test suite: do not modify this file
+
+
+SECTION VARS
+
+// This is an unclosed string
+test = """
+	This is a test
