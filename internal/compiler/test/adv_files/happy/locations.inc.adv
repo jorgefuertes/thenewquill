@@ -1,0 +1,174 @@
+SECTION LOCATIONS
+
+celda:
+	title: "Celda"
+	desc: "De momento estás en una fría celda, junto a un fiambre bastante deteriorado. Tras los barrotes de tu puerta \
+	ves un lóbrego vestíbulo."
+	exits: salir vestíbulo
+
+celda2:
+	title: "Fría celda"
+	desc: "Entras en otra fría celda y te encuentras con otro fiambre medio putrefacto."
+	exits: salir vestíbulo
+
+celda3:
+	title: "Celda vacía"
+	desc: "Ahora entras en una celda, pero está vacía, sin ningún oloroso habitante."
+	exits: salir vestíbulo
+
+vestíbulo:
+	title: "Vestíulo de la prisión"
+	desc: """
+	El vestíbulo de la cárcel es poco acogedor. Sobre todo para el carcelero que yace muerto en el suelo. Además \
+	de tu celda, hay dos más, una a la derecha y otra a la izquierda.
+	Hacia el Sur se oyen ruidos.
+	"""
+	exits: sur cuartelillo, este celda2, oeste celda3, norte celda
+
+cuartelillo:
+	title: "Cuerpo de guardia"
+	desc: "Estás en el espartano cuartelillo de los guardas. Como único mueble destaca una mesa de noble madera que en \
+	estos momentos solo tiene varias jarras de cerveza."
+	exits: norte vestíbulo, sur corredor1
+
+corredor1:
+	title: "Corredor"
+	desc: "Estás en un tortuoso y fétido corredor dentro de la cárcel."
+	exits: sur corredor2, este corredor2, oeste corredor1, norte cuartelillo
+
+corredor2:
+	title: "Corredor"
+	desc: "Estás en un corredor fétido y tortuoso dentro de la cárcel."
+	exits: norte corredor1, sur corredor1, este corredor3, oeste corredor2
+
+corredor3:
+	title: "Corredor"
+	desc:  "Estás en un fétido y tortuoso corredor dentro de la cárcel."
+	exits: norte corredor3, sur exterior, este corredor1, oeste corredor2
+
+exterior:
+	title: "Exterior"
+	desc: "Estás en el exterior de la cárcel. Ves varias avenidas de la bella Roma Imperial."
+	exits: norte corredor3, sur templo, este vestales, oeste coliseo
+
+vestales:
+	title: "Casa de las Vestales"
+	desc: "Estás frente a la Casa de las Vestales, bello edificio de corte clásico que da cobijo a éstas sacerdotisas."
+	exits: sur via, entro patio, oeste exterior
+
+coliseo:
+	title: "Coliseo"
+	desc:  "Estás ante el mayor monumento de Roma: El Coliseo. Numerosos pasillos y pasadizos te conducen al interior. \
+	Dentro podrás admirar la fuerza y agilidad de los gladiadores."
+	exits: este exterior, entro gradas
+
+gradas:
+	title: "Gradas"
+	desc: "Desde las seis filas de escalinatas del Coliseo, los espectadores tienen una buena vista de los dramas que \
+	ocurren en la arena."
+	exits: salir coliseo, sur subasta
+
+subasta:
+	title: "Subasta"
+	desc: "La sala de subastas de esclavos es un triste lugar que huele a sudor, miseria y doliente humanidad."
+
+templo:
+	title: "Templo"
+	desc: "Ante el templo de todos los dioses del Olimpo y maravilla de la arquitectura romana: El Panteón de Agripa."
+	exits: norte exterior, entro panteon
+
+panteón:
+	title: "Panteón"
+	desc: "El interior del Panteón consiste en una inmensa bóveda que recibe la luz por un orificio superior."
+	exits: salir templo
+
+via:
+	title: "Via Appia"
+	desc: "La Via Appia es la más importante calzada de comunicación entre la Ciudad Eterna y sus provincias."
+	exits: norte vestales, sur tumba
+
+tumba:
+	title: "Tumba"
+	desc: "Estás junto a la tumba de la patricia Cecilia Metella, el más bello monumento de la Via Appia."
+	exits: norte via, sur afueras
+
+afueras:
+	title: "En las afueras de Roma"
+	desc: "Ya estás en las afueras de Roma y alejándote de ella por la Via Appia."
+	exits: sur caravanas, norte tumba
+
+patio:
+	title: "Patio de las Vestales"
+	desc: "Imprudentemente te has introducido en el inviolable patio de las intocables Vestales."
+	exits: salir vestales
+
+muerte:
+	title: "Muerte"
+	desc: "Sufres un poco mientras la vida se te va escapando dulcemente. Al final del proceso, muerto eres."
+
+caravanas:
+	title: "Caravanas"
+	desc: "Todo el lugar vibra de actividad, pues hay varias caravanas a punto de partir. Un malencarado sujeto dirige \
+	toda la operación."
+	exits: subo carromato, norte afueras, este afueras, oeste afueras
+
+carromato:
+	title: "Carromato"
+	desc: "Estás un poco apretujado dentro de uno de los carromatos de la caravana."
+
+paraje:
+	title: "Paraje"
+	desc: "Llegas a un sereno y bucólico paraje de la Galia, cercano a la guarnición romana de Massilia."
+
+santuario:
+	title: "Santuario"
+	desc: "Estás profanando uno de los más sagrados santuarios megalíticos de los galos."
+	exits: este paraje
+
+taberna:
+	title: "Taberna"
+	desc: "Estás en la taberna de Monte Picayum, elegante hostal hispánicus. Un agradable fuego caldea la estancia."
+	exits: sur saguntum, bajo sótano
+
+sótano:
+	title: "Sótano de la taberna"
+	desc: "El tenebroso, mohoso y soso sótano de la taberna está en un estado de abandono lamentable, muy propicio \
+	para refugio de todo tipo de alimañas."
+	exits: subo taberna
+
+saguntum:
+	title: "Saguntum"
+	desc: "La fortaleza de Saguntum está rodeada por una amplia y rica vega."
+	exits: subo fortaleza, entro fortaleza, este puerto, norte taberna
+
+fortaleza:
+	title: "Fortaleza de Saguntum"
+	desc: "Te encuentras en el interior de la fortaleza. Aunque la población local mantiene el ánimo, se nota por \
+	doquier el cruel rastri de la guerra. Agradecidos, los saguntinos os vitorean."
+	exits: bajo saguntum, salir saguntum
+
+puerto:
+	title: "Puerto"
+	desc:  "Estás justo ante las puertas de acceso al interior del puerto. Cerca quedan los Altius Fornius del Mare \
+	Nostrum."
+	exits: oeste saguntum, entro barcos
+
+barcos:
+	title: "Ante un barco"
+	desc: "Estás ante uno de los muchos barcos que se aprestan a partir de éste ocupado puerto marino. El capitán del \
+	barco te observa."
+	exits: salir puerto, entro barco, subo barco
+
+barco:
+	title: "Barco"
+	desc: "Por fin estás dentro del barco, libre del yugo opresor del Imperio y rumbo a Africa. Por tu mente pasan \
+	gratos recuerdos de tiempos más felices junto a tu amada Claudia y tu corazón se acelera al saberla más \
+	cercana."
+
+poblado:
+	title: "Poblado"
+	desc: """
+	El poblado de la tribu gala tiene una amplia plazoleta central rodeada por fuertes construcciones de variados \
+	estilos.
+	El fortachón Oburrix mira a Taurus con evidente cabreo."
+	"""

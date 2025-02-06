@@ -18,8 +18,12 @@ type Location struct {
 	Connections []Connection
 }
 
-func NewLocation() Location {
-	return Location{Connections: make([]Connection, 0)}
+func NewLocation(label, description string) Location {
+	return Location{
+		Label:       label,
+		Description: description,
+		Connections: make([]Connection, 0),
+	}
 }
 
 type Locations []Location

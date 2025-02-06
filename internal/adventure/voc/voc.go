@@ -15,8 +15,12 @@ func New() Vocabulary {
 }
 
 func (v *Vocabulary) Add(label string, t WordType, synonyms ...string) error {
-	if v.Exists(label) {
+	if v.Exists(t, label) {
 		return ErrWordAlreadyExists
+	}
+
+	if synonyms == nil {
+		synonyms = []string{}
 	}
 
 	w := Word{
@@ -30,16 +34,7 @@ func (v *Vocabulary) Add(label string, t WordType, synonyms ...string) error {
 	return nil
 }
 
-func (v Vocabulary) Get(labelOrSynonym string) *Word {
-	for _, w := range v {
-		if w.Is(labelOrSynonym) {
-			return &w
-		}
-	}
-	return nil
-}
-
-func (v Vocabulary) GetByType(t WordType, labelOrSynonym string) *Word {
+func (v Vocabulary) Get(t WordType, labelOrSynonym string) *Word {
 	for _, w := range v {
 		if w.Is(labelOrSynonym) && w.Type == t {
 			return &w
@@ -49,8 +44,12 @@ func (v Vocabulary) GetByType(t WordType, labelOrSynonym string) *Word {
 	return nil
 }
 
-func (v Vocabulary) Exists(labelOrSynonym string) bool {
+func (v Vocabulary) Exists(t WordType, labelOrSynonym string) bool {
 	for _, w := range v {
+		if w.Type != t {
+			continue
+		}
+
 		if w.Label == labelOrSynonym || slices.Contains(w.Synonyms, labelOrSynonym) {
 			return true
 		}

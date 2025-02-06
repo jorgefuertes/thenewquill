@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"strings"
 
+	"thenewquill/internal/adventure/loc"
 	"thenewquill/internal/adventure/msg"
 	"thenewquill/internal/adventure/voc"
 )
@@ -142,7 +143,7 @@ func (l line) toWord() (voc.Word, bool) {
 }
 
 func (l line) toMsg(t msg.MsgType) (msg.Msg, bool) {
-	re := regexp.MustCompile(`(?s)^([0-9\p{L}-_]+):\s+["^(\\")]{1}(.+)["^(\\")]{1}$`)
+	re := regexp.MustCompile(`(?s)^(` + labelMatcher + `):\s+["^(\\")]{1}(.+)["^(\\")]{1}$`)
 
 	if !re.MatchString(l.text) {
 		return msg.Msg{}, false
@@ -172,4 +173,19 @@ func (l line) isMultilineBegin() bool {
 
 func (l line) isMultilineEnd() bool {
 	return multilineEndRg.MatchString(l.text)
+}
+
+func (l line) toLocation() (loc.Location, bool) {
+	re := regexp.MustCompile(`(?s)^(` + labelMatcher + `):\s+["^(\\")]{1}(.+)["^(\\")]{1}$`)
+
+	if !re.MatchString(l.text) {
+		return loc.NewLocation("", ""), false
+	}
+
+	parts := re.FindStringSubmatch(l.text)
+	if len(parts) != 2 {
+		return loc.NewLocation("", ""), false
+	}
+
+	return loc.NewLocation(parts[1], parts[2]), true
 }
