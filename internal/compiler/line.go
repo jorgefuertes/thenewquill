@@ -5,14 +5,8 @@ import (
 	"strconv"
 	"strings"
 
-	"thenewquill/internal/adventure/loc"
 	"thenewquill/internal/adventure/msg"
 	"thenewquill/internal/adventure/voc"
-)
-
-const (
-	labelMatcher = `[0-9\p{L}\-_]+`
-	wordMatcher  = `[\p{L}\-_]+`
 )
 
 type line struct {
@@ -175,17 +169,20 @@ func (l line) isMultilineEnd() bool {
 	return multilineEndRg.MatchString(l.text)
 }
 
-func (l line) toLocation() (loc.Location, bool) {
-	re := regexp.MustCompile(`(?s)^(` + labelMatcher + `):\s+["^(\\")]{1}(.+)["^(\\")]{1}$`)
+func (l line) toLocationLabel() (string, bool) {
+	re := regexp.MustCompile(`^\s*(` + labelMatcher + `):\s*$`)
 
 	if !re.MatchString(l.text) {
-		return loc.NewLocation("", ""), false
+		return "", false
 	}
 
-	parts := re.FindStringSubmatch(l.text)
-	if len(parts) != 2 {
-		return loc.NewLocation("", ""), false
-	}
+	return re.FindStringSubmatch(l.text)[1], true
+}
 
-	return loc.NewLocation(parts[1], parts[2]), true
+func (l line) toLocationDescription() (string, bool) {
+	return l.labelAndTextRg("desc")
+}
+
+func (l line) toLocationTitle() (string, bool) {
+	return l.labelAndTextRg("title")
 }

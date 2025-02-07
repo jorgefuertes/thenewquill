@@ -14,13 +14,15 @@ type Connection struct {
 
 type Location struct {
 	Label       string
+	Title       string
 	Description string
 	Connections []Connection
 }
 
-func NewLocation(label, description string) Location {
+func NewLocation(label, title, description string) Location {
 	return Location{
 		Label:       label,
+		Title:       title,
 		Description: description,
 		Connections: make([]Connection, 0),
 	}
@@ -32,12 +34,12 @@ func New() Locations {
 	return Locations{}
 }
 
-func (locs *Locations) Add(label, description string, connections []Connection) error {
+func (locs *Locations) Add(label, title, description string, connections []Connection) error {
 	if locs.Exists(label) {
 		return ErrDuplicatedLocation
 	}
 
-	*locs = append(*locs, Location{Label: label, Description: description, Connections: connections})
+	*locs = append(*locs, Location{Label: label, Title: title, Description: description, Connections: connections})
 
 	return nil
 }

@@ -113,6 +113,7 @@ func compileFile(st *status, filename string, a *adventure.Adventure) error {
 			name, value, ok := l.toVar()
 			if ok {
 				a.Vars.Set(name, value)
+				st.appendLabel(name, sectionVars, true, l)
 
 				continue
 			}
@@ -129,6 +130,8 @@ func compileFile(st *status, filename string, a *adventure.Adventure) error {
 				return ErrWrongWordDeclaration.WithStack(st.stack).AddErr(err).WithLine(l).WithFilename(filename)
 			}
 
+			st.appendLabel(w.Label, sectionWords, true, l)
+
 			continue
 		case sectionSysMsg:
 			m, ok := l.toMsg(msg.SystemMsg)
@@ -140,6 +143,8 @@ func compileFile(st *status, filename string, a *adventure.Adventure) error {
 				return ErrWrongMessageDeclaration.WithStack(st.stack).AddErr(err).WithLine(l).WithFilename(filename)
 			}
 
+			st.appendLabel(m.Label, sectionSysMsg, true, l)
+
 			continue
 		case sectionUserMsgs:
 			m, ok := l.toMsg(msg.UserMsg)
@@ -147,13 +152,39 @@ func compileFile(st *status, filename string, a *adventure.Adventure) error {
 				return ErrWrongMessageDeclaration.WithStack(st.stack).WithLine(l).WithFilename(filename)
 			}
 
-			a.Messages.Add(m)
+			if err := a.Messages.Add(m); err != nil {
+				return ErrWrongMessageDeclaration.WithStack(st.stack).AddErr(err).WithLine(l).WithFilename(filename)
+			}
+
+			st.appendLabel(m.Label, sectionUserMsgs, true, l)
 
 			continue
 		case sectionObjs:
 			// TODO
 		case sectionLocs:
-			// TODO
+			if st.currentLocation.Label != "" {
+				desc, ok := l.toLocationDescription()
+				if ok {
+					st.currentLocation.Description = desc
+
+					continue
+				}
+
+				title, ok := l.toLocationTitle()
+				if ok {
+					st.currentLocation.Title = title
+
+					continue
+				}
+			}
+
+			label, ok := l.toLocationLabel()
+			if ok {
+				st.setCurrentLocation(label)
+				st.appendLabel(label, sectionLocs, true, l)
+
+				continue
+			}
 		case sectionProcs:
 			// TODO
 		default:
