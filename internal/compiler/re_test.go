@@ -51,6 +51,13 @@ func TestLabelAndTextRg(t *testing.T) {
 			shouldMatch: true,
 		},
 		{
+			name:        "desc with colons",
+			lineText:    `desc: "In a \"dark cave\", you see several niches and a large 'chamber'."`,
+			label:       "desc",
+			expected:    `In a "dark cave", you see several niches and a large 'chamber'.`,
+			shouldMatch: true,
+		},
+		{
 			name:        "no match",
 			lineText:    `foo: "No Match"`,
 			label:       "bar",

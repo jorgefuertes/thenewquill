@@ -54,12 +54,12 @@ func (s *status) resolveLabel(label string, sec section) {
 	}
 }
 
-func (s *status) setSection(section section, l line) {
+func (s *status) setSection(section section) {
 	s.section = section
 }
 
 func (s *status) setComment(l line) {
-	s.comment = multi{on: true, lines: []line{l}}
+	s.comment = multi{lines: []line{l}}
 }
 
 func (s *status) unsetComment() {

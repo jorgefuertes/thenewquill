@@ -83,13 +83,13 @@ func compileFile(st *status, filename string, a *adventure.Adventure) error {
 
 		// multiline begin
 		if l.isMultilineBegin() && !st.multiLine.isOn() {
-			st.startMultiLine(l)
+			st.appendMultiLine(l)
 
 			continue
 		}
 
 		// multiline end
-		if l.isMultilineEnd() && st.multiLine.isOn() {
+		if st.multiLine.isOn() && l.isMultilineEnd(st.multiLine.isHeredoc()) {
 			l = st.joinAnClearMultiLine()
 		}
 
@@ -103,7 +103,7 @@ func compileFile(st *status, filename string, a *adventure.Adventure) error {
 		// section declaration
 		s, ok := l.toSection()
 		if ok {
-			st.setSection(s, l)
+			st.setSection(s)
 
 			continue
 		}

@@ -13,7 +13,6 @@ var (
 )
 
 type multi struct {
-	on    bool
 	lines []line
 }
 
@@ -22,11 +21,15 @@ func (m *multi) append(l line) {
 }
 
 func (m multi) isOn() bool {
-	return m.on
+	return len(m.lines) > 0
 }
 
-func (s *status) startMultiLine(l line) {
-	s.multiLine = multi{on: true, lines: []line{l}}
+func (m multi) isHeredoc() bool {
+	if len(m.lines) == 0 {
+		return true
+	}
+
+	return multilineBeginRg.MatchString(m.lines[0].text)
 }
 
 // returns true if its the end of the multiline
@@ -43,26 +46,35 @@ func (m multi) getIndent() string {
 }
 
 func (s *status) joinAnClearMultiLine() line {
-	l := s.multiLine.lines[0]
-	l.text = multilineBeginRg.ReplaceAllString(l.text, `"`)
-	for i, l2 := range s.multiLine.lines[1:] {
-		l2.text = strings.Replace(l2.text, s.multiLine.getIndent(), "", 1)
+	var output string
+	n := s.multiLine.lines[0].n
+
+	for i, l := range s.multiLine.lines {
+		current := l.text
+		cont := false
+
 		if i == 0 {
-			l.text += l2.text
-			continue
-		}
-
-		if continueRg.MatchString(l.text) {
-			l.text = continueRg.ReplaceAllString(l.text, "")
+			current = multilineBeginRg.ReplaceAllString(current, `"`)
+			cont = true
 		} else {
-			l.text += "\n"
+			current = strings.Replace(current, s.multiLine.getIndent(), "", 1)
+			current = multilineEndRg.ReplaceAllString(current, `"`)
 		}
 
-		l.text += l2.text
+		if continueRg.MatchString(current) {
+			cont = true
+			current = continueRg.ReplaceAllString(current, "")
+			current = regexp.MustCompile(`^(\s*)`).ReplaceAllString(current, "")
+		}
+
+		output += current
+
+		if !cont && i != len(s.multiLine.lines)-1 && s.multiLine.lines[i+1].text != `"""` {
+			output += "\n"
+		}
 	}
 
-	l.text += `"`
-	s.multiLine = multi{on: false, lines: []line{}}
+	s.multiLine = multi{lines: []line{}}
 
-	return l
+	return line{text: output, n: n}
 }

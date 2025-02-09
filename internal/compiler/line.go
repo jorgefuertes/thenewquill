@@ -151,22 +151,16 @@ func (l line) toMsg(t msg.MsgType) (msg.Msg, bool) {
 	return msg.Msg{Type: t, Label: parts[1], Text: parts[2]}, true
 }
 
-func (l line) getIndent() string {
-	re := regexp.MustCompile(`^(\s+)`)
+func (l line) isMultilineBegin() bool {
+	return multilineBeginRg.MatchString(l.text) || continueRg.MatchString(l.text)
+}
 
-	if !re.MatchString(l.text) {
-		return ""
+func (l line) isMultilineEnd(isHeredoc bool) bool {
+	if isHeredoc {
+		return multilineEndRg.MatchString(l.text)
 	}
 
-	return re.FindStringSubmatch(l.text)[1]
-}
-
-func (l line) isMultilineBegin() bool {
-	return multilineBeginRg.MatchString(l.text)
-}
-
-func (l line) isMultilineEnd() bool {
-	return multilineEndRg.MatchString(l.text)
+	return !continueRg.MatchString(l.text)
 }
 
 func (l line) toLocationLabel() (string, bool) {

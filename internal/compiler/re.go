@@ -1,6 +1,9 @@
 package compiler
 
-import "regexp"
+import (
+	"regexp"
+	"strings"
+)
 
 const (
 	labelMatcher = `[0-9\p{L}\-_]+`
@@ -14,5 +17,11 @@ func (l line) labelAndTextRg(label string) (string, bool) {
 		return "", false
 	}
 
-	return re.FindStringSubmatch(l.text)[1], true
+	text := re.FindStringSubmatch(l.text)[1]
+
+	// normalize escaped quotes
+	text = strings.ReplaceAll(text, `\"`, `"`)
+	text = strings.ReplaceAll(text, `\'`, `'`)
+
+	return text, true
 }

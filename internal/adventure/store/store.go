@@ -55,17 +55,17 @@ func (d *Store) Unset(key string) {
 func (d *Store) GetBool(key string) bool {
 	v := d.Get(key)
 
-	switch v.(type) {
+	switch v := v.(type) {
 	case string:
 		re := regexp.MustCompile(`(?i)^\s*(true|yes|1|sí|si|ok|on)\s*$`)
 
-		return re.MatchString(v.(string))
+		return re.MatchString(v)
 	case bool:
-		return v.(bool)
+		return v
 	case int:
-		return v.(int) > 0
+		return v > 0
 	case float64:
-		return v.(float64) > 0
+		return v > 0
 	default:
 		return false
 	}
@@ -74,20 +74,20 @@ func (d *Store) GetBool(key string) bool {
 func (d *Store) GetInt(key string) int {
 	v := d.Get(key)
 
-	switch v.(type) {
+	switch v := v.(type) {
 	case int:
-		return v.(int)
+		return v
 	case float64:
-		return int(v.(float64))
+		return int(v)
 	case string:
-		i, err := strconv.ParseInt(v.(string), 10, 64)
+		i, err := strconv.ParseInt(v, 10, 64)
 		if err == nil {
 			return int(i)
 		}
 
 		return 0
 	case bool:
-		if v.(bool) {
+		if v {
 			return 1
 		}
 
@@ -100,25 +100,25 @@ func (d *Store) GetInt(key string) int {
 func (d *Store) GetFloat(key string) float64 {
 	v := d.Get(key)
 
-	switch v.(type) {
+	switch v := v.(type) {
 	case float64:
-		return v.(float64)
+		return v
 	case int:
-		return float64(v.(int))
+		return float64(v)
 	case string:
-		i, err := strconv.ParseInt(v.(string), 10, 64)
+		i, err := strconv.ParseInt(v, 10, 64)
 		if err == nil {
 			return float64(i)
 		}
 
-		f, err := strconv.ParseFloat(v.(string), 64)
+		f, err := strconv.ParseFloat(v, 64)
 		if err != nil {
 			return 0
 		}
 
 		return f
 	case bool:
-		if v.(bool) {
+		if v {
 			return 1.0
 		}
 
