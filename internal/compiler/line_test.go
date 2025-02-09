@@ -4,32 +4,111 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
-func TestLine(t *testing.T) {
-	l := line{text: `test:    "This is  a test \"message\"."`, n: 1}
-	assert.Equal(t, `test:    "This is  a test \"message\"."`, l.optimized())
+func TestLineToVar(t *testing.T) {
+	type result struct {
+		key   string
+		value any
+		ok    bool
+	}
 
-	l = line{text: `test: "This is a test \"message\"." // with a comment`, n: 1}
-	assert.Equal(t, `test: "This is a test \"message\"."`, l.optimized())
+	testCases := []struct {
+		name     string
+		lineText string
+		expected result
+	}{
+		{
+			name:     "string declaration",
+			lineText: `test = "This is a test string var"`,
+			expected: result{
+				key:   "test",
+				value: "This is a test string var",
+				ok:    true,
+			},
+		},
+		{
+			name:     "with indentation",
+			lineText: `	test = "This is a test string var"`,
+			expected: result{
+				key:   "test",
+				value: "This is a test string var",
+				ok:    true,
+			},
+		},
+		{
+			name:     "weird spacing",
+			lineText: `	test  = 	"This is a test string var"  `,
+			expected: result{
+				key:   "test",
+				value: "This is a test string var",
+				ok:    true,
+			},
+		},
+		{
+			name:     "line comment",
+			lineText: `	test  = 	"This is a test string var" // comment`,
+			expected: result{
+				key:   "test",
+				value: "This is a test string var",
+				ok:    true,
+			},
+		},
+		{
+			name:     "unclosed declaration",
+			lineText: `	test  = 	"This is a test string var`,
+			expected: result{
+				key:   "test",
+				value: "This is a test string var",
+				ok:    true,
+			},
+		},
+		{
+			name:     "int declaration",
+			lineText: `test = 1`,
+			expected: result{
+				key:   "test",
+				value: 1,
+				ok:    true,
+			},
+		},
+		{
+			name:     "float declaration",
+			lineText: `test = 0.536`,
+			expected: result{
+				key:   "test",
+				value: 0.536,
+				ok:    true,
+			},
+		},
+		{
+			name:     "bool true declaration",
+			lineText: `test = true`,
+			expected: result{
+				key:   "test",
+				value: true,
+				ok:    true,
+			},
+		},
+		{
+			name:     "bool false declaration",
+			lineText: `test = 	false // this is false`,
+			expected: result{
+				key:   "test",
+				value: false,
+				ok:    true,
+			},
+		},
+	}
 
-	l = line{text: `test: "This is a test \"message\"." /* with a comment */`, n: 1}
-	assert.Equal(t, `test: "This is a test \"message\"."`, l.optimized())
-
-	l = line{text: `test: "This is a test message`, n: 1}
-	_, _, ok := l.toVar()
-	assert.False(t, ok)
-
-	l = line{text: `test = "This is a test message"`, n: 1}
-	name, value, ok := l.toVar()
-	assert.True(t, ok)
-	assert.Equal(t, "test", name)
-	assert.Equal(t, "This is a test message", value)
-
-	// TODO: check for balanced quotes
-	l = line{text: `test = "This is a test message`, n: 1}
-	name, value, ok = l.toVar()
-	assert.True(t, ok)
-	assert.Equal(t, "test", name)
-	assert.Equal(t, "This is a test message", value)
+	for _, tt := range testCases {
+		t.Run(tt.name, func(t *testing.T) {
+			l := line{text: tt.lineText, n: 1}
+			key, res, ok := l.toVar()
+			assert.Equal(t, tt.expected.ok, ok)
+			assert.Equal(t, tt.expected.key, key)
+			require.EqualValues(t, tt.expected.value, res)
+		})
+	}
 }

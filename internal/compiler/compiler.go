@@ -90,6 +90,7 @@ func compileFile(st *status, filename string, a *adventure.Adventure) error {
 
 		// multiline end
 		if st.multiLine.isOn() && l.isMultilineEnd(st.multiLine.isHeredoc()) {
+			st.appendMultiLine(l)
 			l = st.joinAnClearMultiLine()
 		}
 
