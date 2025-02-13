@@ -8,6 +8,10 @@ func New() Locations {
 	return Locations{locations: make([]*Location, 0)}
 }
 
+func (s *Locations) All() []*Location {
+	return s.locations
+}
+
 func (s *Locations) Get(label string) *Location {
 	for _, l := range s.locations {
 		if l.Label == label {

@@ -41,3 +41,24 @@ func sectionFromString(s string) section {
 		return sectionNone
 	}
 }
+
+func (s section) singleString() string {
+	switch s {
+	case sectionVars:
+		return "var"
+	case sectionWords:
+		return "word"
+	case sectionLocs:
+		return "location"
+	case sectionObjs:
+		return "object"
+	case sectionProcs:
+		return "process"
+	case sectionSysMsg:
+		return "sysmsg"
+	case sectionUserMsgs:
+		return "usermsg"
+	default:
+		return "unknown"
+	}
+}

@@ -54,13 +54,13 @@ exterior:
 vestales:
 	title: "Casa de las Vestales"
 	desc: "Estás frente a la Casa de las Vestales, bello edificio de corte clásico que da cobijo a éstas sacerdotisas."
-	exits: sur via, entro patio, oeste exterior
+	exits: sur via, entrar patio, oeste exterior
 
 coliseo:
 	title: "Coliseo"
 	desc:  "Estás ante el mayor monumento de Roma: El Coliseo. Numerosos pasillos y pasadizos te conducen al interior. \
 	Dentro podrás admirar la fuerza y agilidad de los gladiadores."
-	exits: este exterior, entro gradas
+	exits: este exterior, entrar gradas
 
 gradas:
 	title: "Gradas"
@@ -75,7 +75,7 @@ subasta:
 templo:
 	title: "Templo"
 	desc: "Ante el templo de todos los dioses del Olimpo y maravilla de la arquitectura romana: El Panteón de Agripa."
-	exits: norte exterior, entro panteon
+	exits: norte exterior, entrar panteón
 
 panteón:
 	title: "Panteón"
@@ -139,7 +139,7 @@ sótano:
 saguntum:
 	title: "Saguntum"
 	desc: "La fortaleza de Saguntum está rodeada por una amplia y rica vega."
-	exits: subo fortaleza, entro fortaleza, este puerto, norte taberna
+	exits: subo fortaleza, entrar fortaleza, este puerto, norte taberna
 
 fortaleza:
 	title: "Fortaleza de Saguntum"
@@ -151,13 +151,13 @@ puerto:
 	title: "Puerto"
 	desc:  "Estás justo ante las puertas de acceso al interior del puerto. Cerca quedan los Altius Fornius del Mare \
 	Nostrum."
-	exits: oeste saguntum, entro barcos
+	exits: oeste saguntum, entrar barcos
 
 barcos:
 	title: "Ante un barco"
 	desc: "Estás ante uno de los muchos barcos que se aprestan a partir de éste ocupado puerto marino. El capitán del \
 	barco te observa."
-	exits: salir puerto, entro barco, subo barco
+	exits: salir puerto, entrar barco, subo barco
 
 barco:
 	title: "Barco"

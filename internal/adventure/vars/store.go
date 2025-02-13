@@ -1,4 +1,4 @@
-package store
+package vars
 
 import (
 	"regexp"
@@ -18,42 +18,46 @@ func New() Store {
 	}
 }
 
-func (d *Store) Set(key string, value any) {
-	d.lock.Lock()
-	defer d.lock.Unlock()
-
-	d.regs[key] = value
+func (s *Store) All() map[string]any {
+	return s.regs
 }
 
-func (d *Store) Get(key string) any {
-	d.lock.Lock()
-	defer d.lock.Unlock()
+func (s *Store) Set(key string, value any) {
+	s.lock.Lock()
+	defer s.lock.Unlock()
 
-	if v, ok := d.regs[key]; ok {
+	s.regs[key] = value
+}
+
+func (s *Store) Get(key string) any {
+	s.lock.Lock()
+	defer s.lock.Unlock()
+
+	if v, ok := s.regs[key]; ok {
 		return v
 	}
 
 	return ""
 }
 
-func (d *Store) IsSet(key string) bool {
-	d.lock.Lock()
-	defer d.lock.Unlock()
+func (s *Store) IsSet(key string) bool {
+	s.lock.Lock()
+	defer s.lock.Unlock()
 
-	_, ok := d.regs[key]
+	_, ok := s.regs[key]
 
 	return ok
 }
 
-func (d *Store) Unset(key string) {
-	d.lock.Lock()
-	defer d.lock.Unlock()
+func (s *Store) Unset(key string) {
+	s.lock.Lock()
+	defer s.lock.Unlock()
 
-	delete(d.regs, key)
+	delete(s.regs, key)
 }
 
-func (d *Store) GetBool(key string) bool {
-	v := d.Get(key)
+func (s *Store) GetBool(key string) bool {
+	v := s.Get(key)
 
 	switch v := v.(type) {
 	case string:
@@ -71,8 +75,8 @@ func (d *Store) GetBool(key string) bool {
 	}
 }
 
-func (d *Store) GetInt(key string) int {
-	v := d.Get(key)
+func (s *Store) GetInt(key string) int {
+	v := s.Get(key)
 
 	switch v := v.(type) {
 	case int:
@@ -97,8 +101,8 @@ func (d *Store) GetInt(key string) int {
 	}
 }
 
-func (d *Store) GetFloat(key string) float64 {
-	v := d.Get(key)
+func (s *Store) GetFloat(key string) float64 {
+	v := s.Get(key)
 
 	switch v := v.(type) {
 	case float64:
@@ -128,6 +132,6 @@ func (d *Store) GetFloat(key string) float64 {
 	}
 }
 
-func (d *Store) Count() int {
-	return len(d.regs)
+func (s *Store) Count() int {
+	return len(s.regs)
 }

@@ -1,15 +1,15 @@
-package store_test
+package vars_test
 
 import (
 	"testing"
 
-	"thenewquill/internal/adventure/store"
+	"thenewquill/internal/adventure/vars"
 
 	"github.com/stretchr/testify/require"
 )
 
 func TestStore(t *testing.T) {
-	st := store.New()
+	st := vars.New()
 
 	// string
 	st.Set("foo", "bar")

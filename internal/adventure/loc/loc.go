@@ -1,6 +1,10 @@
 package loc
 
-import "thenewquill/internal/adventure/voc"
+import (
+	"thenewquill/internal/adventure/voc"
+)
+
+const Undefined = `undefined`
 
 type Location struct {
 	Label       string

@@ -1,7 +1,5 @@
 package msg
 
-import "fmt"
-
 type MsgType int
 
 const (
@@ -28,10 +26,6 @@ type Msg struct {
 
 func (m Msg) String() string {
 	return m.Text
-}
-
-func (m Msg) Dump() string {
-	return fmt.Sprintf("[%6s] %s: %s", m.Type, m.Label, m.Text)
 }
 
 type Messages []Msg

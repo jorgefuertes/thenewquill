@@ -63,6 +63,12 @@ func (e compilerError) AddMsg(msg string) compilerError {
 	return e
 }
 
+func (e compilerError) AddMsgf(format string, args ...any) compilerError {
+	e.msgs = append(e.msgs, fmt.Sprintf(format, args...))
+
+	return e
+}
+
 func (e compilerError) AddErr(err error) compilerError {
 	e.msgs = append(e.msgs, err.Error())
 

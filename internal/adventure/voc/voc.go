@@ -23,6 +23,10 @@ func (v *Vocabulary) Add(label string, t WordType, synonyms ...string) *Word {
 		w := v.Get(t, label)
 		w.Synonyms = synonyms
 
+		if w.Type == Unknown {
+			w.Type = t
+		}
+
 		return w
 	}
 
@@ -59,4 +63,27 @@ func (v Vocabulary) Exists(t WordType, labelOrSynonym string) bool {
 	}
 
 	return false
+}
+
+// First returns the first word of the vocabulary that matches the given label or synonym.
+func (v Vocabulary) First(labelOrSynonym string) *Word {
+	for _, w := range v {
+		if w.Is(labelOrSynonym) {
+			return w
+		}
+	}
+
+	return nil
+}
+
+// FirstWithTypes returns the first word found by given types preferences
+func (v Vocabulary) FirstWithTypes(labelOrSynonym string, types ...WordType) *Word {
+	for _, t := range types {
+		w := v.Get(t, labelOrSynonym)
+		if w != nil {
+			return w
+		}
+	}
+
+	return nil
 }

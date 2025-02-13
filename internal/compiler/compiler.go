@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 
 	"thenewquill/internal/adventure"
+	"thenewquill/internal/adventure/loc"
 	"thenewquill/internal/adventure/msg"
 	"thenewquill/internal/adventure/voc"
 )
@@ -22,13 +23,14 @@ func Compile(filename string) (*adventure.Adventure, error) {
 	}
 
 	// check for unresolved labels
-	for _, seenLabel := range st.labels {
-		if !seenLabel.resolved {
-			fmt.Println(ErrUnresolvedLabel.WithLine(seenLabel.line).WithFilename(seenLabel.filename).
-				AddMsg(fmt.Sprintf("[%s]: label \"%s\" remains unresolved", seenLabel.section, seenLabel.label)).
-				Dump())
-			err = ErrRemainingUnresolvedLabels
-		}
+	for _, udf := range st.undef {
+		fmt.Println(
+			ErrUnresolvedLabel.WithFilename(udf.file).
+				WithLine(udf.line).
+				AddMsgf("%s `%s` remains undefined", udf.section.singleString(), udf.label).
+				Dump(),
+		)
+		err = ErrRemainingUnresolvedLabels
 	}
 
 	return a, err
@@ -115,6 +117,7 @@ func compileFile(st *status, filename string, a *adventure.Adventure) error {
 		// section declaration
 		s, ok := l.toSection()
 		if ok {
+			st.unsetCurrentLabel()
 			st.setSection(s)
 
 			continue
@@ -125,7 +128,7 @@ func compileFile(st *status, filename string, a *adventure.Adventure) error {
 			name, value, ok := l.toVar()
 			if ok {
 				a.Vars.Set(name, value)
-				st.addLabel(name, true, l, filename)
+				st.setDef(name, sectionVars)
 
 				continue
 			}
@@ -138,8 +141,7 @@ func compileFile(st *status, filename string, a *adventure.Adventure) error {
 			}
 
 			_ = a.Vocabulary.Add(w.Label, w.Type, w.Synonyms...)
-
-			st.addLabel(w.Label, true, l, filename)
+			st.setDef(w.Label, sectionWords)
 
 			continue
 		case sectionSysMsg:
@@ -151,8 +153,7 @@ func compileFile(st *status, filename string, a *adventure.Adventure) error {
 			if err := a.Messages.Add(m); err != nil {
 				return ErrWrongMessageDeclaration.WithStack(st.stack).AddErr(err).WithLine(l).WithFilename(filename)
 			}
-
-			st.addLabel(m.Label, true, l, filename)
+			st.setDef(m.Label, sectionSysMsg)
 
 			continue
 		case sectionUserMsgs:
@@ -164,54 +165,58 @@ func compileFile(st *status, filename string, a *adventure.Adventure) error {
 			if err := a.Messages.Add(m); err != nil {
 				return ErrWrongMessageDeclaration.WithStack(st.stack).AddErr(err).WithLine(l).WithFilename(filename)
 			}
-
-			st.addLabel(m.Label, true, l, filename)
+			st.setDef(m.Label, sectionUserMsgs)
 
 			continue
 		case sectionObjs:
 			// TODO
 		case sectionLocs:
-			if st.currentLocation != nil {
-				desc, ok := l.toLocationDescription()
-				if ok {
-					st.currentLocation.Description = desc
+			label, ok := l.toLocationLabel()
+			if ok {
+				st.setCurrentLabel(label)
+				a.Locations.Set(label, loc.Undefined, loc.Undefined)
+				st.setDef(label, sectionLocs)
 
-					continue
-				}
-
-				title, ok := l.toLocationTitle()
-				if ok {
-					st.currentLocation.Title = title
-
-					continue
-				}
-
-				exitMap, ok := l.toLocationConns()
-				if ok {
-					for wordLabel, destLabel := range exitMap {
-						word := a.Vocabulary.Get(voc.Verb, wordLabel)
-						if word == nil {
-							word = a.Vocabulary.Add(wordLabel, voc.Verb)
-							st.addLabel(word.Label, false, l, filename)
-						}
-
-						dest := a.Locations.Get(destLabel)
-						if dest == nil {
-							dest = a.Locations.Set(destLabel, "", "")
-							st.addLabel(dest.Label, false, l, filename)
-						}
-
-						st.currentLocation.SetConn(word, dest)
-					}
-
-					continue
+				continue
+			} else {
+				if !st.hasCurrentLabel() {
+					return ErrWrongLocationLabelDeclaration.WithStack(st.stack).WithLine(l).WithFilename(filename)
 				}
 			}
 
-			label, ok := l.toLocationLabel()
+			currentLocation := a.Locations.Get(st.currentLabel)
+
+			desc, ok := l.toLocationDescription()
 			if ok {
-				st.setCurrentLocation(label)
-				st.addLabel(label, true, l, filename)
+				currentLocation.Description = desc
+
+				continue
+			}
+
+			title, ok := l.toLocationTitle()
+			if ok {
+				currentLocation.Title = title
+
+				continue
+			}
+
+			exitMap, ok := l.toLocationConns()
+			if ok {
+				for wordLabel, destLabel := range exitMap {
+					word := a.Vocabulary.FirstWithTypes(wordLabel, voc.Verb, voc.Noun)
+					if word == nil {
+						word = a.Vocabulary.Add(wordLabel, voc.Unknown)
+						st.setUndef(wordLabel, sectionWords, l, filename)
+					}
+
+					dest := a.Locations.Get(destLabel)
+					if dest == nil {
+						dest = a.Locations.Set(destLabel, loc.Undefined, loc.Undefined)
+						st.setUndef(destLabel, sectionLocs, l, filename)
+					}
+
+					currentLocation.SetConn(word, dest)
+				}
 
 				continue
 			}
