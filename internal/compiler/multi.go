@@ -7,7 +7,7 @@ import (
 
 var (
 	multilineBeginRg = regexp.MustCompile(`("""\s*)$`)
-	multilineEndRg   = regexp.MustCompile(`^\s*"""`)
+	multilineEndRg   = regexp.MustCompile(`^\s*"""\s*$`)
 	indentRg         = regexp.MustCompile(`^(\s*)`)
 	continueRg       = regexp.MustCompile(`(\\\s*)$`)
 )
@@ -58,7 +58,11 @@ func (s *status) joinAnClearMultiLine() line {
 			cont = true
 		} else {
 			current = strings.Replace(current, s.multiLine.getIndent(), "", 1)
-			current = multilineEndRg.ReplaceAllString(current, `"`)
+		}
+
+		if multilineEndRg.MatchString(current) {
+			current = `"`
+			output = strings.TrimSuffix(output, "\n")
 		}
 
 		if continueRg.MatchString(current) {

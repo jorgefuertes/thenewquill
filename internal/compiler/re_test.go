@@ -1,11 +1,166 @@
 package compiler
 
 import (
+	"regexp"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+func TestRegexps(t *testing.T) {
+	tests := []struct {
+		name        string
+		text        string
+		rg          *regexp.Regexp
+		shouldMatch bool
+	}{
+		{
+			name:        "blank",
+			text:        "    \t",
+			rg:          blankRg,
+			shouldMatch: true,
+		},
+		{
+			name:        "not blank",
+			text:        `not blank`,
+			rg:          blankRg,
+			shouldMatch: false,
+		},
+		{
+			name:        "inline comment",
+			text:        `foo: bar, baz // This is an inline comment`,
+			rg:          inlineCommentRg,
+			shouldMatch: true,
+		},
+		{
+			name:        "inline comment 2",
+			text:        `foo: bar, baz /* This is an inline comment */`,
+			rg:          inlineCommentRg,
+			shouldMatch: true,
+		},
+		{
+			name:        "one line comment",
+			text:        `// This is an inline comment`,
+			rg:          inlineCommentRg,
+			shouldMatch: true,
+		},
+		{
+			name:        "one line comment 2",
+			text:        `/* This is an inline comment */`,
+			rg:          inlineCommentRg,
+			shouldMatch: true,
+		},
+		{
+			name:        "comment begin",
+			text:        `/* Comment begin`,
+			rg:          commentBeginRg,
+			shouldMatch: true,
+		},
+		{
+			name:        "comment end",
+			text:        `end of the comment */`,
+			rg:          commentEndRg,
+			shouldMatch: true,
+		},
+		{
+			name:        "word",
+			text:        `foo: bar`,
+			rg:          wordRg,
+			shouldMatch: true,
+		},
+		{
+			name:        "word with synonyms",
+			text:        `foo: bar, baz, qux`,
+			rg:          wordRg,
+			shouldMatch: true,
+		},
+		{
+			name:        "include",
+			text:        `INCLUDE "foo.bar"`,
+			rg:          includeRg,
+			shouldMatch: true,
+		},
+		{
+			name:        "bad include",
+			text:        `INCLUDE foo.bar`,
+			rg:          includeRg,
+			shouldMatch: false,
+		},
+		{
+			name:        "section",
+			text:        `seCtion vars`,
+			rg:          sectionRg,
+			shouldMatch: true,
+		},
+		{
+			name:        "bad section",
+			text:        `bad section vars`,
+			rg:          sectionRg,
+			shouldMatch: false,
+		},
+		{
+			name:        "var declaration",
+			text:        `foo = "bar"`,
+			rg:          varRg,
+			shouldMatch: true,
+		},
+		{
+			name:        "float",
+			text:        `0.256`,
+			rg:          floatRg,
+			shouldMatch: true,
+		},
+		{
+			name:        "int",
+			text:        `256`,
+			rg:          intRg,
+			shouldMatch: true,
+		},
+		{
+			name:        "bool true",
+			text:        `true`,
+			rg:          boolRg,
+			shouldMatch: true,
+		},
+		{
+			name:        "bool false",
+			text:        `false`,
+			rg:          boolRg,
+			shouldMatch: true,
+		},
+		{
+			name:        "message",
+			text:        `foo: "This is a message"`,
+			rg:          msgRg,
+			shouldMatch: true,
+		},
+		{
+			name:        "location conns",
+			text:        `exits: north loc001, south loc002, east loc003, west loc004`,
+			rg:          locConnsRg,
+			shouldMatch: true,
+		},
+		{
+			name:        "location conns2",
+			text:        `exits: salir vestíbulo`,
+			rg:          locConnsRg,
+			shouldMatch: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if !tt.shouldMatch {
+				require.False(t, tt.rg.MatchString(tt.text), "matches for: %v in '%s'", tt.rg, tt.text)
+
+				return
+			}
+
+			require.True(t, tt.rg.MatchString(tt.text), "no matches for: %v in '%s'", tt.rg, tt.text)
+		})
+	}
+}
 
 func TestLabelAndTextRg(t *testing.T) {
 	tests := []struct {

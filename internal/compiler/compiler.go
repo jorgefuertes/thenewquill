@@ -8,6 +8,7 @@ import (
 
 	"thenewquill/internal/adventure"
 	"thenewquill/internal/adventure/msg"
+	"thenewquill/internal/adventure/voc"
 )
 
 func Compile(filename string) (*adventure.Adventure, error) {
@@ -18,6 +19,16 @@ func Compile(filename string) (*adventure.Adventure, error) {
 	cErr, ok := err.(compilerError)
 	if ok {
 		fmt.Println(cErr.Dump())
+	}
+
+	// check for unresolved labels
+	for _, seenLabel := range st.labels {
+		if !seenLabel.resolved {
+			fmt.Println(ErrUnresolvedLabel.WithLine(seenLabel.line).WithFilename(seenLabel.filename).
+				AddMsg(fmt.Sprintf("[%s]: label \"%s\" remains unresolved", seenLabel.section, seenLabel.label)).
+				Dump())
+			err = ErrRemainingUnresolvedLabels
+		}
 	}
 
 	return a, err
@@ -114,7 +125,7 @@ func compileFile(st *status, filename string, a *adventure.Adventure) error {
 			name, value, ok := l.toVar()
 			if ok {
 				a.Vars.Set(name, value)
-				st.appendLabel(name, sectionVars, true, l)
+				st.addLabel(name, true, l, filename)
 
 				continue
 			}
@@ -126,12 +137,9 @@ func compileFile(st *status, filename string, a *adventure.Adventure) error {
 				return ErrWrongWordDeclaration.WithStack(st.stack).WithLine(l).WithFilename(filename)
 			}
 
-			err := a.Vocabulary.Add(w.Label, w.Type, w.Synonyms...)
-			if err != nil {
-				return ErrWrongWordDeclaration.WithStack(st.stack).AddErr(err).WithLine(l).WithFilename(filename)
-			}
+			_ = a.Vocabulary.Add(w.Label, w.Type, w.Synonyms...)
 
-			st.appendLabel(w.Label, sectionWords, true, l)
+			st.addLabel(w.Label, true, l, filename)
 
 			continue
 		case sectionSysMsg:
@@ -144,7 +152,7 @@ func compileFile(st *status, filename string, a *adventure.Adventure) error {
 				return ErrWrongMessageDeclaration.WithStack(st.stack).AddErr(err).WithLine(l).WithFilename(filename)
 			}
 
-			st.appendLabel(m.Label, sectionSysMsg, true, l)
+			st.addLabel(m.Label, true, l, filename)
 
 			continue
 		case sectionUserMsgs:
@@ -157,13 +165,13 @@ func compileFile(st *status, filename string, a *adventure.Adventure) error {
 				return ErrWrongMessageDeclaration.WithStack(st.stack).AddErr(err).WithLine(l).WithFilename(filename)
 			}
 
-			st.appendLabel(m.Label, sectionUserMsgs, true, l)
+			st.addLabel(m.Label, true, l, filename)
 
 			continue
 		case sectionObjs:
 			// TODO
 		case sectionLocs:
-			if st.currentLocation.Label != "" {
+			if st.currentLocation != nil {
 				desc, ok := l.toLocationDescription()
 				if ok {
 					st.currentLocation.Description = desc
@@ -177,12 +185,33 @@ func compileFile(st *status, filename string, a *adventure.Adventure) error {
 
 					continue
 				}
+
+				exitMap, ok := l.toLocationConns()
+				if ok {
+					for wordLabel, destLabel := range exitMap {
+						word := a.Vocabulary.Get(voc.Verb, wordLabel)
+						if word == nil {
+							word = a.Vocabulary.Add(wordLabel, voc.Verb)
+							st.addLabel(word.Label, false, l, filename)
+						}
+
+						dest := a.Locations.Get(destLabel)
+						if dest == nil {
+							dest = a.Locations.Set(destLabel, "", "")
+							st.addLabel(dest.Label, false, l, filename)
+						}
+
+						st.currentLocation.SetConn(word, dest)
+					}
+
+					continue
+				}
 			}
 
 			label, ok := l.toLocationLabel()
 			if ok {
 				st.setCurrentLocation(label)
-				st.appendLabel(label, sectionLocs, true, l)
+				st.addLabel(label, true, l, filename)
 
 				continue
 			}

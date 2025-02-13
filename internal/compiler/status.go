@@ -11,6 +11,7 @@ const stackSize = 5
 type seenLabel struct {
 	label    string
 	section  section
+	filename string
 	line     line
 	resolved bool
 }
@@ -20,8 +21,8 @@ type status struct {
 	comment         multi
 	multiLine       multi
 	stack           []line
-	labels          []seenLabel
-	currentLocation loc.Location
+	labels          []*seenLabel
+	currentLocation *loc.Location
 }
 
 func newStatus() *status {
@@ -36,22 +37,19 @@ func (s *status) appendStack(l line) {
 	s.stack = append(s.stack, l)
 }
 
-func (s *status) appendLabel(label string, sec section, resolved bool, l line) {
+func (s *status) addLabel(label string, resolved bool, l line, filename string) {
 	for _, la := range s.labels {
-		if la.label == label && la.section == sec {
+		if la.label == label && la.section == s.section {
+			la.resolved = la.resolved || resolved
+
 			return
 		}
 	}
 
-	s.labels = append(s.labels, seenLabel{label: label, section: sec, resolved: resolved, line: l})
-}
-
-func (s *status) resolveLabel(label string, sec section) {
-	for _, l := range s.labels {
-		if l.label == label && l.section == sec {
-			l.resolved = true
-		}
-	}
+	s.labels = append(
+		s.labels,
+		&seenLabel{label: label, section: s.section, resolved: resolved, line: l, filename: filename},
+	)
 }
 
 func (s *status) setSection(section section) {
@@ -68,12 +66,4 @@ func (s *status) unsetComment() {
 
 func (s *status) setCurrentLocation(label string) {
 	s.currentLocation = loc.NewLocation(label, "", "")
-}
-
-func (s *status) unsetLocation() {
-	s.currentLocation = loc.NewLocation("", "", "")
-}
-
-func (s *status) isCurrentLocation() bool {
-	return s.currentLocation.Label != ""
 }

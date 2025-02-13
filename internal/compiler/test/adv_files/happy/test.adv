@@ -25,7 +25,7 @@ aFloat    = 1.5 // float
 name      = "The New Quill Adventure Writing System" // string
 hello     = "Hello, _.\nWelcome to _.\n" // string with interpolated arguments
 
-INCLUDE "words.inc.adv" // include another file
 INCLUDE "sysmsg.inc.adv"
+INCLUDE "words.inc.adv" // include another file
 INCLUDE "usermsg.inc.adv"
 INCLUDE "locations.inc.adv"

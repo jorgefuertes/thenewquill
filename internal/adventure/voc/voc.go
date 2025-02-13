@@ -2,28 +2,31 @@ package voc
 
 import "slices"
 
-type Vocabulary []Word
+type Vocabulary []*Word
 
 func New() Vocabulary {
 	v := Vocabulary{}
 
 	for _, t := range wordTypes() {
-		v = append(v, Word{Label: "_", Type: t})
+		v = append(v, &Word{Label: "_", Type: t, Synonyms: make([]string, 0)})
 	}
 
 	return v
 }
 
-func (v *Vocabulary) Add(label string, t WordType, synonyms ...string) error {
-	if v.Exists(t, label) {
-		return ErrWordAlreadyExists
-	}
-
+func (v *Vocabulary) Add(label string, t WordType, synonyms ...string) *Word {
 	if synonyms == nil {
-		synonyms = []string{}
+		synonyms = make([]string, 0)
 	}
 
-	w := Word{
+	if v.Exists(t, label) {
+		w := v.Get(t, label)
+		w.Synonyms = synonyms
+
+		return w
+	}
+
+	w := &Word{
 		Label:    label,
 		Type:     t,
 		Synonyms: synonyms,
@@ -31,13 +34,13 @@ func (v *Vocabulary) Add(label string, t WordType, synonyms ...string) error {
 
 	*v = append(*v, w)
 
-	return nil
+	return w
 }
 
 func (v Vocabulary) Get(t WordType, labelOrSynonym string) *Word {
 	for _, w := range v {
 		if w.Is(labelOrSynonym) && w.Type == t {
-			return &w
+			return w
 		}
 	}
 

@@ -1,6 +1,6 @@
 module thenewquill
 
-go 1.23.5
+go 1.23.6
 
 require github.com/stretchr/testify v1.10.0
 

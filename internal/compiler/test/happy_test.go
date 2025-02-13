@@ -87,6 +87,7 @@ func TestCompilerHappyPath(t *testing.T) {
 				require.NotNil(t, w)
 				assert.Equal(t, tc.label, w.Label)
 				assert.Equal(t, tc.kind, w.Type)
+				assert.Len(t, w.Synonyms, len(tc.syns))
 				assert.Equal(t, tc.syns, w.Synonyms)
 			})
 		}

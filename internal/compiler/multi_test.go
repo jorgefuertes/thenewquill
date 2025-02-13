@@ -37,29 +37,66 @@ func TestStartMultiLine(t *testing.T) {
 func TestJoinAndClearMultiLine(t *testing.T) {
 	s := newStatus()
 
-	lines := []line{
-		{text: `multi: """`},
-		{text: `    This is a test line \`},
-		{text: `    that continues`},
-		{text: `    	with this indented`},
-		{text: `    and ends here.`},
-		{text: `"""`},
+	testCases := []struct {
+		name     string
+		lines    []line
+		expected string
+	}{
+		{
+			name: "tabbed end",
+			lines: []line{
+				{text: `multi: """`},
+				{text: `    This is a test line \`},
+				{text: `    that continues`},
+				{text: `    	with this indented`},
+				{text: `    and ends here.`},
+				{text: `	"""`},
+			},
+			expected: "multi: \"This is a test line that continues\n\twith this indented\nand ends here.\"",
+		},
+		{
+			name: "normal end",
+			lines: []line{
+				{text: `multi: """`},
+				{text: `    This is a test line \`},
+				{text: `    that continues`},
+				{text: `    	with this indented`},
+				{text: `    and ends here.`},
+				{text: `"""`},
+			},
+			expected: "multi: \"This is a test line that continues\n\twith this indented\nand ends here.\"",
+		},
+		{
+			name: "spaced end",
+			lines: []line{
+				{text: `multi: """`},
+				{text: `    This is a test line \`},
+				{text: `    that continues`},
+				{text: `    	with this indented`},
+				{text: `    and ends here.`},
+				{text: `  """  	`},
+			},
+			expected: "multi: \"This is a test line that continues\n\twith this indented\nand ends here.\"",
+		},
 	}
 
-	for _, l := range lines {
-		if l.text == `"""` {
-			require.True(t, l.isMultilineEnd(s.multiLine.isHeredoc()))
-		}
+	for _, sut := range testCases {
+		t.Run(sut.name, func(t *testing.T) {
+			for _, l := range sut.lines {
+				if l.text == `"""` {
+					require.True(t, l.isMultilineEnd(s.multiLine.isHeredoc()))
+				}
 
-		s.appendMultiLine(l)
+				s.appendMultiLine(l)
+			}
+
+			joinedLine := s.joinAnClearMultiLine()
+
+			assert.Equal(t, sut.expected, joinedLine.text)
+			assert.False(t, s.multiLine.isOn())
+			require.Equal(t, 0, len(s.multiLine.lines))
+		})
 	}
-
-	joinedLine := s.joinAnClearMultiLine()
-	expectedText := "multi: \"This is a test line that continues\n\twith this indented\nand ends here.\""
-
-	assert.Equal(t, expectedText, joinedLine.text)
-	assert.False(t, s.multiLine.isOn())
-	require.Equal(t, 0, len(s.multiLine.lines))
 }
 
 func TestJoinAndClearMultiLineBackslashed(t *testing.T) {

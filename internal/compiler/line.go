@@ -1,7 +1,6 @@
 package compiler
 
 import (
-	"regexp"
 	"strconv"
 	"strings"
 
@@ -19,70 +18,50 @@ func newLine(text string, n int) line {
 }
 
 func (l line) optimized() string {
-	commentRg := regexp.MustCompile(`(//.*|/\*.*)$`)
-
-	return strings.TrimSpace(commentRg.ReplaceAllString(l.text, ""))
+	return strings.TrimSpace(inlineCommentRg.ReplaceAllString(l.text, ""))
 }
 
 func (l line) isCommentBegin() bool {
-	re := regexp.MustCompile(`^\s*/\*`)
-
-	return re.MatchString(l.text)
+	return commentBeginRg.MatchString(l.text)
 }
 
 func (l line) isCommentEnd() bool {
-	re := regexp.MustCompile(`\*/\s*$`)
-
-	return re.MatchString(l.optimized())
+	return commentEndRg.MatchString(l.optimized())
 }
 
 func (l line) isBlank() bool {
-	blankRg := regexp.MustCompile(`^\s*$`)
-
 	return blankRg.MatchString(l.text)
 }
 
 func (l line) isOneLineComment() bool {
-	commentRg := regexp.MustCompile(`^\s*(/\*.*\*/|//.*)\s*$`)
-
-	return commentRg.MatchString(l.text)
+	return oneLinecommentRg.MatchString(l.text)
 }
 
 func (l line) toInClude() (string, bool) {
-	re := regexp.MustCompile(`^INCLUDE\s+"(.*)"$`)
-
-	if !re.MatchString(l.optimized()) {
+	if !includeRg.MatchString(l.optimized()) {
 		return "", false
 	}
 
-	return re.FindStringSubmatch(l.optimized())[1], true
+	return includeRg.FindStringSubmatch(l.optimized())[1], true
 }
 
 func (l line) toSection() (section, bool) {
-	re := regexp.MustCompile(`^SECTION\s+([\p{L}\s]+)$`)
-
-	if !re.MatchString(l.optimized()) {
+	if !sectionRg.MatchString(l.optimized()) {
 		return sectionNone, false
 	}
 
-	return sectionFromString(re.FindStringSubmatch(l.optimized())[1]), true
+	return sectionFromString(sectionRg.FindStringSubmatch(l.optimized())[1]), true
 }
 
 func (l line) toVar() (string, any, bool) {
-	re := regexp.MustCompile(`^(\w+)\s*=\s*"?((?:[^"]|.\\")+)"?$`)
-
 	o := l.optimized()
 
-	if !re.MatchString(o) {
+	if !varRg.MatchString(o) {
 		return "", "", false
 	}
 
-	name := re.FindStringSubmatch(o)[1]
-	valueStr := re.FindStringSubmatch(o)[2]
-
-	floatRg := regexp.MustCompile(`^(\d+\.\d+)$`)
-	intRg := regexp.MustCompile(`^(\d+)$`)
-	boolRg := regexp.MustCompile(`^(true|false)$`)
+	name := varRg.FindStringSubmatch(o)[1]
+	valueStr := varRg.FindStringSubmatch(o)[2]
 
 	if floatRg.MatchString(valueStr) {
 		value, _ := strconv.ParseFloat(valueStr, 64)
@@ -106,10 +85,9 @@ func (l line) toVar() (string, any, bool) {
 }
 
 func (l line) toWord() (voc.Word, bool) {
-	re := regexp.MustCompile(`^(` + labelMatcher + `):(\s*((` + wordMatcher + `)),?)*$`)
 	o := l.optimized()
 
-	if !re.MatchString(o) {
+	if !wordRg.MatchString(o) {
 		return voc.Word{}, false
 	}
 
@@ -137,13 +115,11 @@ func (l line) toWord() (voc.Word, bool) {
 }
 
 func (l line) toMsg(t msg.MsgType) (msg.Msg, bool) {
-	re := regexp.MustCompile(`(?s)^(` + labelMatcher + `):\s+["^(\\")]{1}(.+)["^(\\")]{1}$`)
-
-	if !re.MatchString(l.text) {
+	if !msgRg.MatchString(l.text) {
 		return msg.Msg{}, false
 	}
 
-	parts := re.FindStringSubmatch(l.text)
+	parts := msgRg.FindStringSubmatch(l.text)
 	if len(parts) != 3 {
 		return msg.Msg{}, false
 	}
@@ -164,13 +140,11 @@ func (l line) isMultilineEnd(isHeredoc bool) bool {
 }
 
 func (l line) toLocationLabel() (string, bool) {
-	re := regexp.MustCompile(`^\s*(` + labelMatcher + `):\s*$`)
-
-	if !re.MatchString(l.text) {
+	if !locLabelRg.MatchString(l.text) {
 		return "", false
 	}
 
-	return re.FindStringSubmatch(l.text)[1], true
+	return locLabelRg.FindStringSubmatch(l.text)[1], true
 }
 
 func (l line) toLocationDescription() (string, bool) {
@@ -179,4 +153,25 @@ func (l line) toLocationDescription() (string, bool) {
 
 func (l line) toLocationTitle() (string, bool) {
 	return l.labelAndTextRg("title")
+}
+
+func (l line) toLocationConns() (map[string]string, bool) {
+	exits := make(map[string]string, 0)
+
+	if !locConnsRg.MatchString(l.text) {
+		return exits, false
+	}
+
+	parts := strings.Split(strings.Split(l.optimized(), ":")[1], ",")
+
+	for _, part := range parts {
+		words := strings.Split(strings.TrimSpace(part), " ")
+		if len(words) != 2 {
+			return exits, false
+		}
+
+		exits[words[0]] = words[1]
+	}
+
+	return exits, true
 }

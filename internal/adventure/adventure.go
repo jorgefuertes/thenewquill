@@ -29,6 +29,8 @@ func New() *Adventure {
 }
 
 func (a *Adventure) Dump() {
+	fmt.Println("--- VARS DUMP ---")
+
 	fmt.Println("--- MESSAGES DUMP ---")
 	for _, m := range a.Messages {
 		fmt.Println(m.Dump())

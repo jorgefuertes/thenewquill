@@ -5,9 +5,24 @@ import (
 	"strings"
 )
 
-const (
-	labelMatcher = `[0-9\p{L}\-_]+`
-	wordMatcher  = `[\p{L}\-_]+`
+var (
+	inlineCommentRg  = regexp.MustCompile(`(//.*|/\*.*)$`)
+	oneLinecommentRg = regexp.MustCompile(`^\s*(/\*.*\*/|//.*)\s*$`)
+	commentBeginRg   = regexp.MustCompile(`^\s*/\*`)
+	commentEndRg     = regexp.MustCompile(`\*/\s*$`)
+	blankRg          = regexp.MustCompile(`^\s*$`)
+	includeRg        = regexp.MustCompile(`^INCLUDE\s+"(.*)"$`)
+	sectionRg        = regexp.MustCompile(`(?i)^SECTION\s+([\p{L}\s]+)$`)
+	varRg            = regexp.MustCompile(`^(\w+)\s*=\s*"?((?:[^"]|.\\")+)"?$`)
+	floatRg          = regexp.MustCompile(`^(\d+\.\d+)$`)
+	intRg            = regexp.MustCompile(`^(\d+)$`)
+	boolRg           = regexp.MustCompile(`^(true|false)$`)
+	wordRg           = regexp.MustCompile(`^([\d\p{L}\-_]+):(\s*(([\d\p{L}\-_]+)),?)*$`)
+	msgRg            = regexp.MustCompile(`(?s)^([\d\p{L}\-_]+):\s+["^(\\")]{1}(.+)["^(\\")]{1}$`)
+	locLabelRg       = regexp.MustCompile(`^\s*([\d\p{L}\-_]+):\s*$`)
+	locConnsRg       = regexp.MustCompile(
+		`^\s*(exits|conns|connections)\s*:\s*(\s*([\d\p{L}\-_]+\s+[\d\p{L}\-_]+\s*,?))+.?$`,
+	)
 )
 
 func (l line) labelAndTextRg(label string) (string, bool) {
