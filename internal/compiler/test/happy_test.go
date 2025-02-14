@@ -16,7 +16,7 @@ func TestCompilerHappyPath(t *testing.T) {
 	require.NoError(t, err)
 
 	// vars
-	assert.Equal(t, 7, a.Vars.Count())
+	assert.Equal(t, 7, a.Vars.Len())
 
 	testCases := []struct {
 		key      string
@@ -95,43 +95,40 @@ func TestCompilerHappyPath(t *testing.T) {
 
 	t.Run("Messages", func(t *testing.T) {
 		testCases := []struct {
-			kind          msg.MsgType
-			label         string
-			expected      string
-			expectedError error
+			kind         msg.MsgType
+			label        string
+			expected     string
+			shouldExists bool
 		}{
-			{msg.SystemMsg, "dark", "No se vé nada.", nil},
-			{msg.SystemMsg, "loc-objects", "Aquí hay", nil},
-			{msg.SystemMsg, "not-needed", "No es necesario para jugar la aventura.", nil},
-			{msg.SystemMsg, "cant", "No puedes _", nil},
-			{msg.SystemMsg, "cant-do", "No puedes hacerlo.", nil},
-			{msg.SystemMsg, "err-save", "Error al grabar el fichero _.", nil},
-			{msg.SystemMsg, "filename", "Nombre del fichero:", nil},
-			{msg.UserMsg, "foo", "", msg.ErrMsgNotFound},
-			{msg.UserMsg, "test", "This is a test message.", nil},
-			{msg.UserMsg, "test2", `This is another \"test\" message.`, nil},
+			{msg.SystemMsg, "dark", "No se vé nada.", true},
+			{msg.SystemMsg, "loc-objects", "Aquí hay", true},
+			{msg.SystemMsg, "not-needed", "No es necesario para jugar la aventura.", true},
+			{msg.SystemMsg, "cant", "No puedes _", true},
+			{msg.SystemMsg, "cant-do", "No puedes hacerlo.", true},
+			{msg.SystemMsg, "err-save", "Error al grabar el fichero _.", true},
+			{msg.SystemMsg, "filename", "Nombre del fichero:", true},
+			{msg.UserMsg, "foo", "", false},
+			{msg.UserMsg, "test", "This is a test message.", true},
+			{msg.UserMsg, "test2", `This is another \"test\" message.`, true},
 			{
 				msg.UserMsg,
 				"multiline",
 				"This is a message with a heredoc string.\nLine 2.\nLine 3.\nLine 4 without carrige return at the " +
 					"end.\n\tLine 5 and this line is indented.",
-				nil,
+				true,
 			},
-			{msg.UserMsg, "bar", "", msg.ErrMsgNotFound},
+			{msg.UserMsg, "bar", "", false},
 		}
 
 		for _, tc := range testCases {
 			t.Run(tc.label, func(t *testing.T) {
-				m, err := a.Messages.GetText(tc.kind, tc.label)
-				if tc.expectedError != nil {
-					require.Error(t, err)
-					require.ErrorIs(t, err, tc.expectedError)
-
-					return
+				m := a.Messages.Get(tc.kind, tc.label)
+				if tc.shouldExists {
+					require.NotNil(t, m)
+					assert.Equal(t, tc.expected, m.Text)
+				} else {
+					require.Nil(t, m)
 				}
-
-				require.NoError(t, err)
-				assert.Equal(t, tc.expected, m)
 			})
 		}
 	})

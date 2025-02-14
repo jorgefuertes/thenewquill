@@ -1,4 +1,4 @@
-package obj
+package item
 
 import (
 	"thenewquill/internal/adventure/loc"

@@ -8,9 +8,9 @@ import (
 	"strconv"
 
 	"thenewquill/internal/adventure"
+	"thenewquill/internal/adventure/item"
 	"thenewquill/internal/adventure/loc"
 	"thenewquill/internal/adventure/msg"
-	"thenewquill/internal/adventure/obj"
 	"thenewquill/internal/adventure/voc"
 )
 
@@ -143,7 +143,7 @@ func compileFile(st *status, filename string, a *adventure.Adventure) error {
 				return ErrWrongWordDeclaration.WithStack(st.stack).WithLine(l).WithFilename(filename)
 			}
 
-			_ = a.Vocabulary.Add(w.Label, w.Type, w.Synonyms...)
+			_ = a.Vocabulary.Set(w.Label, w.Type, w.Synonyms...)
 			st.setDef(w.Label, sectionWords)
 
 			continue
@@ -153,7 +153,7 @@ func compileFile(st *status, filename string, a *adventure.Adventure) error {
 				return ErrWrongMessageDeclaration.WithStack(st.stack).WithLine(l).WithFilename(filename)
 			}
 
-			if err := a.Messages.Add(m); err != nil {
+			if err := a.Messages.Set(&m); err != nil {
 				return ErrWrongMessageDeclaration.WithStack(st.stack).AddErr(err).WithLine(l).WithFilename(filename)
 			}
 			st.setDef(m.Label, sectionSysMsg)
@@ -165,7 +165,7 @@ func compileFile(st *status, filename string, a *adventure.Adventure) error {
 				return ErrWrongMessageDeclaration.WithStack(st.stack).WithLine(l).WithFilename(filename)
 			}
 
-			if err := a.Messages.Add(m); err != nil {
+			if err := a.Messages.Set(&m); err != nil {
 				return ErrWrongMessageDeclaration.WithStack(st.stack).AddErr(err).WithLine(l).WithFilename(filename)
 			}
 			st.setDef(m.Label, sectionUserMsgs)
@@ -173,7 +173,7 @@ func compileFile(st *status, filename string, a *adventure.Adventure) error {
 			continue
 		case sectionItems:
 			if st.hasCurrentLabel() {
-				i := a.Objects.Get(st.currentLabel)
+				i := a.Items.Get(st.currentLabel)
 				if i == nil {
 					return ErrWrongItemDeclaration.WithStack(st.stack).WithLine(l).WithFilename(filename)
 				}
@@ -256,7 +256,7 @@ func compileFile(st *status, filename string, a *adventure.Adventure) error {
 
 			label, noun, adj, ok := l.toItemDeclaration()
 			if ok {
-				if a.Objects.Exists(label) {
+				if a.Items.Exists(label) {
 					return ErrDuplicatedItemLabel.WithStack(st.stack).WithLine(l).WithFilename(filename)
 				}
 
@@ -265,17 +265,17 @@ func compileFile(st *status, filename string, a *adventure.Adventure) error {
 
 				nounWord := a.Vocabulary.Get(voc.Noun, noun)
 				if nounWord == nil {
-					nounWord = a.Vocabulary.Add(noun, voc.Noun)
+					nounWord = a.Vocabulary.Set(noun, voc.Noun)
 					st.setUndef(noun, sectionWords, l, filename)
 				}
 
 				adjWord := a.Vocabulary.Get(voc.Adjective, adj)
 				if adjWord == nil {
-					adjWord = a.Vocabulary.Add(adj, voc.Adjective)
+					adjWord = a.Vocabulary.Set(adj, voc.Adjective)
 					st.setUndef(adj, sectionWords, l, filename)
 				}
 
-				if err := a.Objects.Add(obj.New(label, nounWord, adjWord)); err != nil {
+				if err := a.Items.Set(item.New(label, nounWord, adjWord)); err != nil {
 					return ErrWrongItemDeclaration.WithStack(st.stack).AddErr(err).WithLine(l).WithFilename(filename)
 				}
 
@@ -320,7 +320,7 @@ func compileFile(st *status, filename string, a *adventure.Adventure) error {
 				for wordLabel, destLabel := range exitMap {
 					word := a.Vocabulary.FirstWithTypes(wordLabel, voc.Verb, voc.Noun)
 					if word == nil {
-						word = a.Vocabulary.Add(wordLabel, voc.Unknown)
+						word = a.Vocabulary.Set(wordLabel, voc.Unknown)
 						st.setUndef(wordLabel, sectionWords, l, filename)
 					}
 

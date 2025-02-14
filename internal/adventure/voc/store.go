@@ -4,7 +4,7 @@ import "slices"
 
 type Vocabulary []*Word
 
-func New() Vocabulary {
+func NewStore() Vocabulary {
 	v := Vocabulary{}
 
 	for _, t := range wordTypes() {
@@ -14,7 +14,9 @@ func New() Vocabulary {
 	return v
 }
 
-func (v *Vocabulary) Add(label string, t WordType, synonyms ...string) *Word {
+// Set a new word
+// overwrites any existing word with the same label and type
+func (v *Vocabulary) Set(label string, t WordType, synonyms ...string) *Word {
 	if synonyms == nil {
 		synonyms = make([]string, 0)
 	}
@@ -86,4 +88,8 @@ func (v Vocabulary) FirstWithTypes(labelOrSynonym string, types ...WordType) *Wo
 	}
 
 	return nil
+}
+
+func (v Vocabulary) Len() int {
+	return len(v)
 }

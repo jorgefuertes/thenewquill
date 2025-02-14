@@ -13,7 +13,7 @@ type Location struct {
 	Conns       []Connection
 }
 
-func NewLocation(label, title, desc string) *Location {
+func New(label, title, desc string) *Location {
 	return &Location{
 		Label:       label,
 		Title:       title,

@@ -11,7 +11,7 @@ import (
 )
 
 func TestLocations(t *testing.T) {
-	locs := loc.New()
+	locs := loc.NewStore()
 
 	north := &voc.Word{Label: "north", Type: voc.Verb}
 	east := &voc.Word{Label: "east", Type: voc.Verb}

@@ -1,6 +1,7 @@
 package vars
 
 import (
+	"fmt"
 	"regexp"
 	"strconv"
 	"sync"
@@ -11,15 +12,15 @@ type Store struct {
 	regs map[string]any
 }
 
-func New() Store {
+func NewStore() Store {
 	return Store{
 		lock: &sync.Mutex{},
 		regs: make(map[string]any, 0),
 	}
 }
 
-func (s *Store) All() map[string]any {
-	return s.regs
+func (s Store) Len() int {
+	return len(s.regs)
 }
 
 func (s *Store) Set(key string, value any) {
@@ -132,6 +133,17 @@ func (s *Store) GetFloat(key string) float64 {
 	}
 }
 
-func (s *Store) Count() int {
-	return len(s.regs)
+func (s *Store) GetString(key string) string {
+	v := s.Get(key)
+
+	switch v := v.(type) {
+	case string:
+		return v
+	case float64:
+		return fmt.Sprintf("%0.4f", v)
+	case int:
+		return fmt.Sprintf("%d", v)
+	default:
+		return fmt.Sprintf("%v", v)
+	}
 }

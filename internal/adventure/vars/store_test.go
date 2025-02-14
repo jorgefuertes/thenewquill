@@ -9,7 +9,7 @@ import (
 )
 
 func TestStore(t *testing.T) {
-	st := vars.New()
+	st := vars.NewStore()
 
 	// string
 	st.Set("foo", "bar")

@@ -1,4 +1,4 @@
-package obj
+package item
 
 func (i Item) IsContainer() bool {
 	return i.isContainer
