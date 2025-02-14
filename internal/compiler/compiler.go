@@ -5,10 +5,12 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
 
 	"thenewquill/internal/adventure"
 	"thenewquill/internal/adventure/loc"
 	"thenewquill/internal/adventure/msg"
+	"thenewquill/internal/adventure/obj"
 	"thenewquill/internal/adventure/voc"
 )
 
@@ -20,6 +22,7 @@ func Compile(filename string) (*adventure.Adventure, error) {
 	cErr, ok := err.(compilerError)
 	if ok {
 		fmt.Println(cErr.Dump())
+		return a, cErr
 	}
 
 	// check for unresolved labels
@@ -168,8 +171,120 @@ func compileFile(st *status, filename string, a *adventure.Adventure) error {
 			st.setDef(m.Label, sectionUserMsgs)
 
 			continue
-		case sectionObjs:
-			// TODO
+		case sectionItems:
+			if st.hasCurrentLabel() {
+				i := a.Objects.Get(st.currentLabel)
+				if i == nil {
+					return ErrWrongItemDeclaration.WithStack(st.stack).WithLine(l).WithFilename(filename)
+				}
+
+				desc, ok := l.labelAndTextRg("desc")
+				if ok {
+					i.SetDescription(desc)
+
+					continue
+				}
+
+				desc, ok = l.labelAndTextRg("description")
+				if ok {
+					i.SetDescription(desc)
+
+					continue
+				}
+
+				if l.optimized() == "is wearable" {
+					i.SetWearable()
+					continue
+				}
+
+				if l.optimized() == "is worn" {
+					i.SetWearable()
+					i.Wear()
+					continue
+				}
+
+				if l.optimized() == "is created" {
+					i.Create()
+					continue
+				}
+
+				if l.optimized() == "is container" {
+					i.SetContainer()
+					continue
+				}
+
+				if l.optimized() == "is held" {
+					i.Hold()
+					continue
+				}
+
+				if itemLocationRg.MatchString(l.optimized()) {
+					m := itemLocationRg.FindStringSubmatch(l.optimized())
+
+					inLoc := a.Locations.Get(m[1])
+					if inLoc == nil {
+						inLoc = a.Locations.Set(m[1], loc.Undefined, loc.Undefined)
+						st.setUndef(m[1], sectionLocs, l, filename)
+					}
+
+					i.SetLocation(inLoc)
+					continue
+				}
+
+				if itemWeightRg.MatchString(l.optimized()) {
+					m := itemWeightRg.FindStringSubmatch(l.optimized())
+					w, err := strconv.Atoi(m[1])
+					if err != nil {
+						return ErrWrongItemWeight.WithStack(st.stack).WithLine(l).WithFilename(filename)
+					}
+
+					i.SetWeight(w)
+					continue
+				}
+
+				if itemMaxWeightRg.MatchString(l.optimized()) {
+					m := itemMaxWeightRg.FindStringSubmatch(l.optimized())
+					w, err := strconv.Atoi(m[1])
+					if err != nil {
+						return ErrWrongItemWeight.WithStack(st.stack).WithLine(l).WithFilename(filename)
+					}
+
+					i.SetMaxWeight(w)
+					continue
+				}
+			}
+
+			label, noun, adj, ok := l.toItemDeclaration()
+			if ok {
+				if a.Objects.Exists(label) {
+					return ErrDuplicatedItemLabel.WithStack(st.stack).WithLine(l).WithFilename(filename)
+				}
+
+				st.setCurrentLabel(label)
+				st.setDef(label, sectionItems)
+
+				nounWord := a.Vocabulary.Get(voc.Noun, noun)
+				if nounWord == nil {
+					nounWord = a.Vocabulary.Add(noun, voc.Noun)
+					st.setUndef(noun, sectionWords, l, filename)
+				}
+
+				adjWord := a.Vocabulary.Get(voc.Adjective, adj)
+				if adjWord == nil {
+					adjWord = a.Vocabulary.Add(adj, voc.Adjective)
+					st.setUndef(adj, sectionWords, l, filename)
+				}
+
+				if err := a.Objects.Add(obj.New(label, nounWord, adjWord)); err != nil {
+					return ErrWrongItemDeclaration.WithStack(st.stack).AddErr(err).WithLine(l).WithFilename(filename)
+				}
+
+				st.setDef(label, sectionItems)
+
+				continue
+			}
+
+			return ErrWrongItemDeclaration.WithStack(st.stack).WithLine(l).WithFilename(filename)
 		case sectionLocs:
 			label, ok := l.toLocationLabel()
 			if ok {

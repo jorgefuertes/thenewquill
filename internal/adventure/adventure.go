@@ -44,13 +44,13 @@ func (a *Adventure) Dump() {
 
 	fmt.Println("--- LOCATIONS BEGIN ---")
 	for _, l := range a.Locations.All() {
-		fmt.Printf("[loc:%s] %s: \"%s\"\n",
-			util.LimitStr(l.Label, 4),
+		fmt.Printf("[loc:%-5s] %-10s \"%s\"\n",
+			util.LimitStr(l.Label, 5),
 			util.LimitStr(l.Title, 10),
 			util.LimitStr(l.Description, 50))
 
 		if len(l.Conns) > 0 {
-			fmt.Printf("      exits: ")
+			fmt.Printf("            exits: ")
 			for _, c := range l.Conns {
 				fmt.Printf("%s->%s ", c.Word, c.To.Label)
 			}

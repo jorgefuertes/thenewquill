@@ -9,7 +9,7 @@ const (
 	sectionWords    section = "WORDS"
 	sectionUserMsgs section = "USER MESSAGES"
 	sectionSysMsg   section = "SYSTEM MESSAGES"
-	sectionObjs     section = "OBJECTS"
+	sectionItems    section = "ITEMS"
 	sectionLocs     section = "LOCATIONS"
 	sectionProcs    section = "PROCESS TABLES"
 	sectionNone     section = "NONE"
@@ -31,8 +31,8 @@ func sectionFromString(s string) section {
 		return sectionSysMsg
 	case "USER MESSAGES":
 		return sectionUserMsgs
-	case "OBJECTS":
-		return sectionObjs
+	case "ITEMS", "OBJECTS":
+		return sectionItems
 	case "LOCATIONS":
 		return sectionLocs
 	case "PROCESS TABLES":
@@ -50,8 +50,8 @@ func (s section) singleString() string {
 		return "word"
 	case sectionLocs:
 		return "location"
-	case sectionObjs:
-		return "object"
+	case sectionItems:
+		return "item"
 	case sectionProcs:
 		return "process"
 	case sectionSysMsg:

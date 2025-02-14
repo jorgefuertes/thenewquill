@@ -19,6 +19,7 @@ type Item struct {
 	isHeld      bool
 	location    *loc.Location
 	contents    []*Item
+	flags       map[string]bool
 }
 
 // simple Item
@@ -30,6 +31,7 @@ func New(label string, noun *voc.Word, adjective *voc.Word) *Item {
 		weight:    0,
 		maxWeight: 100,
 		contents:  make([]*Item, 0),
+		flags:     make(map[string]bool, 0),
 	}
 }
 

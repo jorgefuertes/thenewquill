@@ -29,3 +29,4 @@ INCLUDE "sysmsg.inc.adv"
 INCLUDE "words.inc.adv" // include another file
 INCLUDE "usermsg.inc.adv"
 INCLUDE "locations.inc.adv"
+INCLUDE "items.inc.adv"

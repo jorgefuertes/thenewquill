@@ -2,7 +2,6 @@ package obj
 
 import (
 	"thenewquill/internal/adventure/voc"
-	"thenewquill/internal/log"
 )
 
 type Items []*Item
@@ -50,15 +49,6 @@ func (i *Items) Add(newItem *Item) error {
 
 	if newItem.noun == nil {
 		return ErrNounCannotBeNil
-	}
-
-	if i.ExistsNounAdj(newItem.noun, newItem.adjective) {
-		log.Warning(
-			"Duplicate noun/adjective for object '%s': %s %s",
-			newItem.label,
-			newItem.noun.Label,
-			newItem.adjective.Label,
-		)
 	}
 
 	*i = append(*i, newItem)

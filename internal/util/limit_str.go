@@ -1,20 +1,15 @@
 package util
 
-import "unicode/utf8"
-
 func LimitStr(s string, max int) string {
-	if max >= utf8.RuneCountInString(s) {
-		return s
+	runes := []rune(s)
+
+	if len(runes) >= max-3 && len(runes) > 15 {
+		return string(runes[:max-3]) + "..."
 	}
 
-	var output string
-	for i, r := range s {
-		if i == max {
-			break
-		}
-
-		output += string(r)
+	if len(runes) > max {
+		return string(runes[:max])
 	}
 
-	return output
+	return string(runes)
 }

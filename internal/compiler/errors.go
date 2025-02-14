@@ -15,4 +15,7 @@ var (
 	ErrUnclosedMultiline             = newCompilerError("unclosed multiline declaration")
 	ErrUnresolvedLabel               = newCompilerError("unresolved label")
 	ErrRemainingUnresolvedLabels     = newCompilerError("remaining unresolved labels")
+	ErrWrongItemDeclaration          = newCompilerError("wrong item declaration")
+	ErrDuplicatedItemLabel           = newCompilerError("duplicated item label")
+	ErrWrongItemWeight               = newCompilerError("wrong item weight")
 )

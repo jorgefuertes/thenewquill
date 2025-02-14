@@ -175,3 +175,16 @@ func (l line) toLocationConns() (map[string]string, bool) {
 
 	return exits, true
 }
+
+func (l line) toItemDeclaration() (label, noun, adjetive string, ok bool) {
+	if !itemDeclarationRg.MatchString(l.text) {
+		return "", "", "", false
+	}
+
+	m := itemDeclarationRg.FindStringSubmatch(l.text)
+	label = m[1]
+	noun = m[2]
+	adjetive = m[3]
+
+	return label, noun, adjetive, true
+}

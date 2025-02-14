@@ -23,6 +23,10 @@ var (
 	locConnsRg       = regexp.MustCompile(
 		`^\s*(exits|conns|connections)\s*:\s*(\s*([\d\p{L}\-_]+\s+[\d\p{L}\-_]+\s*,?))+.?$`,
 	)
+	itemDeclarationRg = regexp.MustCompile(`^\s*([\d\p{L}\-_]+):\s+([\d\p{L}\-_]+)\s+([\d\p{L}\-_]+)\s*$`)
+	itemLocationRg    = regexp.MustCompile(`^\s*is\s+in\s+([\d\p{L}\-_]+)\s*$`)
+	itemWeightRg      = regexp.MustCompile(`^\s*has\s+weight\s+(\d+)\s*$`)
+	itemMaxWeightRg   = regexp.MustCompile(`^\s*has\s+max\s+weight\s+(\d+)\s*$`)
 )
 
 func (l line) labelAndTextRg(label string) (string, bool) {

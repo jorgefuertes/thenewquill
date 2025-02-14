@@ -147,6 +147,36 @@ func TestRegexps(t *testing.T) {
 			rg:          locConnsRg,
 			shouldMatch: true,
 		},
+		{
+			name:        "item declaration",
+			text:        `antorcha: antorcha _`,
+			rg:          itemDeclarationRg,
+			shouldMatch: true,
+		},
+		{
+			name:        "item declaration 2",
+			text:        `llave: llave dorada`,
+			rg:          itemDeclarationRg,
+			shouldMatch: true,
+		},
+		{
+			name:        "item location",
+			text:        `is in loc-004`,
+			rg:          itemLocationRg,
+			shouldMatch: true,
+		},
+		{
+			name:        "item weight",
+			text:        `has weight 10`,
+			rg:          itemWeightRg,
+			shouldMatch: true,
+		},
+		{
+			name:        "item max weight",
+			text:        `has max weight 250`,
+			rg:          itemMaxWeightRg,
+			shouldMatch: true,
+		},
 	}
 
 	for _, tt := range tests {
