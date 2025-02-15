@@ -1,5 +1,9 @@
 .PHONY: test
 
+compile:
+	mkdir -p tmp
+	@go run cmd/quill/quill.go -i internal/compiler/test/adv_files/happy/test.adv -o tmp/test.db
+
 run:
 	@go run .
 
