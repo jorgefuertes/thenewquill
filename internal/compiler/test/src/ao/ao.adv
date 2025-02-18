@@ -1,0 +1,13 @@
+/*
+	La aventura original
+	Basada en la Aventura Original desarrollada en DAAD
+	por el equipo de Aventuras AD.
+
+	Interpretación libre para probar el compilador
+	The New Quill Adventure Writing System
+
+	Author: queru (github.com/queru) 2025
+*/
+
+INCLUDE "vars.inc.adv"
+INCLUDE "voc.inc.adv"

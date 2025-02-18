@@ -1,6 +1,9 @@
 package voc
 
-import "slices"
+import (
+	"slices"
+	"strings"
+)
 
 type Vocabulary []*Word
 
@@ -17,6 +20,8 @@ func NewStore() Vocabulary {
 // Set a new word
 // overwrites any existing word with the same label and type
 func (v *Vocabulary) Set(label string, t WordType, synonyms ...string) *Word {
+	label = strings.ToLower(label)
+
 	if synonyms == nil {
 		synonyms = make([]string, 0)
 	}
@@ -44,6 +49,8 @@ func (v *Vocabulary) Set(label string, t WordType, synonyms ...string) *Word {
 }
 
 func (v Vocabulary) Get(t WordType, labelOrSynonym string) *Word {
+	labelOrSynonym = strings.ToLower(labelOrSynonym)
+
 	for _, w := range v {
 		if w.Is(labelOrSynonym) && w.Type == t {
 			return w
@@ -54,6 +61,8 @@ func (v Vocabulary) Get(t WordType, labelOrSynonym string) *Word {
 }
 
 func (v Vocabulary) Exists(t WordType, labelOrSynonym string) bool {
+	labelOrSynonym = strings.ToLower(labelOrSynonym)
+
 	for _, w := range v {
 		if w.Type != t {
 			continue
@@ -69,6 +78,8 @@ func (v Vocabulary) Exists(t WordType, labelOrSynonym string) bool {
 
 // First returns the first word of the vocabulary that matches the given label or synonym.
 func (v Vocabulary) First(labelOrSynonym string) *Word {
+	labelOrSynonym = strings.ToLower(labelOrSynonym)
+
 	for _, w := range v {
 		if w.Is(labelOrSynonym) {
 			return w
@@ -80,6 +91,8 @@ func (v Vocabulary) First(labelOrSynonym string) *Word {
 
 // FirstWithTypes returns the first word found by given types preferences
 func (v Vocabulary) FirstWithTypes(labelOrSynonym string, types ...WordType) *Word {
+	labelOrSynonym = strings.ToLower(labelOrSynonym)
+
 	for _, t := range types {
 		w := v.Get(t, labelOrSynonym)
 		if w != nil {

@@ -1,3 +1,5 @@
 .trunk
 .vscode
 .aider*
+/work
+/tmp

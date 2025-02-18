@@ -1,8 +1,14 @@
-.PHONY: test
+.PHONY: test tmp
 
-compile:
-	mkdir -p tmp
-	@go run cmd/quill/quill.go -i internal/compiler/test/adv_files/happy/test.adv -o tmp/test.db
+compile-happy: tmp
+	@go run cmd/quill/quill.go c -i internal/compiler/test/src/happy/test.adv -o tmp/happy-test.db
+
+compile-ao: tmp
+	@go run cmd/quill/quill.go c -i internal/compiler/test/src/ao/ao.adv -o tmp/test.db
+
+tmp:
+	@rm -Rf tmp
+	@mkdir -p tmp
 
 run:
 	@go run .

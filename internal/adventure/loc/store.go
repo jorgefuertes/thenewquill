@@ -1,5 +1,7 @@
 package loc
 
+import "strings"
+
 type Store []*Location
 
 func NewStore() Store {
@@ -7,6 +9,8 @@ func NewStore() Store {
 }
 
 func (s Store) Get(label string) *Location {
+	label = strings.ToLower(label)
+
 	for _, l := range s {
 		if l.Label == label {
 			return l
@@ -19,6 +23,8 @@ func (s Store) Get(label string) *Location {
 // Set a new location
 // overwrites any existing location with the same label
 func (s *Store) Set(label, title, desc string) *Location {
+	label = strings.ToLower(label)
+
 	if existent := s.Get(label); existent != nil {
 		existent.Title = title
 		existent.Description = desc
@@ -33,6 +39,8 @@ func (s *Store) Set(label, title, desc string) *Location {
 }
 
 func (s Store) Exists(label string) bool {
+	label = strings.ToLower(label)
+
 	for _, l := range s {
 		if l.Label == label {
 			return true

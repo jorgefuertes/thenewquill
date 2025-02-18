@@ -1,0 +1,152 @@
+SECTION WORDS
+
+// nouns
+
+noun: agua
+noun: aguijón
+noun: alfombra
+noun: almeja, ostra
+noun: almohada
+noun: azufre, fragancia, peste, olor
+noun: barra, titan
+noun: barro, jaula, reja
+noun: barrotes, barrote, candado
+noun: batería, pila, pilas
+noun: bicho, dragon, drago
+noun: boca, pozo
+noun: borde
+noun: botas, zapatos
+noun: botella
+noun: brillante
+noun: brote, judia, planta, semilla, tronco
+noun: cabaña, casa, casita, caverna, vives
+noun: caca, mierda, cagada, truño, detritus
+noun: cadena
+noun: camino, rampa, senda, cuesta
+noun: canto, piedra
+noun: cartel, cuadro, nota, texto
+noun: cascada
+noun: charco
+noun: claro
+noun: colina
+noun: depresión
+noun: desconocido
+noun: diamante
+noun: e, este
+noun: elfito, elfo, figura
+noun: enano
+noun: escalera
+noun: esmeralda
+noun: espectro
+noun: espejo
+noun: espiral
+noun: estás, estas, llora, ocurre, pasa, quiere, rabia, sucede
+noun: estru
+noun: fee
+noun: figura, ventana
+noun: fisura
+noun: gancho, garfio
+noun: gráfico, grafico, gráficos, graficos
+noun: grieta
+noun: hacha
+noun: habita
+noun: hola, saludos, saludo, hey, ey
+noun: hueso
+noun: huevo
+noun: i, inven, inventario
+noun: jarra, jarro
+noun: joya
+noun: lámpara, linterna
+noun: lava, magma
+noun: lecho
+noun: llamas, nombre
+noun: llave
+noun: mágica, magia
+noun: maquina, maqui
+noun: mesa, mesas
+noun: moneda, denario, doblón, dinero, dineros, monedas, monedas, parné, colorao
+noun: n, norte
+noun: ne, noreste
+noun: niebla
+noun: no, noroeste
+noun: o, oeste
+noun: oso, pepos
+noun: pajaro, pajar
+noun: pared, pilar
+noun: pepita
+noun: perla
+noun: picnic
+noun: piramide, piram
+noun: plove, plugh
+noun: puente
+noun: puerta
+noun: rama
+noun: recol
+noun: s, sur
+noun: se, sureste
+noun: serpiente
+noun: so, suroeste
+noun: todo
+noun: tortilla
+noun: tridente
+noun: varita
+noun: xyzzy
+
+// verbs
+
+verb: bajar, abajo, bajo
+verb: abandonar, fin, retirarse, rindo, rendirse, rendir, quit, terminar, termino
+verb: abrir, abro, empujar, empujo, abre
+verb: ad, quill, compiler, compilador, versión
+verb: coger, agarrar, buscar, busco, cojo, coge, agarro, agarra, busca
+verb: mover, agitar, agito, agita, muevo, mueve, sacude, sacudir
+verb: apagar, apago, apaga
+verb: subir, arriba, subo, sube, trepar, trepo, trepa
+verb: asomar, asoma, asomo, asómate
+verb: atacar, asustar, ataco, ataca, gritar, grito, grita, pegar, pego, pega
+verb: ayudar, ayuda
+verb: beber, bebo, bebe
+verb: cabrón, cabrona, culo, joputa, hijoputa, puta, puto, joto, sorete, joder, capullo, folla, folle, gilipollas, \
+	idiota, imbécil, joder, jodes, marica, maricón, caramierda, carapija, carapolla, soplapollas, putos, subnormal
+verb: cargar, load
+verb: cerrar, cierro, cierra
+verb: comer, como, come
+verb: m, mirar, d, desc, describir, r, redesc, redescribir
+verb: dar, darle, doy, da
+verb: decir, digo, di, hablar, hablo, habla, preguntar, pregunta
+verb: dejar, deja, dejo, soltar, suelto, suelta
+verb: encender, enciendo, enciende
+verb: entrar, entra, entro
+verb: oir, escuchar, escucha, escucho, oigo, oye
+verb: esperar, espero, espera
+verb: examinar, ex, examina, examino
+verb: grabar, save
+verb: intro, introduzco, introduce, inserta, meter, meto, mete, poner, pongo, pon
+verb: leer, leo, lee
+verb: llenar, llena, lleno
+verb: luz
+verb: matar, mato, mata
+verb: pedir, pido, pide
+verb: quitar, quito, quita, sacar, saco
+verb: romper, rompo, rompe
+verb: salir, salgo, sal
+verb: salidas, salida, exits, x
+verb: saltar, salto, salta, brinca, brinco, brincar
+verb: saludar, saludo, saluda
+verb: sentar, siento, sienta
+verb: vaciar, vacía, vacío
+verb: usar, usa, usando, agitar, agita, agito, agudo, mover, muevo, mueve
+verb: aceitar
+verb: apartar, aparta, aparto
+verb: buscar, busca, busco, atrapar, atrapo, atrapa, cazar, cazo, caza
+verb: nadar, nado, nada, bucear, buceo, bucea
+verb: empujar, empujo, empuja
+verb: palpar, palpo, palpa, tocar, toco, toca
+
+// adjectives
+
+adjective: altos, esbeltos, largos
+
+// conjunction
+
+conjunction: y, entonces

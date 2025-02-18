@@ -1,6 +1,7 @@
 package item
 
 import (
+	"strings"
 	"thenewquill/internal/adventure/voc"
 )
 
@@ -52,6 +53,8 @@ func (s *Store) Set(newItem *Item) error {
 	if newItem.label == "" {
 		return ErrEmptyLabel
 	}
+
+	newItem.label = strings.ToLower(newItem.label)
 
 	if newItem.noun == nil {
 		return ErrNounCannotBeNil

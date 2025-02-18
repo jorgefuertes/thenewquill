@@ -2,6 +2,7 @@ package item
 
 import (
 	"thenewquill/internal/adventure/loc"
+	"thenewquill/internal/adventure/player"
 	"thenewquill/internal/adventure/voc"
 )
 
@@ -18,6 +19,7 @@ type Item struct {
 	isCreated   bool
 	isHeld      bool
 	location    *loc.Location
+	carriedBy   *player.Player
 	contents    []*Item
 	flags       map[string]bool
 }
@@ -75,10 +77,6 @@ func (i *Item) IsWearable() bool {
 	return i.isWearable
 }
 
-func (i *Item) SetLocation(l *loc.Location) {
-	i.location = l
-}
-
 func (i Item) IsWorn() bool {
 	return i.isWorn
 }
@@ -113,4 +111,20 @@ func (i *Item) Destroy() {
 	i.isWorn = false
 	i.isCreated = false
 	i.location = nil
+}
+
+func (i *Item) SetCarriedBy(p *player.Player) {
+	i.carriedBy = p
+}
+
+func (i *Item) CarriedBy() *player.Player {
+	return i.carriedBy
+}
+
+func (i *Item) SetLocation(l *loc.Location) {
+	i.location = l
+}
+
+func (i *Item) Location() *loc.Location {
+	return i.location
 }
