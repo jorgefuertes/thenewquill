@@ -1,2 +1,4 @@
 SECTION VARS
 
+test = 1
+testSrt = "Hello World!"

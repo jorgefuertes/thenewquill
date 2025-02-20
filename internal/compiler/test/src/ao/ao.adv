@@ -11,3 +11,4 @@
 
 INCLUDE "vars.inc.adv"
 INCLUDE "voc.inc.adv"
+INCLUDE "sysmsg.inc.adv"

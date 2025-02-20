@@ -18,7 +18,7 @@ var (
 	intRg            = regexp.MustCompile(`^(\d+)$`)
 	boolRg           = regexp.MustCompile(`^(true|false)$`)
 	wordRg           = regexp.MustCompile(`^([\d\p{L}\-_]+):(\s*(([\d\p{L}\-_]+)),?)*$`)
-	msgRg            = regexp.MustCompile(`(?s)^([\d\p{L}\-_]+):\s+["^(\\")]{1}(.+)["^(\\")]{1}$`)
+	msgRg            = regexp.MustCompile(`(?s)^([\d\p{L}\-_.]+):\s+["^(\\")]{1}(.+)["^(\\")]{1}$`)
 	locLabelRg       = regexp.MustCompile(`^\s*([\d\p{L}\-_]+):\s*$`)
 	locConnsRg       = regexp.MustCompile(
 		`^\s*(exits|conns|connections)\s*:\s*(\s*([\d\p{L}\-_]+\s+[\d\p{L}\-_]+\s*,?))+.?$`,
