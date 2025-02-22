@@ -1,7 +1,7 @@
 SECTION SYSTEM MESSAGES
 
-colon: ", "
-and: "y "
+colon: ","
+and: "y"
 ok: "Vale."
 darkness: "Está oscuro y no se ve nada."
 exits: "Las posibles salidas son _"

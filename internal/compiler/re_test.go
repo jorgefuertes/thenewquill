@@ -14,6 +14,7 @@ func TestRegexps(t *testing.T) {
 		text        string
 		rg          *regexp.Regexp
 		shouldMatch bool
+		matches     []string
 	}{
 		{
 			name:        "blank",
@@ -80,6 +81,7 @@ func TestRegexps(t *testing.T) {
 			text:        `INCLUDE "foo.bar"`,
 			rg:          includeRg,
 			shouldMatch: true,
+			matches:     []string{"foo.bar"},
 		},
 		{
 			name:        "bad include",
@@ -92,6 +94,7 @@ func TestRegexps(t *testing.T) {
 			text:        `seCtion vars`,
 			rg:          sectionRg,
 			shouldMatch: true,
+			matches:     []string{"vars"},
 		},
 		{
 			name:        "bad section",
@@ -104,6 +107,7 @@ func TestRegexps(t *testing.T) {
 			text:        `foo = "bar"`,
 			rg:          varRg,
 			shouldMatch: true,
+			matches:     []string{"foo", "bar"},
 		},
 		{
 			name:        "float",
@@ -134,6 +138,7 @@ func TestRegexps(t *testing.T) {
 			text:        `foo: "This is a message"`,
 			rg:          msgRg,
 			shouldMatch: true,
+			matches:     []string{"foo", "This is a message"},
 		},
 		{
 			name:        "location conns",
@@ -177,6 +182,39 @@ func TestRegexps(t *testing.T) {
 			rg:          itemMaxWeightRg,
 			shouldMatch: true,
 		},
+		{
+			name:        "pluralized message",
+			text:        `foo.zero: "No foos."`,
+			rg:          msgRg,
+			shouldMatch: true,
+			matches:     []string{"foo.zero", "No foos."},
+		},
+		{
+			name:        "pluralized message",
+			text:        `foo.one: "One foo."`,
+			rg:          msgRg,
+			shouldMatch: true,
+			matches:     []string{"foo.one", "One foo."},
+		},
+		{
+			name:        "pluralized message",
+			text:        `foo.more: "We have _ foos."`,
+			rg:          msgPluralRg,
+			shouldMatch: true,
+			matches:     []string{"foo", "more", "We have _ foos."},
+		},
+		{
+			name:        "not pluralized message",
+			text:        `foo.bar: "We have _ foos."`,
+			rg:          msgPluralRg,
+			shouldMatch: false,
+		},
+		{
+			name:        "not pluralized message",
+			text:        `foo.bar: "We have _ foos."`,
+			rg:          msgRg,
+			shouldMatch: false,
+		},
 	}
 
 	for _, tt := range tests {
@@ -188,6 +226,23 @@ func TestRegexps(t *testing.T) {
 			}
 
 			require.True(t, tt.rg.MatchString(tt.text), "no matches for: %v in '%s'", tt.rg, tt.text)
+			matches := tt.rg.FindStringSubmatch(tt.text)
+			if len(tt.matches) > 0 {
+				require.Equal(
+					t,
+					len(tt.matches),
+					len(matches)-1,
+					"%d expected matches, got %d: %v",
+					len(tt.matches),
+					len(matches)-1,
+					matches,
+				)
+
+				assert.Equal(t, tt.text, matches[0])
+				for i, expected := range tt.matches {
+					assert.Equal(t, expected, matches[i+1])
+				}
+			}
 		})
 	}
 }

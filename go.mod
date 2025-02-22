@@ -42,12 +42,15 @@ require (
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/charithe/durationcheck v0.0.10 // indirect
 	github.com/chavacava/garif v0.1.0 // indirect
+	github.com/cilium/ebpf v0.11.0 // indirect
 	github.com/ckaznocha/intrange v0.3.0 // indirect
+	github.com/cosiner/argv v0.1.0 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.5 // indirect
 	github.com/curioswitch/go-reassign v0.3.0 // indirect
 	github.com/daixiang0/gci v0.13.5 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/denis-tingaikin/go-header v0.5.0 // indirect
+	github.com/derekparker/trie v0.0.0-20230829180723-39f4de51ef7d // indirect
 	github.com/ettle/strcase v0.2.0 // indirect
 	github.com/fatih/color v1.18.0 // indirect
 	github.com/fatih/structtag v1.2.0 // indirect
@@ -56,6 +59,8 @@ require (
 	github.com/fzipp/gocyclo v0.6.0 // indirect
 	github.com/ghostiam/protogetter v0.3.9 // indirect
 	github.com/go-critic/go-critic v0.12.0 // indirect
+	github.com/go-delve/delve v1.24.0 // indirect
+	github.com/go-delve/liner v1.2.3-0.20231231155935-4726ab1d7f62 // indirect
 	github.com/go-toolsmith/astcast v1.1.0 // indirect
 	github.com/go-toolsmith/astcopy v1.1.0 // indirect
 	github.com/go-toolsmith/astequal v1.2.0 // indirect
@@ -77,6 +82,7 @@ require (
 	github.com/golangci/revgrep v0.8.0 // indirect
 	github.com/golangci/unconvert v0.0.0-20240309020433-c5143eacb3ed // indirect
 	github.com/google/go-cmp v0.6.0 // indirect
+	github.com/google/go-dap v0.12.0 // indirect
 	github.com/gordonklaus/ineffassign v0.1.0 // indirect
 	github.com/gostaticanalysis/analysisutil v0.7.1 // indirect
 	github.com/gostaticanalysis/comment v1.4.2 // indirect
@@ -84,6 +90,7 @@ require (
 	github.com/gostaticanalysis/nilerr v0.1.1 // indirect
 	github.com/hashicorp/go-immutable-radix/v2 v2.1.0 // indirect
 	github.com/hashicorp/go-version v1.7.0 // indirect
+	github.com/hashicorp/golang-lru v1.0.2 // indirect
 	github.com/hashicorp/golang-lru/v2 v2.0.7 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/hexops/gotextdiff v1.0.3 // indirect
@@ -179,16 +186,22 @@ require (
 	gitlab.com/bosi/decorder v0.4.2 // indirect
 	go-simpler.org/musttag v0.13.0 // indirect
 	go-simpler.org/sloglint v0.9.0 // indirect
+	go.starlark.net v0.0.0-20231101134539-556fd59b42f6 // indirect
 	go.uber.org/atomic v1.7.0 // indirect
 	go.uber.org/automaxprocs v1.6.0 // indirect
 	go.uber.org/multierr v1.6.0 // indirect
 	go.uber.org/zap v1.24.0 // indirect
+	golang.org/x/arch v0.11.0 // indirect
+	golang.org/x/exp v0.0.0-20240909161429-701f63a606c0 // indirect
 	golang.org/x/exp/typeparams v0.0.0-20250210185358-939b2ce775ac // indirect
 	golang.org/x/mod v0.23.0 // indirect
 	golang.org/x/sync v0.11.0 // indirect
 	golang.org/x/sys v0.30.0 // indirect
+	golang.org/x/telemetry v0.0.0-20241220003058-cc96b6e0d3d9 // indirect
 	golang.org/x/text v0.22.0 // indirect
-	golang.org/x/tools v0.30.0 // indirect
+	golang.org/x/tools v0.30.1-0.20250220174815-31e3bb2b8fd1 // indirect
+	golang.org/x/tools/gopls v0.18.0 // indirect
+	golang.org/x/vuln v1.1.3 // indirect
 	google.golang.org/protobuf v1.36.4 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
@@ -196,8 +209,13 @@ require (
 	honnef.co/go/tools v0.6.0 // indirect
 	mvdan.cc/gofumpt v0.7.0 // indirect
 	mvdan.cc/unparam v0.0.0-20240528143540-8a5130ca722f // indirect
+	mvdan.cc/xurls/v2 v2.5.0 // indirect
 )
 
 tool honnef.co/go/tools/cmd/staticcheck
 
 tool github.com/golangci/golangci-lint/cmd/golangci-lint
+
+tool golang.org/x/tools/gopls
+
+tool github.com/go-delve/delve/cmd/dlv

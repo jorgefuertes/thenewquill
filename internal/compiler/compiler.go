@@ -35,8 +35,16 @@ func Compile(filename string) (*adventure.Adventure, error) {
 		)
 		err = ErrRemainingUnresolvedLabels
 	}
+	if err != nil {
+		return a, err
+	}
 
-	return a, err
+	// check messages
+	if err := a.Messages.Check(); err != nil {
+		return a, err
+	}
+
+	return a, nil
 }
 
 func compileFile(st *status, filename string, a *adventure.Adventure) error {
@@ -153,7 +161,7 @@ func compileFile(st *status, filename string, a *adventure.Adventure) error {
 				return ErrWrongMessageDeclaration.WithStack(st.stack).WithLine(l).WithFilename(filename)
 			}
 
-			if err := a.Messages.Set(&m); err != nil {
+			if err := a.Messages.Set(m); err != nil {
 				return ErrWrongMessageDeclaration.WithStack(st.stack).AddErr(err).WithLine(l).WithFilename(filename)
 			}
 			st.setDef(m.Label, sectionSysMsg)
@@ -165,7 +173,7 @@ func compileFile(st *status, filename string, a *adventure.Adventure) error {
 				return ErrWrongMessageDeclaration.WithStack(st.stack).WithLine(l).WithFilename(filename)
 			}
 
-			if err := a.Messages.Set(&m); err != nil {
+			if err := a.Messages.Set(m); err != nil {
 				return ErrWrongMessageDeclaration.WithStack(st.stack).AddErr(err).WithLine(l).WithFilename(filename)
 			}
 			st.setDef(m.Label, sectionUserMsgs)

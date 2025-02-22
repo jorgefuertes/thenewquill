@@ -13,14 +13,17 @@ var (
 	blankRg          = regexp.MustCompile(`^\s*$`)
 	includeRg        = regexp.MustCompile(`^INCLUDE\s+"(.*)"$`)
 	sectionRg        = regexp.MustCompile(`(?i)^SECTION\s+([\p{L}\s]+)$`)
-	varRg            = regexp.MustCompile(`^(\w+)\s*=\s*"?((?:[^"]|.\\")+)"?$`)
+	varRg            = regexp.MustCompile(`^([\d\p{L}\-_]+)\s*=\s*"?((?:[^"]|.\\")+)"?$`)
 	floatRg          = regexp.MustCompile(`^(\d+\.\d+)$`)
 	intRg            = regexp.MustCompile(`^(\d+)$`)
 	boolRg           = regexp.MustCompile(`^(true|false)$`)
-	wordRg           = regexp.MustCompile(`^([\d\p{L}\-_]+):(\s*(([\d\p{L}\-_]+)),?)*$`)
-	msgRg            = regexp.MustCompile(`(?s)^([\d\p{L}\-_.]+):\s+["^(\\")]{1}(.+)["^(\\")]{1}$`)
-	locLabelRg       = regexp.MustCompile(`^\s*([\d\p{L}\-_]+):\s*$`)
-	locConnsRg       = regexp.MustCompile(
+	wordRg           = regexp.MustCompile(`^([\d\p{L}\-_]+):\s*((?:[\d\p{L}\-_^]+),*\s*)+$`)
+	msgRg            = regexp.MustCompile(
+		`(?s)^((?:[\d\p{L}\-_]+)(?:\.(?:zero|one|more)){0,1}):\s+["^(\\")]{1}(.+)["^(\\")]{1}$`,
+	)
+	msgPluralRg = regexp.MustCompile(`(?s)^([\d\p{L}\-_]+)\.(zero|one|more):\s+["^(\\")]{1}(.+)["^(\\")]{1}$`)
+	locLabelRg  = regexp.MustCompile(`^\s*([\d\p{L}\-_]+):\s*$`)
+	locConnsRg  = regexp.MustCompile(
 		`^\s*(exits|conns|connections)\s*:\s*(\s*([\d\p{L}\-_]+\s+[\d\p{L}\-_]+\s*,?))+.?$`,
 	)
 	itemDeclarationRg = regexp.MustCompile(`^\s*([\d\p{L}\-_]+):\s+([\d\p{L}\-_]+)\s+([\d\p{L}\-_]+)\s*$`)

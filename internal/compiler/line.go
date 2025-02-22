@@ -114,17 +114,17 @@ func (l line) toWord() (voc.Word, bool) {
 	return w, true
 }
 
-func (l line) toMsg(t msg.MsgType) (msg.Msg, bool) {
+func (l line) toMsg(t msg.MsgType) (*msg.Msg, bool) {
 	if !msgRg.MatchString(l.text) {
-		return msg.Msg{}, false
+		return nil, false
 	}
 
 	parts := msgRg.FindStringSubmatch(l.text)
 	if len(parts) != 3 {
-		return msg.Msg{}, false
+		return nil, false
 	}
 
-	return msg.Msg{Type: t, Label: parts[1], Text: parts[2]}, true
+	return msg.New(t, parts[1], parts[2]), true
 }
 
 func (l line) isMultilineBegin() bool {
