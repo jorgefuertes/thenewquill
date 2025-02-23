@@ -1,7 +1,9 @@
-package compiler
+package line_test
 
 import (
 	"testing"
+
+	"thenewquill/internal/compiler/line"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -104,8 +106,8 @@ func TestLineToVar(t *testing.T) {
 
 	for _, tt := range testCases {
 		t.Run(tt.name, func(t *testing.T) {
-			l := line{text: tt.lineText, n: 1}
-			key, res, ok := l.toVar()
+			l := line.New(tt.lineText, 1)
+			key, res, ok := l.AsVar()
 			assert.Equal(t, tt.expected.ok, ok)
 			assert.Equal(t, tt.expected.key, key)
 			require.EqualValues(t, tt.expected.value, res)

@@ -1,8 +1,10 @@
-package compiler
+package rg_test
 
 import (
 	"regexp"
 	"testing"
+
+	"thenewquill/internal/compiler/rg"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -19,200 +21,200 @@ func TestRegexps(t *testing.T) {
 		{
 			name:        "blank",
 			text:        "    \t",
-			rg:          blankRg,
+			rg:          rg.Blank,
 			shouldMatch: true,
 		},
 		{
 			name:        "not blank",
 			text:        `not blank`,
-			rg:          blankRg,
+			rg:          rg.Blank,
 			shouldMatch: false,
 		},
 		{
 			name:        "inline comment",
 			text:        `foo: bar, baz // This is an inline comment`,
-			rg:          inlineCommentRg,
+			rg:          rg.InlineComment,
 			shouldMatch: true,
 		},
 		{
 			name:        "inline comment 2",
 			text:        `foo: bar, baz /* This is an inline comment */`,
-			rg:          inlineCommentRg,
+			rg:          rg.InlineComment,
 			shouldMatch: true,
 		},
 		{
 			name:        "one line comment",
 			text:        `// This is an inline comment`,
-			rg:          inlineCommentRg,
+			rg:          rg.InlineComment,
 			shouldMatch: true,
 		},
 		{
 			name:        "one line comment 2",
 			text:        `/* This is an inline comment */`,
-			rg:          inlineCommentRg,
+			rg:          rg.InlineComment,
 			shouldMatch: true,
 		},
 		{
 			name:        "comment begin",
 			text:        `/* Comment begin`,
-			rg:          commentBeginRg,
+			rg:          rg.CommentBegin,
 			shouldMatch: true,
 		},
 		{
 			name:        "comment end",
 			text:        `end of the comment */`,
-			rg:          commentEndRg,
+			rg:          rg.CommentEnd,
 			shouldMatch: true,
 		},
 		{
 			name:        "word",
 			text:        `foo: bar`,
-			rg:          wordRg,
+			rg:          rg.Word,
 			shouldMatch: true,
 		},
 		{
 			name:        "word with synonyms",
 			text:        `foo: bar, baz, qux`,
-			rg:          wordRg,
+			rg:          rg.Word,
 			shouldMatch: true,
 		},
 		{
 			name:        "include",
 			text:        `INCLUDE "foo.bar"`,
-			rg:          includeRg,
+			rg:          rg.Include,
 			shouldMatch: true,
 			matches:     []string{"foo.bar"},
 		},
 		{
 			name:        "bad include",
 			text:        `INCLUDE foo.bar`,
-			rg:          includeRg,
+			rg:          rg.Include,
 			shouldMatch: false,
 		},
 		{
 			name:        "section",
 			text:        `seCtion vars`,
-			rg:          sectionRg,
+			rg:          rg.Section,
 			shouldMatch: true,
 			matches:     []string{"vars"},
 		},
 		{
 			name:        "bad section",
 			text:        `bad section vars`,
-			rg:          sectionRg,
+			rg:          rg.Section,
 			shouldMatch: false,
 		},
 		{
 			name:        "var declaration",
 			text:        `foo = "bar"`,
-			rg:          varRg,
+			rg:          rg.Var,
 			shouldMatch: true,
 			matches:     []string{"foo", "bar"},
 		},
 		{
 			name:        "float",
 			text:        `0.256`,
-			rg:          floatRg,
+			rg:          rg.Float,
 			shouldMatch: true,
 		},
 		{
 			name:        "int",
 			text:        `256`,
-			rg:          intRg,
+			rg:          rg.Int,
 			shouldMatch: true,
 		},
 		{
 			name:        "bool true",
 			text:        `true`,
-			rg:          boolRg,
+			rg:          rg.Bool,
 			shouldMatch: true,
 		},
 		{
 			name:        "bool false",
 			text:        `false`,
-			rg:          boolRg,
+			rg:          rg.Bool,
 			shouldMatch: true,
 		},
 		{
 			name:        "message",
 			text:        `foo: "This is a message"`,
-			rg:          msgRg,
+			rg:          rg.Msg,
 			shouldMatch: true,
 			matches:     []string{"foo", "This is a message"},
 		},
 		{
 			name:        "location conns",
 			text:        `exits: north loc001, south loc002, east loc003, west loc004`,
-			rg:          locConnsRg,
+			rg:          rg.LocConns,
 			shouldMatch: true,
 		},
 		{
 			name:        "location conns2",
 			text:        `exits: salir vestíbulo`,
-			rg:          locConnsRg,
+			rg:          rg.LocConns,
 			shouldMatch: true,
 		},
 		{
 			name:        "item declaration",
 			text:        `antorcha: antorcha _`,
-			rg:          itemDeclarationRg,
+			rg:          rg.ItemDeclaration,
 			shouldMatch: true,
 		},
 		{
 			name:        "item declaration 2",
 			text:        `llave: llave dorada`,
-			rg:          itemDeclarationRg,
+			rg:          rg.ItemDeclaration,
 			shouldMatch: true,
 		},
 		{
 			name:        "item location",
 			text:        `is in loc-004`,
-			rg:          itemLocationRg,
+			rg:          rg.ItemLocation,
 			shouldMatch: true,
 		},
 		{
 			name:        "item weight",
 			text:        `has weight 10`,
-			rg:          itemWeightRg,
+			rg:          rg.ItemWeight,
 			shouldMatch: true,
 		},
 		{
 			name:        "item max weight",
 			text:        `has max weight 250`,
-			rg:          itemMaxWeightRg,
+			rg:          rg.ItemMaxWeight,
 			shouldMatch: true,
 		},
 		{
 			name:        "pluralized message",
 			text:        `foo.zero: "No foos."`,
-			rg:          msgRg,
+			rg:          rg.Msg,
 			shouldMatch: true,
 			matches:     []string{"foo.zero", "No foos."},
 		},
 		{
 			name:        "pluralized message",
 			text:        `foo.one: "One foo."`,
-			rg:          msgRg,
+			rg:          rg.Msg,
 			shouldMatch: true,
 			matches:     []string{"foo.one", "One foo."},
 		},
 		{
 			name:        "pluralized message",
 			text:        `foo.more: "We have _ foos."`,
-			rg:          msgPluralRg,
+			rg:          rg.MsgPlural,
 			shouldMatch: true,
 			matches:     []string{"foo", "more", "We have _ foos."},
 		},
 		{
 			name:        "not pluralized message",
 			text:        `foo.bar: "We have _ foos."`,
-			rg:          msgPluralRg,
+			rg:          rg.MsgPlural,
 			shouldMatch: false,
 		},
 		{
 			name:        "not pluralized message",
 			text:        `foo.bar: "We have _ foos."`,
-			rg:          msgRg,
+			rg:          rg.Msg,
 			shouldMatch: false,
 		},
 	}
@@ -243,75 +245,6 @@ func TestRegexps(t *testing.T) {
 					assert.Equal(t, expected, matches[i+1])
 				}
 			}
-		})
-	}
-}
-
-func TestLabelAndTextRg(t *testing.T) {
-	tests := []struct {
-		name        string
-		lineText    string
-		label       string
-		expected    string
-		shouldMatch bool
-	}{
-		{
-			name:        "title",
-			lineText:    `title: "Catacombs"`,
-			label:       "title",
-			expected:    `Catacombs`,
-			shouldMatch: true,
-		},
-		{
-			name:        "title with weird spacing",
-			lineText:    `	 title: 	"Catacombs" `,
-			label:       "title",
-			expected:    `Catacombs`,
-			shouldMatch: true,
-		},
-		{
-			name:        "title with comment",
-			lineText:    `title: "Catacombs" // comment`,
-			label:       "title",
-			expected:    `Catacombs`,
-			shouldMatch: true,
-		},
-		{
-			name:        "desc",
-			lineText:    `desc: "In a dark cave, you see several niches and a large chamber."`,
-			label:       "desc",
-			expected:    `In a dark cave, you see several niches and a large chamber.`,
-			shouldMatch: true,
-		},
-		{
-			name:        "desc with weird spacing",
-			lineText:    `desc:   "In a dark cave, you see several niches and a large chamber."	    `,
-			label:       "desc",
-			expected:    `In a dark cave, you see several niches and a large chamber.`,
-			shouldMatch: true,
-		},
-		{
-			name:        "desc with colons",
-			lineText:    `desc: "In a \"dark cave\", you see several niches and a large 'chamber'."`,
-			label:       "desc",
-			expected:    `In a "dark cave", you see several niches and a large 'chamber'.`,
-			shouldMatch: true,
-		},
-		{
-			name:        "no match",
-			lineText:    `foo: "No Match"`,
-			label:       "bar",
-			expected:    "",
-			shouldMatch: false,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			l := line{text: tt.lineText, n: 0}
-			result, ok := l.labelAndTextRg(tt.label)
-			require.Equal(t, tt.shouldMatch, ok)
-			assert.Equal(t, tt.expected, result)
 		})
 	}
 }

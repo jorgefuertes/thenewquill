@@ -5,35 +5,35 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strconv"
 
 	"thenewquill/internal/adventure"
-	"thenewquill/internal/adventure/item"
-	"thenewquill/internal/adventure/loc"
-	"thenewquill/internal/adventure/msg"
-	"thenewquill/internal/adventure/voc"
+	cerr "thenewquill/internal/compiler/compiler_error"
+	"thenewquill/internal/compiler/line"
+	"thenewquill/internal/compiler/processor"
+	"thenewquill/internal/compiler/section"
+	"thenewquill/internal/compiler/status"
 )
 
 func Compile(filename string) (*adventure.Adventure, error) {
 	a := adventure.New()
-	st := newStatus()
+	st := status.New()
 
 	err := compileFile(st, filename, a)
-	cErr, ok := err.(compilerError)
+	cErr, ok := err.(cerr.CompilerError)
 	if ok {
 		fmt.Println(cErr.Dump())
 		return a, cErr
 	}
 
 	// check for unresolved labels
-	for _, udf := range st.undef {
+	for _, udf := range st.Undefs {
 		fmt.Println(
-			ErrUnresolvedLabel.WithFilename(udf.file).
-				WithLine(udf.line).
-				AddMsgf("%s `%s` remains undefined", udf.section.singleString(), udf.label).
+			cerr.ErrUnresolvedLabel.WithFilename(udf.File).
+				WithLine(udf.Line).
+				AddMsgf("%s `%s` remains undefined", udf.Section.String(), udf.Label).
 				Dump(),
 		)
-		err = ErrRemainingUnresolvedLabels
+		err = cerr.ErrRemainingUnresolvedLabels
 	}
 	if err != nil {
 		return a, err
@@ -47,320 +47,121 @@ func Compile(filename string) (*adventure.Adventure, error) {
 	return a, nil
 }
 
-func compileFile(st *status, filename string, a *adventure.Adventure) error {
+func compileFile(st *status.Status, filename string, a *adventure.Adventure) error {
 	file, err := os.Open(filename)
 	if err != nil {
 		return err
 	}
 
 	defer file.Close()
+	st.PushFilename(filename)
+	defer st.PopFilename()
 
 	n := 0
 	scanner := bufio.NewScanner(file)
 
 	for scanner.Scan() {
 		n++
-		l := newLine(scanner.Text(), n)
+		l := line.New(scanner.Text(), n)
 
-		if l.isBlank() {
+		if l.IsBlank() {
 			continue
 		}
 
-		st.appendStack(l)
+		st.AppendStack(l)
 
-		if l.isOneLineComment() {
+		if l.IsOneLineComment() {
 			continue
 		}
 
 		// comments are ignored
-		if l.isCommentBegin() && !st.comment.isOn() {
-			st.setComment(l)
+		if l.IsCommentBegin() && !st.Comment.IsOn() {
+			st.SetComment(l)
 
 			continue
 		}
 
-		if st.comment.isOn() && l.isCommentEnd() {
-			st.unsetComment()
+		if st.Comment.IsOn() && l.IsCommentEnd() {
+			st.UnsetComment()
 
 			continue
 		}
 
-		if st.comment.isOn() {
+		if st.Comment.IsOn() {
 			continue
 		}
 
 		// follow includes
-		f, ok := l.toInClude()
+		f, ok := l.AsInclude()
 		if ok {
-			err := compileFile(st, filepath.Dir(filename)+"/"+f, a)
+			err := compileFile(st, filepath.Dir(st.CurrentFilename())+"/"+f, a)
 			if err != nil {
-				cErr, ok := err.(compilerError)
+				cErr, ok := err.(cerr.CompilerError)
 				if ok {
 					return cErr
 				}
 
-				return ErrCannotOpenIncludedFile.WithStack(st.stack).WithLine(l).WithFilename(filename).AddErr(err)
+				return cerr.ErrCannotOpenIncludedFile.WithStack(st.Stack).
+					WithLine(l).
+					WithFilename(st.CurrentFilename()).
+					AddErr(err)
 			}
 
 			continue
 		}
 
 		// multiline begin
-		if l.isMultilineBegin() && !st.multiLine.isOn() {
-			st.appendMultiLine(l)
+		if l.IsMultilineBegin() && !st.MultiLine.IsOn() {
+			st.AppendLine(l)
 
 			continue
 		}
 
 		// multiline end
-		if st.multiLine.isOn() && l.isMultilineEnd(st.multiLine.isHeredoc()) {
-			st.appendMultiLine(l)
-			l = st.joinAnClearMultiLine()
+		if st.MultiLine.IsOn() && l.IsMultilineEnd(st.MultiLine.IsHeredoc()) {
+			st.AppendLine(l)
+			l = st.MultiLine.Join()
+			st.MultiLine.Clear()
 		}
 
 		// feed the multiline
-		if st.multiLine.isOn() {
-			st.appendMultiLine(l)
+		if st.MultiLine.IsOn() {
+			st.AppendLine(l)
 
 			continue
 		}
 
 		// section declaration
-		s, ok := l.toSection()
+		s, ok := l.AsSection()
 		if ok {
-			st.unsetCurrentLabel()
-			st.setSection(s)
+			st.CurrentLabel = ""
+			st.Section = s
 
 			continue
 		}
 
-		switch st.section {
-		case sectionVars:
-			name, value, ok := l.toVar()
-			if ok {
-				a.Vars.Set(name, value)
-				st.setDef(name, sectionVars)
-
-				continue
-			}
-
-			return ErrWrongVariableDeclaration.WithStack(st.stack).WithLine(l).WithFilename(filename)
-		case sectionWords:
-			w, ok := l.toWord()
-			if !ok {
-				return ErrWrongWordDeclaration.WithStack(st.stack).WithLine(l).WithFilename(filename)
-			}
-
-			_ = a.Vocabulary.Set(w.Label, w.Type, w.Synonyms...)
-			st.setDef(w.Label, sectionWords)
-
-			continue
-		case sectionSysMsg:
-			m, ok := l.toMsg(msg.SystemMsg)
-			if !ok {
-				return ErrWrongMessageDeclaration.WithStack(st.stack).WithLine(l).WithFilename(filename)
-			}
-
-			if err := a.Messages.Set(m); err != nil {
-				return ErrWrongMessageDeclaration.WithStack(st.stack).AddErr(err).WithLine(l).WithFilename(filename)
-			}
-			st.setDef(m.Label, sectionSysMsg)
-
-			continue
-		case sectionUserMsgs:
-			m, ok := l.toMsg(msg.UserMsg)
-			if !ok {
-				return ErrWrongMessageDeclaration.WithStack(st.stack).WithLine(l).WithFilename(filename)
-			}
-
-			if err := a.Messages.Set(m); err != nil {
-				return ErrWrongMessageDeclaration.WithStack(st.stack).AddErr(err).WithLine(l).WithFilename(filename)
-			}
-			st.setDef(m.Label, sectionUserMsgs)
-
-			continue
-		case sectionItems:
-			if st.hasCurrentLabel() {
-				i := a.Items.Get(st.currentLabel)
-				if i == nil {
-					return ErrWrongItemDeclaration.WithStack(st.stack).WithLine(l).WithFilename(filename)
-				}
-
-				desc, ok := l.labelAndTextRg("desc")
-				if ok {
-					i.SetDescription(desc)
-
-					continue
-				}
-
-				desc, ok = l.labelAndTextRg("description")
-				if ok {
-					i.SetDescription(desc)
-
-					continue
-				}
-
-				if l.optimized() == "is wearable" {
-					i.SetWearable()
-					continue
-				}
-
-				if l.optimized() == "is worn" {
-					i.SetWearable()
-					i.Wear()
-					continue
-				}
-
-				if l.optimized() == "is created" {
-					i.Create()
-					continue
-				}
-
-				if l.optimized() == "is container" {
-					i.SetContainer()
-					continue
-				}
-
-				if l.optimized() == "is held" {
-					i.Hold()
-					continue
-				}
-
-				if itemLocationRg.MatchString(l.optimized()) {
-					m := itemLocationRg.FindStringSubmatch(l.optimized())
-
-					inLoc := a.Locations.Get(m[1])
-					if inLoc == nil {
-						inLoc = a.Locations.Set(m[1], loc.Undefined, loc.Undefined)
-						st.setUndef(m[1], sectionLocs, l, filename)
-					}
-
-					i.SetLocation(inLoc)
-					continue
-				}
-
-				if itemWeightRg.MatchString(l.optimized()) {
-					m := itemWeightRg.FindStringSubmatch(l.optimized())
-					w, err := strconv.Atoi(m[1])
-					if err != nil {
-						return ErrWrongItemWeight.WithStack(st.stack).WithLine(l).WithFilename(filename)
-					}
-
-					i.SetWeight(w)
-					continue
-				}
-
-				if itemMaxWeightRg.MatchString(l.optimized()) {
-					m := itemMaxWeightRg.FindStringSubmatch(l.optimized())
-					w, err := strconv.Atoi(m[1])
-					if err != nil {
-						return ErrWrongItemWeight.WithStack(st.stack).WithLine(l).WithFilename(filename)
-					}
-
-					i.SetMaxWeight(w)
-					continue
-				}
-			}
-
-			label, noun, adj, ok := l.toItemDeclaration()
-			if ok {
-				if a.Items.Exists(label) {
-					return ErrDuplicatedItemLabel.WithStack(st.stack).WithLine(l).WithFilename(filename)
-				}
-
-				st.setCurrentLabel(label)
-				st.setDef(label, sectionItems)
-
-				nounWord := a.Vocabulary.Get(voc.Noun, noun)
-				if nounWord == nil {
-					nounWord = a.Vocabulary.Set(noun, voc.Noun)
-					st.setUndef(noun, sectionWords, l, filename)
-				}
-
-				adjWord := a.Vocabulary.Get(voc.Adjective, adj)
-				if adjWord == nil {
-					adjWord = a.Vocabulary.Set(adj, voc.Adjective)
-					st.setUndef(adj, sectionWords, l, filename)
-				}
-
-				if err := a.Items.Set(item.New(label, nounWord, adjWord)); err != nil {
-					return ErrWrongItemDeclaration.WithStack(st.stack).AddErr(err).WithLine(l).WithFilename(filename)
-				}
-
-				st.setDef(label, sectionItems)
-
-				continue
-			}
-
-			return ErrWrongItemDeclaration.WithStack(st.stack).WithLine(l).WithFilename(filename)
-		case sectionLocs:
-			label, ok := l.toLocationLabel()
-			if ok {
-				st.setCurrentLabel(label)
-				a.Locations.Set(label, loc.Undefined, loc.Undefined)
-				st.setDef(label, sectionLocs)
-
-				continue
-			} else {
-				if !st.hasCurrentLabel() {
-					return ErrWrongLocationLabelDeclaration.WithStack(st.stack).WithLine(l).WithFilename(filename)
-				}
-			}
-
-			currentLocation := a.Locations.Get(st.currentLabel)
-
-			desc, ok := l.toLocationDescription()
-			if ok {
-				currentLocation.Description = desc
-
-				continue
-			}
-
-			title, ok := l.toLocationTitle()
-			if ok {
-				currentLocation.Title = title
-
-				continue
-			}
-
-			exitMap, ok := l.toLocationConns()
-			if ok {
-				for wordLabel, destLabel := range exitMap {
-					word := a.Vocabulary.FirstWithTypes(wordLabel, voc.Verb, voc.Noun)
-					if word == nil {
-						word = a.Vocabulary.Set(wordLabel, voc.Unknown)
-						st.setUndef(wordLabel, sectionWords, l, filename)
-					}
-
-					dest := a.Locations.Get(destLabel)
-					if dest == nil {
-						dest = a.Locations.Set(destLabel, loc.Undefined, loc.Undefined)
-						st.setUndef(destLabel, sectionLocs, l, filename)
-					}
-
-					currentLocation.SetConn(word, dest)
-				}
-
-				continue
-			}
-		case sectionProcs:
-			// TODO
-		default:
-			return ErrOutOfSection.WithStack(st.stack).WithLine(l).WithFilename(filename)
+		if st.Section == section.None {
+			return cerr.ErrOutOfSection.WithStack(st.Stack).WithLine(l).WithFilename(st.CurrentFilename())
 		}
 
-		// unmatched line
-		return ErrUnknownDeclaration.WithStack(st.stack).WithLine(l).WithFilename(filename)
+		err := processor.ProcessLine(l, st, a)
+		if err != nil {
+			return err
+		} else {
+			continue
+		}
 	}
 
 	// check if there is an unclosed comment
-	if st.comment.isOn() {
-		return ErrUnclosedComment.WithStack(st.stack).WithLine(st.comment.lines[0]).WithFilename(filename)
+	if st.Comment.IsOn() {
+		l, _ := st.Comment.GetByIndex(0)
+		return cerr.ErrUnclosedComment.WithStack(st.Stack).WithLine(l).WithFilename(st.CurrentFilename())
 	}
 
 	// unclosed multiline
-	if st.multiLine.isOn() {
-		return ErrUnclosedMultiline.WithStack(st.stack).WithLine(st.multiLine.lines[0]).WithFilename(filename)
+	if st.MultiLine.IsOn() {
+		l, _ := st.MultiLine.GetByIndex(0)
+		return cerr.ErrUnclosedMultiline.WithStack(st.Stack).WithLine(l).WithFilename(st.CurrentFilename())
 	}
 
 	return nil

@@ -5,6 +5,8 @@ import (
 
 	"thenewquill/internal/compiler"
 
+	cerr "thenewquill/internal/compiler/compiler_error"
+
 	"github.com/stretchr/testify/require"
 )
 
@@ -14,8 +16,8 @@ func TestWrongFiles(t *testing.T) {
 		filename      string
 		expectedError error
 	}{
-		{"unclosed comment", "src/wrong/unclosed_comment.adv", compiler.ErrUnclosedComment},
-		{"unclosed string", "src/wrong/unclosed_string.adv", compiler.ErrUnclosedMultiline},
+		{"unclosed comment", "src/wrong/unclosed_comment.adv", cerr.ErrUnclosedComment},
+		{"unclosed string", "src/wrong/unclosed_string.adv", cerr.ErrUnclosedMultiline},
 	}
 
 	t.Run("test wrong files", func(t *testing.T) {
