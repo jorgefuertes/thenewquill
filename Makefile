@@ -22,7 +22,7 @@ test-v:
 lint:
 	@echo "Linting..."
 	@staticcheck ./...
-	@golangci-lint run ./..
+	@golangci-lint run ./...
 
 clean:
 	@go clean -testcache
