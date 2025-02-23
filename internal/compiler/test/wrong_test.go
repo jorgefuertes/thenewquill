@@ -14,8 +14,8 @@ func TestWrongFiles(t *testing.T) {
 		filename      string
 		expectedError error
 	}{
-		{"unclosed comment", "adv_files/wrong/unclosed_comment.adv", compiler.ErrUnclosedComment},
-		{"unclosed string", "adv_files/wrong/unclosed_string.adv", compiler.ErrUnclosedMultiline},
+		{"unclosed comment", "src/wrong/unclosed_comment.adv", compiler.ErrUnclosedComment},
+		{"unclosed string", "src/wrong/unclosed_string.adv", compiler.ErrUnclosedMultiline},
 	}
 
 	t.Run("test wrong files", func(t *testing.T) {

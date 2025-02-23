@@ -12,7 +12,7 @@ import (
 )
 
 func TestCompilerHappyPath(t *testing.T) {
-	a, err := compiler.Compile("adv_files/happy/test.adv")
+	a, err := compiler.Compile("src/happy/test.adv")
 	require.NoError(t, err)
 
 	// vars
