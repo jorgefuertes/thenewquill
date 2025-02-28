@@ -30,12 +30,23 @@ func readMessage(l line.Line, st *status.Status, a *adventure.Adventure) error {
 	st.SetDef(m.Label, st.Section)
 
 	if m.IsPluralized() {
+		// recover it from the store
+		m = a.Messages.Get(m.Type, m.Label)
+		if m == nil {
+			return cerr.ErrCannotRetrieveMessage.WithStack(st.Stack).
+				WithLine(l).
+				WithFilename(st.CurrentFilename())
+		}
+
+		// define and undefine reminders for the plurals
 		for i, text := range m.Plurals {
-			if text == "" {
-				st.SetUndef(m.Label+"."+msg.PluralNames[i], st.Section, l)
-			} else {
-				st.SetDef(m.Label+"."+msg.PluralNames[i], st.Section)
+			pLabel := m.Label + "." + msg.PluralNames[i]
+			if text == "" && !st.IsUndef(pLabel, st.Section) {
+				st.SetUndef(pLabel, st.Section, l)
+
+				continue
 			}
+			st.SetDef(pLabel, st.Section)
 		}
 	}
 

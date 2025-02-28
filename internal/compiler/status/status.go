@@ -85,7 +85,17 @@ func (s *Status) SetDef(label string, section section.Section) {
 	}
 }
 
-func (s *Status) HasUndef() bool {
+func (s *Status) IsUndef(label string, section section.Section) bool {
+	for _, u := range s.Undefs {
+		if u.Label == label && u.Section == section {
+			return true
+		}
+	}
+
+	return false
+}
+
+func (s *Status) HasAnyUndef() bool {
 	return len(s.Undefs) > 0
 }
 
