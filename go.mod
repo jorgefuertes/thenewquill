@@ -213,9 +213,6 @@ require (
 )
 
 tool honnef.co/go/tools/cmd/staticcheck
-
 tool github.com/golangci/golangci-lint/cmd/golangci-lint
-
 tool golang.org/x/tools/gopls
-
 tool github.com/go-delve/delve/cmd/dlv

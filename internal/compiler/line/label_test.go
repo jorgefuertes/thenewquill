@@ -77,3 +77,19 @@ func TestGetTextForLabel(t *testing.T) {
 		})
 	}
 }
+
+func TestGetTextForFirstFoundLabel(t *testing.T) {
+	l := line.New(`desc: "this is a test"`, 0)
+	result, ok := l.GetTextForFirstFoundLabel("desc", "description")
+	require.True(t, ok)
+	assert.Equal(t, "this is a test", result)
+
+	result, ok = l.GetTextForFirstFoundLabel("title", "desc")
+	require.True(t, ok)
+	assert.Equal(t, "this is a test", result)
+
+	l = line.New(`title: "this is a test"`, 0)
+	result, ok = l.GetTextForFirstFoundLabel("foo", "bar", "title", "desc")
+	require.True(t, ok)
+	assert.Equal(t, "this is a test", result)
+}

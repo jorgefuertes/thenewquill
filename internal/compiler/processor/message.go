@@ -27,7 +27,17 @@ func readMessage(l line.Line, st *status.Status, a *adventure.Adventure) error {
 			WithFilename(st.CurrentFilename())
 	}
 
-	st.SetDef(m.Label, section.SysMsg)
+	st.SetDef(m.Label, st.Section)
+
+	if m.IsPluralized() {
+		for i, text := range m.Plurals {
+			if text == "" {
+				st.SetUndef(m.Label+"."+msg.PluralNames[i], st.Section, l)
+			} else {
+				st.SetDef(m.Label+"."+msg.PluralNames[i], st.Section)
+			}
+		}
+	}
 
 	return nil
 }

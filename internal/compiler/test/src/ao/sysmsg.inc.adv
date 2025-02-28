@@ -16,7 +16,7 @@ play_again: "¿Hace otra partidita?"
 
 order_count.zero: "No has dado ninguna orden."
 order_count.one: "Has dado solo una orden."
-order_count.more: "Has dado _ órdenes."
+order_count.many: "Has dado _ órdenes."
 
 inv: "Tienes _"
 inv_full: "Ya no puedes llevar más trastos."

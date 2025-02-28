@@ -23,14 +23,7 @@ func readItem(l line.Line, st *status.Status, a *adventure.Adventure) error {
 				WithFilename(st.CurrentFilename())
 		}
 
-		desc, ok := l.GetTextForLabel("desc")
-		if ok {
-			i.SetDescription(desc)
-
-			return nil
-		}
-
-		desc, ok = l.GetTextForLabel("description")
+		desc, ok := l.GetTextForFirstFoundLabel("description", "desc")
 		if ok {
 			i.SetDescription(desc)
 
@@ -60,6 +53,8 @@ func readItem(l line.Line, st *status.Status, a *adventure.Adventure) error {
 		case "is held":
 			i.Hold()
 
+			return nil
+		case "is destroyed", "is not created", "is not held", "is not worn", "is not wearable":
 			return nil
 		}
 

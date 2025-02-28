@@ -48,3 +48,14 @@ func (l Line) GetTextForLabel(label string) (string, bool) {
 
 	return text, true
 }
+
+func (l Line) GetTextForFirstFoundLabel(labels ...string) (string, bool) {
+	for _, label := range labels {
+		text, ok := l.GetTextForLabel(label)
+		if ok {
+			return text, ok
+		}
+	}
+
+	return "", false
+}

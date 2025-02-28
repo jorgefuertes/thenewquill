@@ -7,18 +7,16 @@ import (
 )
 
 type Msg struct {
-	Type   MsgType
-	Label  string
-	Text   string
-	plural [3]string
+	Type    MsgType
+	Label   string
+	Text    string
+	Plurals [3]string
 }
 
 var (
-	plurals       = []string{"zero", "one", "more"}
-	pluralLabelRg = regexp.MustCompile(`^([\d\p{L}\-_]+)\.(zero|one|more)$`)
+	PluralNames   = []string{"zero", "one", "many"}
+	pluralLabelRg = regexp.MustCompile(`^([\d\p{L}\-_]+)\.(zero|one|many)$`)
 )
-
-const pluralized = "#plural#"
 
 func New(t MsgType, label, text string) *Msg {
 	m := &Msg{Type: t, Label: label, Text: text}
@@ -27,13 +25,12 @@ func New(t MsgType, label, text string) *Msg {
 		return m
 	}
 
-	m.Text = pluralized
 	matches := pluralLabelRg.FindStringSubmatch(label)
 	m.Label = matches[1]
 
-	for i, p := range plurals {
+	for i, p := range PluralNames {
 		if p == matches[2] {
-			m.plural[i] = text
+			m.Plurals[i] = text
 		}
 	}
 
@@ -41,16 +38,26 @@ func New(t MsgType, label, text string) *Msg {
 }
 
 func (m *Msg) SetPluralTexts(texts [3]string) {
-	m.plural = texts
+	m.Plurals = texts
 }
 
 func (m Msg) String() string {
 	return m.Text
 }
 
+func (m Msg) IsPluralized() bool {
+	for _, p := range m.Plurals {
+		if p != "" {
+			return true
+		}
+	}
+
+	return false
+}
+
 func (m Msg) Stringf(args ...any) string {
-	if m.Text == pluralized && len(args) > 0 {
-		return pluralize(m.plural, args[0])
+	if m.IsPluralized() && len(args) > 0 {
+		return pluralize(m.Plurals, args[0])
 	}
 
 	format := strings.Replace(m.Text, "_", "%v", -1)

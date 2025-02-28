@@ -3,3 +3,156 @@ SECTION LOCATIONS
 start:
 	title: "La aventura original"
 
+frontera:
+	title: "Frontera"
+	desc: "Estás justo en la frontera entre las tierras áridas del norte y la zona húmeda y boscosa del sur. \
+		Muy cerca hacia el este hay una cabaña de ladrillos rodeada por un frondoso bosque. \
+		Un rio poco caudaloso fluye hacia el sur."
+	exits: n campo, s valle, e casa, entrar casa
+
+campo:
+	title: "Campo abierto"
+	desc: "En campo abierto, rodeado por escasa vegetación. Un camino va hacia la cabaña y hacia el este te llega una \
+		peste a azufre."
+	exits: n campo, s frontera, e árida, o campo
+
+árida:
+	title: "Zona árida"
+	desc: "Esta es una zona muy árida donde solo crecen malezas espinosas. La fragancia azufrada ya empieza a molestar."
+	exits: n árida, e lava, o campo
+
+lava:
+	title: "Lava vomitada"
+	desc: "Estás en un terreno tapizado de lava vomitada por el activo volcán norteó. Hacia el sur hay una colinita \
+		que se eleva suavemente."
+	exits: n volcán, s colina, e paisaje, o árida
+
+paisaje:
+	title: "Paisaje alucinante"
+	desc: "En éste lugar el paisaje es alucinante, lleno de rocas erosionadas y partidas, mudos testigos de anteriores \
+		erupciones producidas por el furioso volcán del norte."
+	exits: n volcán, s precipicio, o lava
+
+colina:
+	title: "Colina"
+	desc: "Desde la colina contemplas el fiero espectáculo de fuego, humo y cenizas producido por el volcán. Hacia el \
+		oeste, a lo lejos, y rodeada de denso bosque, se ve una casita. Una senda parte hacia el este, y al sur queda \
+		el bosque, tras el cual ves una extraña torre en espiral rodeada de nubes."
+	exits: n lava, s bosque_1, e precipicio
+
+bosque_cerrado: // elfo
+	title: "Bosque cerrado"
+	desc: "Aquí el bosque es bastante cerrado, con árboles por todas partes."
+	exits: n bosquecillo, s rampa_1, o bosque_cerrado
+
+bosquecillo:
+	title: "Bosquecillo"
+	desc: "Este es un bosquecillo muy agradable al lado este del valle. Oyes el murmullo de una corriente de agua \
+		cerca."
+	exits: s bosque_cerrado, o picnic
+
+bosque_1:
+	title: "Bosque"
+	desc: "Aquí el bosque es bastante cerrado, con árboles por todas partes."
+	exits: n bosque_1, e bosque_1, ne bosque_1, no bosque_1, se bosque_1, s árbol, o bosque_3, so bosque_2
+
+bosque_2:
+	title: "Bosque"
+	desc: "Aquí el bosque es bastante cerrado, con árboles por todas partes."
+	exits: n bosque_3, se árbol, s picnic
+
+bosque_3:
+	title: "Bosque"
+	desc: "Aquí el bosque es bastante cerrado, con árboles por todas partes."
+	exits: n bosque_3, s bosque_3, e bosque_1, o bosque_3
+
+precipicio:
+	title: "Al borde del precipicio"
+	desc: "¡Cuidado! Estás al borde del precipicio donde antaño se suicidaban los enanos celosos. Aquí terminan \
+		(aparte de las pasiones desenfrenadas) tanto la senda del oeste como el camino del norte."
+	exits: n paisaje, o colina, s rip, e rip
+
+casa:
+	title: "Dentro de la casa"
+	desc: "Estás en una habitación bastante guarra. Las paredes desconchadas y el suelo roto indican que hace tiempo \
+		fué abandonada. Ves la oscura boca de un pozo por la que baja una herrumbrosa escalera."
+	exits: bajar pozo, o frontera, salir frontera
+
+pozo:
+	title: "Pozo"
+	desc: "¡Puaf! El fondo del pozo está casi seco (por suerte para tí, curiosín). Sólo quedan algunos charcos \
+		malolientes de agua estancada. La estrechez de las mohosas paredes y el enorme silencio que reina hacen que \
+		tengas por única compañía el latido desbocado de tu corazón."
+	exits: subir casa
+
+volcán:
+	title: "Al borde del volcán"
+	desc: "El calor que se desprende de la burbujeante lava es asfixiante. Un enorme penacho de cenizas se desprende \
+		flotando perezosamente del ardiente magma, dejando una peste cosa mala. Imprudentemente estás haciendo el \
+		payaso en el peligroso borde del volcán"
+	exits: s paisaje, e volcán, n rip, bajar rip
+
+árbol:
+	title: "Árbol enorme"
+	desc: "Te encuentras en lo profundo del bosque rodeado por densa vegetación y junto a un enorme árbol con \
+		desgajadas ramas que llegan al suelo."
+	exits: subir ramas, n bosque_2, s bosque_3
+
+ramas:
+	title: "Ramas del árbol"
+	desc: "Ya estás sentado entre las ramas del enorme árbol. Tienes una espléndida vista de toda la región. Al norte \
+		queda el fardén volcán. Rodeada de bosque está la casita. Hacia el oeste un profundo valle se extiende de \
+		norte a sur. En la lejanía, al sur se yergue la misteriosa espiral. Al este sólo hay vacio y nubes."
+	exits: bajar árbol, n rip, s rip, e rip, o rip
+
+picnic:
+	title: "Picnic"
+	desc: "En esta zona los enanos hacen sus picnics (aunque las malas lenguas dicen que eran verdaderas orgías). \
+		Hay varias sillas junto a una mesa y un árbol con un curioso letrero."
+	exits: no frontera, e bosquecillo, o valle
+
+rampa_1:
+	title: "Rampa artificial"
+	desc: "Estás al comienzo de una maravillosa rampa artificial fabricada en medio del bosque, no se sabe hace \
+		cuantos años ni por quien."
+	exits: n bosque_cerrado, s rampa_2
+
+rampa_2:
+	title: "Rampa artificial"
+	desc: "Sigues en la rampa artificial construida en medio del bosque. Frente a ti ves la base de una extraña, \
+		pero bellísima estructura."
+	exits: n rampa_1, s espiral
+
+espiral:
+	title: "Majestuoso claro"
+	desc: "La rampa te conduce hasta un majestuoso claro. Ante tú se eleva la espiral, pulida, brillante y sobre todo \
+		impresionante. Detrás el suelo cae bruscamente."
+	exits: n rampa_2, s rip
+
+valle:
+	title: "Valle"
+	desc: "Estás al comienzo del valle, al lado de un alegre arroyuelo que juguetea sobre el lecho rocoso en su \
+		camino hacia el sur. Hay bosque a ambos lados."
+	exits: n frontera, s arroyo, e picnic, o bosque_cerrado
+
+arroyo:
+	title: "Valle"
+	desc: "El valle se hace mas estrecho y profundo. El arroyo es cada vez menos caudaloso, y ahora no tan alegre, \
+		porque poco a poco se va filtrando por las numerosas grietas del rocoso lecho."
+	exits: n valle, s depresión
+
+cañón:
+	title: "Cañón"
+	desc: "El cañón se abre en lo que fué antes una cascada y hoy sólo un precipicio rocoso. Un enorme cortado parte \
+		el paisaje de este a oeste y desde tus 500 metros de altura tienes una vista maravillosa de las tierras del \
+		sur. Desde el norte llega el viento a través de la garganta rocosa."
+	exits: n depresión, s rip, e bosque_cerrado, o bosque_cerrado
+
+depresión:
+	title: "Depresión"
+	desc: "Estás en una depresión de 7 metros. El valle se estrecha hacia el sur."
+	exits: n arroyo, s cañón, e bosque_cerrado, entrar cueva
+
+rip:
+	title: "RIP"
+	desc: "Estás un poco muerto"

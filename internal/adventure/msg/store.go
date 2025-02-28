@@ -12,21 +12,29 @@ func NewStore() Store {
 }
 
 func (s *Store) Set(m *Msg) error {
-	if s.Exists(m.Type, m.Label) && m.Text != pluralized {
+	if s.Exists(m.Type, m.Label) && !m.IsPluralized() {
 		return ErrMsgAlreadyExists
 	}
 
-	if m.Text == pluralized && s.Exists(m.Type, m.Label) {
+	if m.IsPluralized() && s.Exists(m.Type, m.Label) {
 		old := s.Get(m.Type, m.Label)
-		if old.Text != pluralized {
+		if !old.IsPluralized() {
 			return ErrMsgAlreadyExists
 		}
 
-		for i, text := range m.plural {
+		for i, text := range m.Plurals {
 			if text != "" {
-				old.plural[i] = text
+				if old.Plurals[i] == "" {
+					old.Plurals[i] = text
+
+					return nil
+				}
+
+				return ErrMsgAlreadyExists
 			}
 		}
+
+		return nil
 	}
 
 	*s = append(*s, m)
@@ -60,10 +68,10 @@ func (s Store) Len() int {
 
 func (s Store) Check() error {
 	for _, m := range s {
-		if m.Text == pluralized {
-			for _, text := range m.plural {
+		if m.IsPluralized() {
+			for i, text := range m.Plurals {
 				if text == "" {
-					return errors.Join(ErrMsgPluralEmpty, fmt.Errorf("label: %s", m.Label))
+					return errors.Join(ErrMsgPluralEmpty, fmt.Errorf("label: %s missing: %s", m.Label, PluralNames[i]))
 				}
 			}
 

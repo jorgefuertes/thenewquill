@@ -42,3 +42,11 @@ func TestNew(t *testing.T) {
 	assert.Equal(t, "There are several foos.", m.Stringf("several"))
 	assert.Equal(t, "There are 98.05 foos.", m.Stringf(98.05))
 }
+
+func TestIsPluralized(t *testing.T) {
+	m := msg.New(msg.SystemMsg, "foo", "bar")
+	assert.False(t, m.IsPluralized())
+
+	m = msg.New(msg.SystemMsg, "foo.zero", "There's no foos")
+	assert.True(t, m.IsPluralized())
+}

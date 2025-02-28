@@ -30,6 +30,7 @@ func Compile(filename string) (*adventure.Adventure, error) {
 		fmt.Println(
 			cerr.ErrUnresolvedLabel.WithFilename(udf.File).
 				WithLine(udf.Line).
+				WithSection(udf.Section).
 				AddMsgf("%s `%s` remains undefined", udf.Section.String(), udf.Label).
 				Dump(),
 		)

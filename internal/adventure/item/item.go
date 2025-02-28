@@ -89,6 +89,12 @@ func (i *Item) Wear() {
 	}
 }
 
+func (i *Item) Unwear() {
+	i.isWorn = false
+	i.Hold()
+	i.location = nil
+}
+
 func (i Item) IsHeld() bool {
 	return i.isHeld
 }

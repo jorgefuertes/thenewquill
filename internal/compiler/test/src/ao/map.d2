@@ -1,0 +1,348 @@
+vars: {
+	d2-config: {
+		layout-engine: dagre
+		theme-id: 5
+	}
+}
+
+title: |md
+	# La aventura original - Parte I
+	Por: Jorge Fuertes AKA Queru
+| {near: top-center}
+
+z1: {
+	label: "Zona del volcán"
+	style {
+		stroke: lightgrey
+		stroke-dash: 10
+		fill: transparent
+	}
+
+}
+
+z1.volcán: {
+	label: "Al borde del volcán\n- Enano\n- Linterna"
+}
+
+z1.volcán -- z1.lava: {
+	direction: down
+	source-arrowhead: S
+	target-arrowhead: N
+}
+
+z1.volcán -> rip: {
+	direction: up
+	source-arrowhead: N/Bajar
+	style.stroke: red
+}
+
+z1.campo: { label: "Campo abierto" }
+z1.campo -- z2.frontera: {
+	direction: down
+	source-arrowhead: S
+	target-arrowhead: N
+}
+z1.campo -- z1.árida: {
+	direction: right
+	source-arrowhead: E
+	target-arrowhead: O
+}
+
+z1.árida: { label: "Zona árida" }
+z1.árida -- z1.lava: {
+	direction: right
+	source-arrowhead: E
+	target-arrowhead: O
+}
+
+z1.lava: {
+	label: "Lava vomitada"
+}
+z1.lava -- z1.paisaje: {
+	direction: right
+	source-arrowhead: E
+	target-arrowhead: O
+}
+z1.lava -- z3.colina: {
+	direction: down
+	source-arrowhead: S
+	target-arrowhead: N
+}
+
+z1.paisaje: { label: "Paisaje alucinante\nSur del volcán" }
+z1.paisaje -> z1.volcán: {
+	direction: up
+	source-arrowhead: N
+	style.stroke: orange
+}
+z1.paisaje -- z2.precipicio: {
+	direction: down
+	source-arrowhead: S
+	target-arrowhead: N
+}
+
+z2: {
+	label: "Zona de la casa"
+	style {
+		stroke: lightgrey
+		stroke-dash: 10
+		fill: transparent
+	}
+
+}
+
+z2.frontera: { label: "INICIO\nFrontera" }
+z2.frontera -- z2.casa: {
+	direction: right
+	source-arrowhead: "E/Entrar"
+	target-arrowhead: "O/Salir"
+}
+z2.frontera -- z3.picnic: {
+	direction: down
+	source-arrowhead: S
+	target-arrowhead: NO
+}
+
+z2.casa: {label: "Dentro de la casa"}
+z2.casa -- z2.pozo: {
+	direction: down
+	source-arrowhead: Bajar
+	target-arrowhead: Subir
+}
+
+z2.pozo: {label: "Pozo\- Moneda"}
+
+z2.precipicio: {label: "Al borde del z2.precipicio"}
+z2.precipicio -- z1.paisaje: {
+	direction: up
+	source-arrowhead: N
+	target-arrowhead: S
+}
+z2.precipicio -> rip: {
+	direction: down
+	style.stroke: red
+	source-arrowhead: "S/E/bajar"
+}
+z2.precipicio -- z3.colina: {
+	direction: left
+	source-arrowhead: O
+	target-arrowhead: E
+}
+
+z3: {
+	label: "Zona boscosa"
+	style {
+		stroke: lightgrey
+		stroke-dash: 10
+		fill: transparent
+	}
+
+}
+
+z3.colina: {label: "Colina\n-Pila eléctrica."}
+z3.colina -> z3.bosque_1: {
+	direction: down
+	source-arrowhead: S
+	style.stroke: orange
+}
+
+z3.bosque_1: {label: "Bosque 1"}
+z3.bosque_1 -> z3.árbol: {
+	direction: down
+	source-arrowhead: S
+	style.stroke: orange
+}
+z3.bosque_1 -> z3.bosque_3: {
+	direction: left
+	source-arrowhead: O
+	style.stroke: orange
+}
+z3.bosque_1 -> z3.bosque_2: {
+	direction: left
+	source-arrowhead: SO
+	style.stroke: orange
+}
+
+z3.bosque_2: {label: "Bosque 2"}
+z3.bosque_2 -> z3.árbol: {
+	direction: right
+	source-arrowhead: SE
+	style.stroke: orange
+}
+z3.bosque_2 -> z3.bosque_3: {
+	direction: up
+	source-arrowhead: N
+	style.stroke: orange
+}
+z3.bosque_2 -> z3.picnic: {
+	direction: down
+	source-arrowhead: S
+	style.stroke: orange
+}
+
+z3.bosque_3: {label: "Bosque 3"}
+z3.bosque_3 -> z3.bosque_1: {
+	direction: right
+	source-arrowhead: E
+	style.stroke: orange
+}
+
+z3.árbol: {label: "Al pié del árbol"}
+z3.árbol -- z3.ramas: {
+	direction: up
+	source-arrowhead: Subir
+	target-arrowhead: Bajar
+}
+z3.árbol -> z3.bosque_2: {
+	direction: up
+	source-arrowhead: N
+}
+z3.árbol -> z3.bosque_3: {
+	direction: down
+	source-arrowhead: S
+}
+
+z3.ramas: {label: "Ramas del árbol\n- Llave"}
+z3.ramas -> rip: "N,S,E,O" {
+	style.stroke: red
+}
+
+z3.bosquecerrado: {
+	label: "Bosque cerrado\n- Figura (Elfo)"
+}
+z3.bosquecerrado -- z3.bosquecillo: {
+	direction: up
+	source-arrowhead: N
+	target-arrowhead: S
+}
+z3.bosquecerrado -- z4.rampa_1: {
+	direction: down
+	source-arrowhead: S
+	target-arrowhead: N
+}
+
+z3.bosquecillo: {label: "Bosquecillo"}
+z3.bosquecillo -- z3.picnic: {
+	direction: right
+	source-arrowhead: O
+	target-arrowhead: E
+}
+
+z3.picnic: {label: "Picnic"}
+z3.picnic -- z5.valle: {
+	direction: right
+	source-arrowhead: O
+	target-arrowhead: E
+}
+
+z4: {
+	label: "Zona de la espiral"
+	style {
+		stroke: lightgrey
+		stroke-dash: 10
+		fill: transparent
+	}
+
+}
+
+z4.rampa_1: {label: "Comienzo de la rampa"}
+z4.rampa_1 -- z4.rampa_2: {
+	direction: down
+	source-arrowhead: S
+	target-arrowhead: N
+}
+
+z4.rampa_2: {label: "Subiendo la rampa"}
+z4.rampa_2 -- z4.espiral: {
+	direction: down
+	source-arrowhead: S
+	target-arrowhead: N
+}
+
+z4.espiral: {label: "Espiral\n- Botas"}
+z4.espiral -> rip: {
+	direction: down
+	source-arrowhead: S
+	style.stroke: red
+}
+
+z5: {
+	label: "Zona del valle"
+	style {
+		stroke: lightgrey
+		stroke-dash: 10
+		fill: transparent
+	}
+
+}
+
+z5.valle: {label: "Comienzo del valle"}
+z5.valle -> z2.frontera: {
+	direction: up
+	source-arrowhead: N
+	style.stroke: orange
+}
+z5.valle -- z5.arroyo: {
+	direction: down
+	source-arrowhead: S
+	target-arrowhead: N
+}
+
+z5.valle -> z3.bosquecerrado: {
+	direction: left
+	source-arrowhead: O
+}
+
+z5.arroyo: {label: "Arroyo"}
+z5.arroyo -- z5.depresión: {
+	direction: down
+	source-arrowhead: S
+	source-arrowhead: N
+}
+
+z5.cañón: {label: "Cañón\n- Botella"}
+z5.cañón -- z5.depresión: {
+	direction: up
+	source-arrowhead: N
+	source-arrowhead: S
+}
+z5.cañón -> rip: "S" {
+	direction: down
+	source-arrowhead: S
+	style.stroke: red
+}
+z5.cañón -> z3.bosquecerrado: {
+	source-arrowhead: E,O
+	style.stroke: orange
+}
+
+z5.depresión: {label: "Depresión\n- Reja/Cueva"}
+z5.depresión -> z3.bosquecerrado: {
+	source-arrowhead: E,O
+	style.stroke: orange
+}
+z5.depresión -> z6.caverna: {
+	direction: left
+	source-arrowhead: Entrar
+	style.stroke: orange
+}
+
+z6: {
+	label: "Zona de la caverna"
+	style {
+		stroke: lightgrey
+		stroke-dash: 10
+		fill: transparent
+	}
+
+}
+
+z6.caverna: {label: "Caverna"}
+
+rip: {
+	label: "RIP\nMuerte"
+	style {
+		stroke: red
+		fill: lightpink
+	}
+}

@@ -1,0 +1,37 @@
+SECTION ITEMS
+
+light: linterna _ // I2/I0
+	desc: "Una linterna"
+	has weight 10
+	on = false
+	batt = false
+
+coin: moneda _ // I1
+	desc: "Una moneda"
+	has weight 5
+
+omelette: tortilla _ // I3
+	desc: "Una tortilla"
+	has weight 12
+	cebolla = false
+
+bottle: botella _ // I4/I5
+	desc: "Una botella"
+	has weight 8
+	full = false
+	is at cañón
+	is created
+
+key: llave _ // I6
+	desc: "Una llave"
+
+battery: pila _ // I7
+	desc: "Una pila eléctrica"
+	is at colina
+	is created
+
+boots: botas _ // I8
+	desc: "Un par de botas"
+	is wearable
+	is at 23
+	is created

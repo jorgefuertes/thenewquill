@@ -200,10 +200,10 @@ func TestRegexps(t *testing.T) {
 		},
 		{
 			name:        "pluralized message",
-			text:        `foo.more: "We have _ foos."`,
+			text:        `foo.many: "We have _ foos."`,
 			rg:          rg.MsgPlural,
 			shouldMatch: true,
-			matches:     []string{"foo", "more", "We have _ foos."},
+			matches:     []string{"foo", "many", "We have _ foos."},
 		},
 		{
 			name:        "not pluralized message",
