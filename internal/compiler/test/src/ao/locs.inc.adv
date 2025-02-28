@@ -156,3 +156,8 @@ depresión:
 rip:
 	title: "RIP"
 	desc: "Estás un poco muerto"
+
+cueva:
+	title: "En la gran caverna"
+	desc: "Estás en la caverna. El suelo es rocoso y oscuro. Hay unas paredes de piedra que se ven muy frías."
+	exits: n cueva, s cueva, e cueva, o cueva, salir depresión

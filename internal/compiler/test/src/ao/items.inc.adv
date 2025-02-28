@@ -33,5 +33,5 @@ battery: pila _ // I7
 boots: botas _ // I8
 	desc: "Un par de botas"
 	is wearable
-	is at 23
+	is at cañón
 	is created

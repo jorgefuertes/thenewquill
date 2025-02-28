@@ -3,6 +3,7 @@ package item
 import (
 	"thenewquill/internal/adventure/loc"
 	"thenewquill/internal/adventure/player"
+	"thenewquill/internal/adventure/vars"
 	"thenewquill/internal/adventure/voc"
 )
 
@@ -21,7 +22,7 @@ type Item struct {
 	location    *loc.Location
 	carriedBy   *player.Player
 	contents    []*Item
-	flags       map[string]bool
+	Vars        vars.Store
 }
 
 // simple Item
@@ -33,7 +34,7 @@ func New(label string, noun *voc.Word, adjective *voc.Word) *Item {
 		weight:    0,
 		maxWeight: 100,
 		contents:  make([]*Item, 0),
-		flags:     make(map[string]bool, 0),
+		Vars:      vars.NewStore(),
 	}
 }
 

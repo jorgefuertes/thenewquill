@@ -96,6 +96,13 @@ func readItem(l line.Line, st *status.Status, a *adventure.Adventure) error {
 
 			return nil
 		}
+
+		if rg.Var.MatchString(o) {
+			m := rg.Var.FindStringSubmatch(o)
+			i.Vars.Set(m[1], m[2])
+
+			return nil
+		}
 	}
 
 	label, noun, adj, ok := l.AsItemDeclaration()
