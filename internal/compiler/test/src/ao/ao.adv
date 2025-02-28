@@ -9,6 +9,15 @@
 	Author: queru (github.com/queru) 2025
 */
 
+SECTION CONFIG
+
+title:   "La aventura original"
+author:  "Jorge Fuertes AKA Queru"
+desc:    "Basada en la Aventura Original desarrollada en DAAD por el equipo de Aventuras AD."
+version: "1.0"
+date:    "28-02-2025"
+lang:    "ES"
+
 INCLUDE "vars.inc.adv"
 INCLUDE "voc.inc.adv"
 INCLUDE "sysmsg.inc.adv"

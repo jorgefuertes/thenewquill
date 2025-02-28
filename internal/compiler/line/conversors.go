@@ -4,6 +4,7 @@ import (
 	"strconv"
 	"strings"
 
+	"thenewquill/internal/adventure/config"
 	"thenewquill/internal/adventure/msg"
 	"thenewquill/internal/adventure/voc"
 	"thenewquill/internal/compiler/rg"
@@ -157,4 +158,15 @@ func (l Line) AsItemDeclaration() (label, noun, adjetive string, ok bool) {
 	adjetive = m[3]
 
 	return label, noun, adjetive, true
+}
+
+func (l Line) AsConfig() (label config.Label, value string, ok bool) {
+	for _, label := range config.Labels() {
+		value, ok := l.GetTextForLabel(label.String())
+		if ok {
+			return label, value, true
+		}
+	}
+
+	return config.UnknownLabel, value, false
 }

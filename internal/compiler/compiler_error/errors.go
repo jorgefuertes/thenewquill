@@ -19,4 +19,5 @@ var (
 	ErrDuplicatedItemLabel           = newCompilerError("duplicated item label")
 	ErrWrongItemWeight               = newCompilerError("wrong item weight")
 	ErrCannotRetrieveMessage         = newCompilerError("cannot retrieve message from store")
+	ErrWrongConfigDeclaration        = newCompilerError("wrong config declaration")
 )

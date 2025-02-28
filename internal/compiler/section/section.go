@@ -5,18 +5,21 @@ import "strings"
 type Section int
 
 const (
-	Vars Section = iota
+	None Section = iota
+	Config
+	Vars
 	Words
 	UserMsgs
 	SysMsg
 	Items
 	Locs
 	Procs
-	None
 )
 
 func sectionNames() []string {
 	return []string{
+		"none",
+		"config",
 		"vars",
 		"words",
 		"user messages",
@@ -24,7 +27,6 @@ func sectionNames() []string {
 		"items",
 		"locations",
 		"process tables",
-		"none",
 	}
 }
 

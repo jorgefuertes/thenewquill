@@ -1,6 +1,7 @@
 package adventure
 
 import (
+	"thenewquill/internal/adventure/config"
 	"thenewquill/internal/adventure/item"
 	"thenewquill/internal/adventure/loc"
 	"thenewquill/internal/adventure/msg"
@@ -9,6 +10,7 @@ import (
 )
 
 type Adventure struct {
+	Config     config.Config
 	Vars       vars.Store
 	Vocabulary voc.Vocabulary
 	Messages   msg.Store
@@ -18,6 +20,7 @@ type Adventure struct {
 
 func New() *Adventure {
 	return &Adventure{
+		Config:     config.New(),
 		Vars:       vars.NewStore(),
 		Vocabulary: voc.NewStore(),
 		Messages:   msg.NewStore(),
