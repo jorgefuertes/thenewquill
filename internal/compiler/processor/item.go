@@ -18,8 +18,7 @@ func readItem(l line.Line, st *status.Status, a *adventure.Adventure) error {
 	if st.HasCurrentLabel() {
 		i := a.Items.Get(st.CurrentLabel)
 		if i == nil {
-			return cerr.ErrWrongItemDeclaration.WithStack(st.Stack).
-				WithLine(l).
+			return cerr.ErrWrongItemDeclaration.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
 				WithFilename(st.CurrentFilename())
 		}
 
@@ -76,8 +75,7 @@ func readItem(l line.Line, st *status.Status, a *adventure.Adventure) error {
 			m := rg.ItemWeight.FindStringSubmatch(o)
 			w, err := strconv.Atoi(m[1])
 			if err != nil {
-				return cerr.ErrWrongItemWeight.WithStack(st.Stack).
-					WithLine(l).
+				return cerr.ErrWrongItemWeight.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
 					WithFilename(st.CurrentFilename())
 			}
 
@@ -90,8 +88,7 @@ func readItem(l line.Line, st *status.Status, a *adventure.Adventure) error {
 			m := rg.ItemMaxWeight.FindStringSubmatch(o)
 			w, err := strconv.Atoi(m[1])
 			if err != nil {
-				return cerr.ErrWrongItemWeight.WithStack(st.Stack).
-					WithLine(l).
+				return cerr.ErrWrongItemWeight.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
 					WithFilename(st.CurrentFilename())
 			}
 
@@ -104,8 +101,7 @@ func readItem(l line.Line, st *status.Status, a *adventure.Adventure) error {
 	label, noun, adj, ok := l.AsItemDeclaration()
 	if ok {
 		if a.Items.Exists(label) {
-			return cerr.ErrDuplicatedItemLabel.WithStack(st.Stack).
-				WithLine(l).
+			return cerr.ErrDuplicatedItemLabel.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
 				WithFilename(st.CurrentFilename())
 		}
 
@@ -125,9 +121,7 @@ func readItem(l line.Line, st *status.Status, a *adventure.Adventure) error {
 		}
 
 		if err := a.Items.Set(item.New(label, nounWord, adjWord)); err != nil {
-			return cerr.ErrWrongItemDeclaration.WithStack(st.Stack).
-				AddErr(err).
-				WithLine(l).
+			return cerr.ErrWrongItemDeclaration.WithStack(st.Stack).WithSection(st.Section).AddErr(err).WithLine(l).
 				WithFilename(st.CurrentFilename())
 		}
 
@@ -136,5 +130,6 @@ func readItem(l line.Line, st *status.Status, a *adventure.Adventure) error {
 		return nil
 	}
 
-	return cerr.ErrWrongItemDeclaration.WithStack(st.Stack).WithLine(l).WithFilename(st.CurrentFilename())
+	return cerr.ErrWrongItemDeclaration.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
+		WithFilename(st.CurrentFilename())
 }

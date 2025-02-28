@@ -102,10 +102,8 @@ func compileFile(st *status.Status, filename string, a *adventure.Adventure) err
 					return cErr
 				}
 
-				return cerr.ErrCannotOpenIncludedFile.WithStack(st.Stack).
-					WithLine(l).
-					WithFilename(st.CurrentFilename()).
-					AddErr(err)
+				return cerr.ErrCannotOpenIncludedFile.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
+					WithFilename(st.CurrentFilename()).AddErr(err)
 			}
 
 			continue
@@ -142,7 +140,8 @@ func compileFile(st *status.Status, filename string, a *adventure.Adventure) err
 		}
 
 		if st.Section == section.None {
-			return cerr.ErrOutOfSection.WithStack(st.Stack).WithLine(l).WithFilename(st.CurrentFilename())
+			return cerr.ErrOutOfSection.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
+				WithFilename(st.CurrentFilename())
 		}
 
 		err := processor.ProcessLine(l, st, a)
@@ -156,13 +155,15 @@ func compileFile(st *status.Status, filename string, a *adventure.Adventure) err
 	// check if there is an unclosed comment
 	if st.Comment.IsOn() {
 		l, _ := st.Comment.GetByIndex(0)
-		return cerr.ErrUnclosedComment.WithStack(st.Stack).WithLine(l).WithFilename(st.CurrentFilename())
+		return cerr.ErrUnclosedComment.WithSection(st.Section).WithStack(st.Stack).WithLine(l).
+			WithFilename(st.CurrentFilename())
 	}
 
 	// unclosed multiline
 	if st.MultiLine.IsOn() {
 		l, _ := st.MultiLine.GetByIndex(0)
-		return cerr.ErrUnclosedMultiline.WithStack(st.Stack).WithLine(l).WithFilename(st.CurrentFilename())
+		return cerr.ErrUnclosedMultiline.WithSection(st.Section).WithStack(st.Stack).WithLine(l).
+			WithFilename(st.CurrentFilename())
 	}
 
 	return nil

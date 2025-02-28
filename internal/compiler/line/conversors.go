@@ -106,11 +106,11 @@ func (l Line) AsMsg(t msg.MsgType) (*msg.Msg, bool) {
 
 // AsLocationLabel returns the location label and true if it was found
 func (l Line) AsLocationLabel() (string, bool) {
-	if !rg.LocLabel.MatchString(l.text) {
+	if !rg.LocLabel.MatchString(l.OptimizedText()) {
 		return "", false
 	}
 
-	return rg.LocLabel.FindStringSubmatch(l.text)[1], true
+	return rg.LocLabel.FindStringSubmatch(l.OptimizedText())[1], true
 }
 
 // AsLocationDescription returns the location description and true if it was found

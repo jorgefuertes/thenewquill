@@ -17,13 +17,12 @@ func readMessage(l line.Line, st *status.Status, a *adventure.Adventure) error {
 
 	m, ok := l.AsMsg(t)
 	if !ok {
-		return cerr.ErrWrongMessageDeclaration.WithStack(st.Stack).WithLine(l).WithFilename(st.CurrentFilename())
+		return cerr.ErrWrongMessageDeclaration.WithSection(st.Section).WithStack(st.Stack).WithLine(l).
+			WithFilename(st.CurrentFilename())
 	}
 
 	if err := a.Messages.Set(m); err != nil {
-		return cerr.ErrWrongMessageDeclaration.WithStack(st.Stack).
-			AddErr(err).
-			WithLine(l).
+		return cerr.ErrWrongMessageDeclaration.WithStack(st.Stack).WithSection(st.Section).AddErr(err).WithLine(l).
 			WithFilename(st.CurrentFilename())
 	}
 
@@ -33,8 +32,7 @@ func readMessage(l line.Line, st *status.Status, a *adventure.Adventure) error {
 		// recover it from the store
 		m = a.Messages.Get(m.Type, m.Label)
 		if m == nil {
-			return cerr.ErrCannotRetrieveMessage.WithStack(st.Stack).
-				WithLine(l).
+			return cerr.ErrCannotRetrieveMessage.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
 				WithFilename(st.CurrentFilename())
 		}
 

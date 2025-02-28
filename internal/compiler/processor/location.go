@@ -21,7 +21,8 @@ func readLocation(l line.Line, st *status.Status, a *adventure.Adventure) error 
 	}
 
 	if !st.HasCurrentLabel() {
-		return cerr.ErrWrongLocationLabelDeclaration.WithStack(st.Stack).WithLine(l).WithFilename(st.CurrentFilename())
+		return cerr.ErrWrongLocationLabelDeclaration.WithSection(st.Section).WithStack(st.Stack).WithLine(l).
+			WithFilename(st.CurrentFilename())
 	}
 
 	currentLocation := a.Locations.Get(st.CurrentLabel)
@@ -61,5 +62,6 @@ func readLocation(l line.Line, st *status.Status, a *adventure.Adventure) error 
 		return nil
 	}
 
-	return cerr.ErrWrongExitsDeclaration.WithStack(st.Stack).WithLine(l).WithFilename(st.CurrentFilename())
+	return cerr.ErrWrongExitsDeclaration.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
+		WithFilename(st.CurrentFilename())
 }

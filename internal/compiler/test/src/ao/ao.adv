@@ -12,4 +12,4 @@
 INCLUDE "vars.inc.adv"
 INCLUDE "voc.inc.adv"
 INCLUDE "sysmsg.inc.adv"
-// INCLUDE "loc.inc.adv"
+INCLUDE "loc.inc.adv"
