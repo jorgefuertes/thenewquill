@@ -66,7 +66,7 @@ func (s Store) Len() int {
 	return len(s)
 }
 
-func (s Store) Check() error {
+func (s Store) Validate() error {
 	for _, m := range s {
 		if m.IsPluralized() {
 			for i, text := range m.Plurals {

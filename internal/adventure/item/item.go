@@ -1,6 +1,8 @@
 package item
 
 import (
+	"errors"
+	"fmt"
 	"thenewquill/internal/adventure/character"
 	"thenewquill/internal/adventure/loc"
 	"thenewquill/internal/adventure/vars"
@@ -23,6 +25,53 @@ type Item struct {
 	CarriedBy   *character.Character
 	Contents    []*Item
 	Vars        vars.Store
+}
+
+func (i *Item) Validate() error {
+	if i.Noun == nil {
+		return ErrNounCannotBeNil
+	}
+
+	if i.Noun.Is("_") {
+		return ErrNounCannotBeUnderscore
+	}
+
+	if i.Adjective == nil {
+		return ErrAdjectiveCannotBeNil
+	}
+
+	if i.IsHeld && i.Location != nil {
+		return ErrItemCannotBeHeldAndHaveLocation
+	}
+
+	if i.CarriedBy != nil && i.Location != nil {
+		return ErrItemCannotBeHeldAndHaveLocation
+	}
+
+	if i.IsHeld && i.IsWorn {
+		return ErrItemCannotBeHeldAndWorn
+	}
+
+	for _, content := range i.Contents {
+		if content.Location != nil {
+			return errors.Join(ErrItemCannotBeContainedInAndHaveLocation,
+				fmt.Errorf("item %s is at %s and contained in %s", content.Label, content.Location.Label, i.Label))
+		}
+	}
+
+	if i.IsContainer && i.WeightTotal() > i.MaxWeight {
+		return ErrContainerCantCarrySoMuch
+	}
+
+	if i.Weight > i.MaxWeight {
+		return ErrWeightShouldBeLessOrEqualThanMaxWeight
+	}
+
+	if i.Weight < 0 || i.MaxWeight < 0 {
+		return ErrWeightCannotBeNegative
+	}
+
+	return nil
 }
 
 // simple Item

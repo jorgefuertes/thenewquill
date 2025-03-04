@@ -43,7 +43,17 @@ func Compile(filename string) (*adventure.Adventure, error) {
 	}
 
 	// check messages
-	if err := a.Messages.Check(); err != nil {
+	if err := a.Messages.Validate(); err != nil {
+		return a, err
+	}
+
+	// check items
+	if err := a.Items.Validate(); err != nil {
+		return a, err
+	}
+
+	// check characters
+	if err := a.Chars.Validate(); err != nil {
 		return a, err
 	}
 

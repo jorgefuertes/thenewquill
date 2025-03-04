@@ -69,3 +69,12 @@ func (s *Store) Set(newItem *Item) error {
 
 	return nil
 }
+
+func (s Store) Validate() error {
+	for _, item := range s {
+		if err := item.Validate(); err != nil {
+			return err
+		}
+	}
+	return nil
+}

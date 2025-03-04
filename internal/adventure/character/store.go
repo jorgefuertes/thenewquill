@@ -4,6 +4,25 @@ import "strings"
 
 type Store []*Character
 
+func (s Store) Validate() error {
+	if s.GetHuman() == nil {
+		return ErrNoHuman
+	}
+
+	humans := 0
+	for _, p := range s {
+		if p.Human {
+			humans++
+		}
+	}
+
+	if humans > 1 {
+		return ErrOnlyOneHuman
+	}
+
+	return nil
+}
+
 func NewStore() Store {
 	return Store{}
 }
