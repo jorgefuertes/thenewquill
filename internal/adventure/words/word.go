@@ -1,8 +1,9 @@
-package voc
+package words
 
 import (
 	"slices"
 	"strings"
+
 	"thenewquill/internal/util"
 )
 
@@ -10,6 +11,10 @@ type Word struct {
 	Label    string
 	Type     WordType
 	Synonyms []string
+}
+
+func New(label string, t WordType, synonyms ...string) *Word {
+	return &Word{Label: label, Type: t, Synonyms: synonyms}
 }
 
 func (w Word) String() string {
@@ -29,6 +34,24 @@ func (w Word) Is(labelOrSynonym string) bool {
 	labelOrSynonym = util.RemoveSymbols(labelOrSynonym)
 
 	return w.Label == labelOrSynonym || slices.Contains(w.Synonyms, labelOrSynonym)
+}
+
+func (w Word) IsExactlyEqual(w2 Word) bool {
+	if w.Label != w2.Label || w.Type != w2.Type {
+		return false
+	}
+
+	if len(w.Synonyms) != len(w2.Synonyms) {
+		return false
+	}
+
+	for _, s := range w.Synonyms {
+		if !slices.Contains(w2.Synonyms, s) {
+			return false
+		}
+	}
+
+	return true
 }
 
 func (w Word) IsEqual(w2 *Word) bool {

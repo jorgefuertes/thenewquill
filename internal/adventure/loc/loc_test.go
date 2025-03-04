@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"thenewquill/internal/adventure/loc"
-	"thenewquill/internal/adventure/voc"
+	"thenewquill/internal/adventure/words"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -13,26 +13,26 @@ import (
 func TestLocations(t *testing.T) {
 	locs := loc.NewStore()
 
-	north := &voc.Word{Label: "north", Type: voc.Verb}
-	east := &voc.Word{Label: "east", Type: voc.Verb}
-	west := &voc.Word{Label: "west", Type: voc.Verb}
-	south := &voc.Word{Label: "shouth", Type: voc.Verb}
+	north := &words.Word{Label: "north", Type: words.Verb}
+	east := &words.Word{Label: "east", Type: words.Verb}
+	west := &words.Word{Label: "west", Type: words.Verb}
+	south := &words.Word{Label: "shouth", Type: words.Verb}
 
 	definitions := []struct {
 		label string
 		title string
 		desc  string
-		exits map[*voc.Word]string
+		exits map[*words.Word]string
 	}{
-		{"loc-001", "loc 001 title", "loc 001 desc", map[*voc.Word]string{east: "loc-002"}},
-		{"loc-002", "loc 002 title", "loc 002 desc", map[*voc.Word]string{west: "loc-001"}},
-		{"loc-003", "loc 003 title", "loc 003 desc", map[*voc.Word]string{north: "loc-004", south: "loc-005"}},
-		{"loc-004", "loc 004 title", "loc 004 desc", map[*voc.Word]string{east: "loc-003"}},
-		{"loc-005", "loc 005 title", "loc 005 desc", map[*voc.Word]string{west: "loc-003"}},
-		{"loc-006", "loc 006 title", "loc 006 desc", map[*voc.Word]string{north: "loc-007", south: "loc-008"}},
-		{"loc-007", "loc 007 title", "loc 007 desc", map[*voc.Word]string{east: "loc-006"}},
-		{"loc-008", "loc 008 title", "loc 008 desc", map[*voc.Word]string{west: "loc-006"}},
-		{"loc-009", "loc 009 title", "loc 009 desc", map[*voc.Word]string{north: "loc-001", south: "loc-002"}},
+		{"loc-001", "loc 001 title", "loc 001 desc", map[*words.Word]string{east: "loc-002"}},
+		{"loc-002", "loc 002 title", "loc 002 desc", map[*words.Word]string{west: "loc-001"}},
+		{"loc-003", "loc 003 title", "loc 003 desc", map[*words.Word]string{north: "loc-004", south: "loc-005"}},
+		{"loc-004", "loc 004 title", "loc 004 desc", map[*words.Word]string{east: "loc-003"}},
+		{"loc-005", "loc 005 title", "loc 005 desc", map[*words.Word]string{west: "loc-003"}},
+		{"loc-006", "loc 006 title", "loc 006 desc", map[*words.Word]string{north: "loc-007", south: "loc-008"}},
+		{"loc-007", "loc 007 title", "loc 007 desc", map[*words.Word]string{east: "loc-006"}},
+		{"loc-008", "loc 008 title", "loc 008 desc", map[*words.Word]string{west: "loc-006"}},
+		{"loc-009", "loc 009 title", "loc 009 desc", map[*words.Word]string{north: "loc-001", south: "loc-002"}},
 	}
 
 	t.Run("create locations", func(t *testing.T) {

@@ -9,43 +9,57 @@ import (
 
 type Store struct {
 	lock *sync.Mutex
-	regs map[string]any
+	Regs map[string]any
 }
 
 func NewStore() Store {
 	return Store{
 		lock: &sync.Mutex{},
-		regs: make(map[string]any, 0),
+		Regs: make(map[string]any, 0),
 	}
 }
 
 func (s Store) Len() int {
-	return len(s.regs)
+	return len(s.Regs)
 }
 
 func (s *Store) Set(key string, value any) {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 
-	s.regs[key] = value
+	s.Regs[key] = value
+}
+
+func (s *Store) SetAll(regs map[string]any) {
+	s.lock.Lock()
+	defer s.lock.Unlock()
+
+	s.Regs = regs
 }
 
 func (s *Store) Get(key string) any {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 
-	if v, ok := s.regs[key]; ok {
+	if v, ok := s.Regs[key]; ok {
 		return v
 	}
 
 	return ""
 }
 
+func (s *Store) GetAll() map[string]any {
+	s.lock.Lock()
+	defer s.lock.Unlock()
+
+	return s.Regs
+}
+
 func (s *Store) IsSet(key string) bool {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 
-	_, ok := s.regs[key]
+	_, ok := s.Regs[key]
 
 	return ok
 }
@@ -54,7 +68,7 @@ func (s *Store) Unset(key string) {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 
-	delete(s.regs, key)
+	delete(s.Regs, key)
 }
 
 func (s *Store) GetBool(key string) bool {

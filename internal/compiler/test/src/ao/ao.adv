@@ -19,7 +19,7 @@ date:    "28-02-2025"
 lang:    "ES"
 
 INCLUDE "vars.inc.adv"
-INCLUDE "voc.inc.adv"
+INCLUDE "words.inc.adv"
 INCLUDE "sysmsg.inc.adv"
 INCLUDE "locs.inc.adv"
 INCLUDE "items.inc.adv"

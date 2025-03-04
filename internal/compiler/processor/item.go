@@ -6,7 +6,7 @@ import (
 	"thenewquill/internal/adventure"
 	"thenewquill/internal/adventure/item"
 	"thenewquill/internal/adventure/loc"
-	"thenewquill/internal/adventure/voc"
+	"thenewquill/internal/adventure/words"
 	cerr "thenewquill/internal/compiler/compiler_error"
 	"thenewquill/internal/compiler/line"
 	"thenewquill/internal/compiler/rg"
@@ -24,7 +24,7 @@ func readItem(l line.Line, st *status.Status, a *adventure.Adventure) error {
 
 		desc, ok := l.GetTextForFirstFoundLabel("description", "desc")
 		if ok {
-			i.SetDescription(desc)
+			i.Description = desc
 
 			return nil
 		}
@@ -33,11 +33,11 @@ func readItem(l line.Line, st *status.Status, a *adventure.Adventure) error {
 
 		switch o {
 		case "is wearable":
-			i.SetWearable()
+			i.IsWearable = true
 
 			return nil
 		case "is worn":
-			i.SetWearable()
+			i.IsWearable = true
 			i.Wear()
 
 			return nil
@@ -46,7 +46,7 @@ func readItem(l line.Line, st *status.Status, a *adventure.Adventure) error {
 
 			return nil
 		case "is container":
-			i.SetContainer()
+			i.IsContainer = true
 
 			return nil
 		case "is held":
@@ -66,7 +66,7 @@ func readItem(l line.Line, st *status.Status, a *adventure.Adventure) error {
 				st.SetUndef(m[1], section.Locs, l)
 			}
 
-			i.SetLocation(inLoc)
+			i.Location = inLoc
 
 			return nil
 		}
@@ -79,7 +79,7 @@ func readItem(l line.Line, st *status.Status, a *adventure.Adventure) error {
 					WithFilename(st.CurrentFilename())
 			}
 
-			i.SetWeight(w)
+			i.Weight = w
 
 			return nil
 		}
@@ -92,7 +92,7 @@ func readItem(l line.Line, st *status.Status, a *adventure.Adventure) error {
 					WithFilename(st.CurrentFilename())
 			}
 
-			i.SetMaxWeight(w)
+			i.MaxWeight = w
 
 			return nil
 		}
@@ -115,15 +115,15 @@ func readItem(l line.Line, st *status.Status, a *adventure.Adventure) error {
 		st.CurrentLabel = label
 		st.SetDef(label, section.Items)
 
-		nounWord := a.Vocabulary.Get(voc.Noun, noun)
+		nounWord := a.Words.Get(words.Noun, noun)
 		if nounWord == nil {
-			nounWord = a.Vocabulary.Set(noun, voc.Noun)
+			nounWord = a.Words.Set(noun, words.Noun)
 			st.SetUndef(noun, section.Words, l)
 		}
 
-		adjWord := a.Vocabulary.Get(voc.Adjective, adj)
+		adjWord := a.Words.Get(words.Adjective, adj)
 		if adjWord == nil {
-			adjWord = a.Vocabulary.Set(adj, voc.Adjective)
+			adjWord = a.Words.Set(adj, words.Adjective)
 			st.SetUndef(adj, section.Words, l)
 		}
 

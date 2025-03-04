@@ -4,7 +4,7 @@ compile-happy: tmp
 	@go run cmd/quill/quill.go c -i internal/compiler/test/src/happy/test.adv -o tmp/happy-test.db
 
 compile-ao: tmp
-	@go run cmd/quill/quill.go c -i internal/compiler/test/src/ao/ao.adv -o tmp/test.db
+	@go run cmd/quill/quill.go c -i internal/compiler/test/src/ao/ao.adv -o tmp/ao.db
 
 tmp:
 	@rm -Rf tmp

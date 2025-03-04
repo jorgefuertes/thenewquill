@@ -45,7 +45,8 @@ func (s *Status) PopFilename() {
 		return
 	}
 
-	s.filenames = slices.Delete(s.filenames, 0, 1)
+	// remove the last element
+	s.filenames = s.filenames[:len(s.filenames)-1]
 }
 
 func (s *Status) CurrentFilename() string {

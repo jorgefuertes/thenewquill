@@ -25,7 +25,7 @@ func main() {
 	t.AppendHeader(table.Row{"Section", "Entries"})
 	t.AppendRows([]table.Row{
 		{"vars", fmt.Sprintf("%d", a.Vars.Len())},
-		{"vocabulary", fmt.Sprintf("%d", a.Vocabulary.Len())},
+		{"vocabulary", fmt.Sprintf("%d", a.Words.Len())},
 		{"messages", fmt.Sprintf("%d", a.Messages.Len())},
 		{"locations", fmt.Sprintf("%d", a.Locations.Len())},
 		{"items", fmt.Sprintf("%d", a.Items.Len())},
@@ -37,7 +37,7 @@ func main() {
 	t.AppendFooter(
 		table.Row{
 			"Total",
-			fmt.Sprintf("%d entries", a.Vars.Len()+a.Vocabulary.Len()+a.Messages.Len()+a.Locations.Len()+a.Items.Len()),
+			fmt.Sprintf("%d entries", a.Vars.Len()+a.Words.Len()+a.Messages.Len()+a.Locations.Len()+a.Items.Len()),
 		},
 	)
 	t.SetStyle(table.StyleColoredCyanWhiteOnBlack)

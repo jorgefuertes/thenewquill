@@ -1,8 +1,6 @@
 package loc
 
-import (
-	"thenewquill/internal/adventure/voc"
-)
+import "thenewquill/internal/adventure/words"
 
 const Undefined = `undefined`
 
@@ -22,9 +20,9 @@ func New(label, title, desc string) *Location {
 	}
 }
 
-func (l *Location) connIndex(word *voc.Word) int {
+func (l *Location) connIndex(word *words.Word) int {
 	for i, c := range l.Conns {
-		if c.Word == word {
+		if c.Word.Is(word.Label) {
 			return i
 		}
 	}
@@ -32,7 +30,7 @@ func (l *Location) connIndex(word *voc.Word) int {
 	return -1
 }
 
-func (l *Location) SetConn(word *voc.Word, to *Location) {
+func (l *Location) SetConn(word *words.Word, to *Location) {
 	idx := l.connIndex(word)
 	if idx != -1 {
 		l.Conns[idx].To = to
@@ -43,7 +41,7 @@ func (l *Location) SetConn(word *voc.Word, to *Location) {
 	l.Conns = append(l.Conns, Connection{Word: word, To: to})
 }
 
-func (l *Location) GetConn(word *voc.Word) *Location {
+func (l *Location) GetConn(word *words.Word) *Location {
 	idx := l.connIndex(word)
 	if idx != -1 {
 		return l.Conns[idx].To

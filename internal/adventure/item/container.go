@@ -1,20 +1,16 @@
 package item
 
-func (i Item) IsContainer() bool {
-	return i.isContainer
-}
-
 func (i *Item) WeightTotal() int {
 	return recursiveWeight(i)
 }
 
 func recursiveWeight(i *Item) int {
-	if !i.IsContainer() || len(i.contents) == 0 {
-		return i.weight
+	if !i.IsContainer || len(i.Contents) == 0 {
+		return i.Weight
 	}
 
-	w := i.weight
-	for _, content := range i.contents {
+	w := i.Weight
+	for _, content := range i.Contents {
 		w += recursiveWeight(content)
 	}
 
@@ -22,19 +18,19 @@ func recursiveWeight(i *Item) int {
 }
 
 func (i Item) canCarry(w int) bool {
-	return i.WeightTotal()+w <= i.maxWeight
+	return i.WeightTotal()+w <= i.MaxWeight
 }
 
 func (i Item) isFull() bool {
-	if !i.IsContainer() {
+	if !i.IsContainer {
 		return true
 	}
 
-	return i.WeightTotal() >= i.maxWeight
+	return i.WeightTotal() >= i.MaxWeight
 }
 
 func (i *Item) Put(a *Item) error {
-	if !i.IsContainer() {
+	if !i.IsContainer {
 		return ErrNotContainer
 	}
 
@@ -46,7 +42,7 @@ func (i *Item) Put(a *Item) error {
 		return ErrContainerCantCarrySoMuch
 	}
 
-	i.contents = append(i.contents, a)
+	i.Contents = append(i.Contents, a)
 
 	return nil
 }

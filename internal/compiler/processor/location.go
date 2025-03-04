@@ -3,7 +3,7 @@ package processor
 import (
 	"thenewquill/internal/adventure"
 	"thenewquill/internal/adventure/loc"
-	"thenewquill/internal/adventure/voc"
+	"thenewquill/internal/adventure/words"
 	cerr "thenewquill/internal/compiler/compiler_error"
 	"thenewquill/internal/compiler/line"
 	"thenewquill/internal/compiler/section"
@@ -44,9 +44,9 @@ func readLocation(l line.Line, st *status.Status, a *adventure.Adventure) error 
 	exitMap, ok := l.AsLocationConns()
 	if ok {
 		for wordLabel, destLabel := range exitMap {
-			word := a.Vocabulary.FirstWithTypes(wordLabel, voc.Verb, voc.Noun)
+			word := a.Words.FirstWithTypes(wordLabel, words.Verb, words.Noun)
 			if word == nil {
-				word = a.Vocabulary.Set(wordLabel, voc.Unknown)
+				word = a.Words.Set(wordLabel, words.Unknown)
 				st.SetUndef(wordLabel, section.Words, l)
 			}
 

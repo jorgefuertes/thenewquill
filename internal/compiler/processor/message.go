@@ -11,7 +11,7 @@ import (
 
 func readMessage(l line.Line, st *status.Status, a *adventure.Adventure) error {
 	t := msg.SystemMsg
-	if st.Section == section.UserMsgs {
+	if st.Section == section.UserMsg {
 		t = msg.UserMsg
 	}
 

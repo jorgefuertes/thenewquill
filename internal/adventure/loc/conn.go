@@ -1,8 +1,8 @@
 package loc
 
-import "thenewquill/internal/adventure/voc"
+import "thenewquill/internal/adventure/words"
 
 type Connection struct {
-	Word *voc.Word
+	Word *words.Word
 	To   *Location
 }

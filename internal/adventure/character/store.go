@@ -1,18 +1,22 @@
-package player
+package character
 
 import "strings"
 
-type Store []*Player
+type Store []*Character
 
 func NewStore() Store {
 	return Store{}
 }
 
-func (s Store) Get(label string) *Player {
+func (s Store) Len() int {
+	return len(s)
+}
+
+func (s Store) Get(label string) *Character {
 	label = strings.ToLower(label)
 
 	for _, p := range s {
-		if p.label == label {
+		if p.Label == label {
 			return p
 		}
 	}
@@ -24,7 +28,7 @@ func (s Store) Exists(label string) bool {
 	label = strings.ToLower(label)
 
 	for _, p := range s {
-		if p.label == label {
+		if p.Label == label {
 			return true
 		}
 	}
@@ -32,7 +36,7 @@ func (s Store) Exists(label string) bool {
 	return false
 }
 
-func (s Store) GetHuman() *Player {
+func (s Store) GetHuman() *Character {
 	for _, p := range s {
 		if p.Human {
 			return p
@@ -43,10 +47,10 @@ func (s Store) GetHuman() *Player {
 }
 
 // Set a new npc
-func (s *Store) Set(n *Player) error {
-	n.label = strings.ToLower(n.label)
+func (s *Store) Set(n *Character) error {
+	n.Label = strings.ToLower(n.Label)
 
-	if s.Exists(n.label) {
+	if s.Exists(n.Label) {
 		return ErrDuplicatedPlayerLabel
 	}
 

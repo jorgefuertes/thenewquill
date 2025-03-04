@@ -2,7 +2,8 @@ package item
 
 import (
 	"strings"
-	"thenewquill/internal/adventure/voc"
+
+	"thenewquill/internal/adventure/words"
 )
 
 type Store []*Item
@@ -17,7 +18,7 @@ func (s Store) Len() int {
 
 func (s Store) Get(label string) *Item {
 	for _, item := range s {
-		if item.label == label {
+		if item.Label == label {
 			return item
 		}
 	}
@@ -27,7 +28,7 @@ func (s Store) Get(label string) *Item {
 
 func (s Store) Exists(label string) bool {
 	for _, item := range s {
-		if item.label == label {
+		if item.Label == label {
 			return true
 		}
 	}
@@ -35,9 +36,9 @@ func (s Store) Exists(label string) bool {
 	return false
 }
 
-func (s Store) ExistsNounAdj(noun, adjective *voc.Word) bool {
+func (s Store) ExistsNounAdj(noun, adjective *words.Word) bool {
 	for _, item := range s {
-		if item.noun.IsEqual(noun) && item.adjective.IsEqual(adjective) {
+		if item.Noun.IsEqual(noun) && item.Adjective.IsEqual(adjective) {
 			return true
 		}
 	}
@@ -46,21 +47,21 @@ func (s Store) ExistsNounAdj(noun, adjective *voc.Word) bool {
 }
 
 func (s *Store) Set(newItem *Item) error {
-	if s.Exists(newItem.label) {
+	if s.Exists(newItem.Label) {
 		return ErrDuplicateLabel
 	}
 
-	if newItem.label == "" {
+	if newItem.Label == "" {
 		return ErrEmptyLabel
 	}
 
-	newItem.label = strings.ToLower(newItem.label)
+	newItem.Label = strings.ToLower(newItem.Label)
 
-	if newItem.noun == nil {
+	if newItem.Noun == nil {
 		return ErrNounCannotBeNil
 	}
 
-	if newItem.noun.Label == "_" {
+	if newItem.Noun.Label == "_" {
 		return ErrNounCannotBeUnderscore
 	}
 

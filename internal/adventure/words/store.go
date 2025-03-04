@@ -1,14 +1,14 @@
-package voc
+package words
 
 import (
 	"slices"
 	"strings"
 )
 
-type Vocabulary []*Word
+type Store []*Word
 
-func NewStore() Vocabulary {
-	v := Vocabulary{}
+func NewStore() Store {
+	v := Store{}
 
 	for _, t := range wordTypes() {
 		v = append(v, &Word{Label: "_", Type: t, Synonyms: make([]string, 0)})
@@ -19,15 +19,15 @@ func NewStore() Vocabulary {
 
 // Set a new word
 // overwrites any existing word with the same label and type
-func (v *Vocabulary) Set(label string, t WordType, synonyms ...string) *Word {
+func (s *Store) Set(label string, t WordType, synonyms ...string) *Word {
 	label = strings.ToLower(label)
 
 	if synonyms == nil {
 		synonyms = make([]string, 0)
 	}
 
-	if v.Exists(t, label) {
-		w := v.Get(t, label)
+	if s.Exists(t, label) {
+		w := s.Get(t, label)
 		w.Synonyms = synonyms
 
 		if w.Type == Unknown {
@@ -43,15 +43,15 @@ func (v *Vocabulary) Set(label string, t WordType, synonyms ...string) *Word {
 		Synonyms: synonyms,
 	}
 
-	*v = append(*v, w)
+	*s = append(*s, w)
 
 	return w
 }
 
-func (v Vocabulary) Get(t WordType, labelOrSynonym string) *Word {
+func (s Store) Get(t WordType, labelOrSynonym string) *Word {
 	labelOrSynonym = strings.ToLower(labelOrSynonym)
 
-	for _, w := range v {
+	for _, w := range s {
 		if w.Is(labelOrSynonym) && w.Type == t {
 			return w
 		}
@@ -60,10 +60,10 @@ func (v Vocabulary) Get(t WordType, labelOrSynonym string) *Word {
 	return nil
 }
 
-func (v Vocabulary) Exists(t WordType, labelOrSynonym string) bool {
+func (s Store) Exists(t WordType, labelOrSynonym string) bool {
 	labelOrSynonym = strings.ToLower(labelOrSynonym)
 
-	for _, w := range v {
+	for _, w := range s {
 		if w.Type != t {
 			continue
 		}
@@ -77,10 +77,10 @@ func (v Vocabulary) Exists(t WordType, labelOrSynonym string) bool {
 }
 
 // First returns the first word of the vocabulary that matches the given label or synonym.
-func (v Vocabulary) First(labelOrSynonym string) *Word {
+func (s Store) First(labelOrSynonym string) *Word {
 	labelOrSynonym = strings.ToLower(labelOrSynonym)
 
-	for _, w := range v {
+	for _, w := range s {
 		if w.Is(labelOrSynonym) {
 			return w
 		}
@@ -90,11 +90,11 @@ func (v Vocabulary) First(labelOrSynonym string) *Word {
 }
 
 // FirstWithTypes returns the first word found by given types preferences
-func (v Vocabulary) FirstWithTypes(labelOrSynonym string, types ...WordType) *Word {
+func (s Store) FirstWithTypes(labelOrSynonym string, types ...WordType) *Word {
 	labelOrSynonym = strings.ToLower(labelOrSynonym)
 
 	for _, t := range types {
-		w := v.Get(t, labelOrSynonym)
+		w := s.Get(t, labelOrSynonym)
 		if w != nil {
 			return w
 		}
@@ -103,6 +103,6 @@ func (v Vocabulary) FirstWithTypes(labelOrSynonym string, types ...WordType) *Wo
 	return nil
 }
 
-func (v Vocabulary) Len() int {
-	return len(v)
+func (s Store) Len() int {
+	return len(s)
 }

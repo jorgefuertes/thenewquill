@@ -1,16 +1,11 @@
 package config
 
-import (
-	"errors"
-	"time"
-)
-
 type Config struct {
 	Title       string
 	Author      string
 	Description string
 	Version     string
-	Date        time.Time
+	Date        string
 	Lang        Lang
 }
 
@@ -29,14 +24,7 @@ func (c *Config) Set(label Label, value string) error {
 	case VersionLabel:
 		c.Version = value
 	case DateLabel:
-		var err error
-		c.Date, err = time.Parse("02-01-2006", value)
-		if err != nil {
-			c.Date, err = time.Parse("2006-01-02", value)
-			if err != nil {
-				return errors.Join(ErrCannotParseDate, err)
-			}
-		}
+		c.Date = value
 	case LangLabel:
 		lang := LangFromString(value)
 		if lang == Undefined {

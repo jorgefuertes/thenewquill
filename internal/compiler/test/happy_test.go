@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"thenewquill/internal/adventure/msg"
-	"thenewquill/internal/adventure/voc"
+	"thenewquill/internal/adventure/words"
 	"thenewquill/internal/compiler"
 
 	"github.com/stretchr/testify/assert"
@@ -42,48 +42,48 @@ func TestCompilerHappyPath(t *testing.T) {
 
 	t.Run("Vocabulary", func(t *testing.T) {
 		t.Run("Nil word", func(t *testing.T) {
-			require.Nil(t, a.Vocabulary.Get(voc.Verb, "foo"))
+			require.Nil(t, a.Words.Get(words.Verb, "foo"))
 		})
 
 		testCases := []struct {
-			kind  voc.WordType
+			kind  words.WordType
 			label string
 			syns  []string
 		}{
-			{voc.Verb, "subir", []string{"sube", "subo"}},
-			{voc.Verb, "bajar", []string{"bajo", "baja"}},
-			{voc.Verb, "salir", []string{"salgo", "sal"}},
-			{voc.Verb, "coger", []string{"coge", "llevar", "recoger", "recoge", "pillar"}},
-			{voc.Verb, "dejar", []string{"dejo", "soltar", "suelta", "suelto"}},
-			{voc.Verb, "quitar", []string{"quito", "quita"}},
-			{voc.Verb, "poner", []string{"pongo", "pone"}},
-			{voc.Verb, "abrir", []string{"abro", "abre"}},
-			{voc.Verb, "cerrar", []string{"cierro", "cierra"}},
-			{voc.Verb, "fin", []string{"terminar", "acabar", "sistema"}},
-			{voc.Verb, "quill", []string{"thenewquill", "tnq"}},
-			{voc.Verb, "ad", []string{}},
-			{voc.Verb, "decir", []string{"di", "hablar", "habla"}},
-			{voc.Verb, "ir", []string{"voy", "vamos", "ve"}},
-			{voc.Verb, "ex", []string{"exam", "examinar", "examina", "mirar", "mira", "miro"}},
-			{voc.Verb, "save", []string{"grabar", "graba", "grabo", "salvar", "salva", "salvo"}},
-			{voc.Verb, "ram", []string{"ramsave"}},
-			{voc.Noun, "norte", []string{"n", "adelante"}},
-			{voc.Noun, "sur", []string{"s", "atrás"}},
-			{voc.Noun, "este", []string{"e"}},
-			{voc.Noun, "oeste", []string{"o", "w"}},
-			{voc.Noun, "abrigo", []string{"chaqueta"}},
-			{voc.Noun, "guantes", []string{}},
-			{voc.Noun, "cofre", []string{"arcón"}},
-			{voc.Noun, "monedas", []string{"dinero"}},
-			{voc.Noun, "carta", []string{"papel"}},
-			{voc.Pronoun, "el", []string{"la", "los", "las"}},
-			{voc.Preposition, "dentro", []string{"adentro"}},
-			{voc.Conjunction, "enton", []string{"luego", "tras", "y"}},
+			{words.Verb, "subir", []string{"sube", "subo"}},
+			{words.Verb, "bajar", []string{"bajo", "baja"}},
+			{words.Verb, "salir", []string{"salgo", "sal"}},
+			{words.Verb, "coger", []string{"coge", "llevar", "recoger", "recoge", "pillar"}},
+			{words.Verb, "dejar", []string{"dejo", "soltar", "suelta", "suelto"}},
+			{words.Verb, "quitar", []string{"quito", "quita"}},
+			{words.Verb, "poner", []string{"pongo", "pone"}},
+			{words.Verb, "abrir", []string{"abro", "abre"}},
+			{words.Verb, "cerrar", []string{"cierro", "cierra"}},
+			{words.Verb, "fin", []string{"terminar", "acabar", "sistema"}},
+			{words.Verb, "quill", []string{"thenewquill", "tnq"}},
+			{words.Verb, "ad", []string{}},
+			{words.Verb, "decir", []string{"di", "hablar", "habla"}},
+			{words.Verb, "ir", []string{"voy", "vamos", "ve"}},
+			{words.Verb, "ex", []string{"exam", "examinar", "examina", "mirar", "mira", "miro"}},
+			{words.Verb, "save", []string{"grabar", "graba", "grabo", "salvar", "salva", "salvo"}},
+			{words.Verb, "ram", []string{"ramsave"}},
+			{words.Noun, "norte", []string{"n", "adelante"}},
+			{words.Noun, "sur", []string{"s", "atrás"}},
+			{words.Noun, "este", []string{"e"}},
+			{words.Noun, "oeste", []string{"o", "w"}},
+			{words.Noun, "abrigo", []string{"chaqueta"}},
+			{words.Noun, "guantes", []string{}},
+			{words.Noun, "cofre", []string{"arcón"}},
+			{words.Noun, "monedas", []string{"dinero"}},
+			{words.Noun, "carta", []string{"papel"}},
+			{words.Pronoun, "el", []string{"la", "los", "las"}},
+			{words.Preposition, "dentro", []string{"adentro"}},
+			{words.Conjunction, "enton", []string{"luego", "tras", "y"}},
 		}
 
 		for _, tc := range testCases {
 			t.Run(tc.label, func(t *testing.T) {
-				w := a.Vocabulary.Get(tc.kind, tc.label)
+				w := a.Words.Get(tc.kind, tc.label)
 				require.NotNil(t, w)
 				assert.Equal(t, tc.label, w.Label)
 				assert.Equal(t, tc.kind, w.Type)

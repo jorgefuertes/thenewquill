@@ -15,7 +15,7 @@ func readWord(l line.Line, st *status.Status, a *adventure.Adventure) error {
 			WithFilename(st.CurrentFilename())
 	}
 
-	_ = a.Vocabulary.Set(w.Label, w.Type, w.Synonyms...)
+	_ = a.Words.Set(w.Label, w.Type, w.Synonyms...)
 	st.SetDef(w.Label, section.Words)
 
 	return nil

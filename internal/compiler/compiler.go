@@ -14,6 +14,8 @@ import (
 	"thenewquill/internal/compiler/status"
 )
 
+const VERSION = "1.0.0"
+
 func Compile(filename string) (*adventure.Adventure, error) {
 	a := adventure.New()
 	st := status.New()

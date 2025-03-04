@@ -1,18 +1,18 @@
-package voc
+package words
 
 import "strings"
 
 type WordType int
 
 const (
-	Verb WordType = iota
-	Noun
-	Pronoun
-	Adjective
-	Adverb
-	Preposition
-	Conjunction
-	Unknown
+	Unknown     WordType = 0
+	Verb        WordType = 1
+	Noun        WordType = 2
+	Pronoun     WordType = 3
+	Adjective   WordType = 4
+	Adverb      WordType = 5
+	Preposition WordType = 6
+	Conjunction WordType = 7
 )
 
 func wordTypes() []WordType {

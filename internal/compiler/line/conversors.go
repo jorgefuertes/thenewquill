@@ -6,7 +6,7 @@ import (
 
 	"thenewquill/internal/adventure/config"
 	"thenewquill/internal/adventure/msg"
-	"thenewquill/internal/adventure/voc"
+	"thenewquill/internal/adventure/words"
 	"thenewquill/internal/compiler/rg"
 	"thenewquill/internal/compiler/section"
 )
@@ -62,21 +62,21 @@ func (l Line) AsVar() (string, any, bool) {
 }
 
 // AsWord returns the word and true if it was found
-func (l Line) AsWord() (voc.Word, bool) {
+func (l Line) AsWord() (words.Word, bool) {
 	o := l.OptimizedText()
 
 	if !rg.Word.MatchString(o) {
-		return voc.Word{}, false
+		return words.Word{}, false
 	}
 
-	w := voc.Word{}
+	w := words.Word{}
 
 	parts := strings.Split(o, ":")
 	if len(parts) != 2 {
-		return voc.Word{}, false
+		return words.Word{}, false
 	}
 
-	w.Type = voc.WordTypeFromString(parts[0])
+	w.Type = words.WordTypeFromString(parts[0])
 
 	words := strings.Split(parts[1], ",")
 	for i, word := range words {
