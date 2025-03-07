@@ -105,3 +105,16 @@ func sprintf(format string, args ...any) string {
 
 	return format
 }
+
+func (m Msg) Dump() string {
+	return fmt.Sprintf(
+		"%d\x1F%d\x1F%s\x1F%s\x1F%s\x1F%s\x1F%s\x1E",
+		m.Type.Section(),
+		m.Type,
+		m.Label,
+		m.Text,
+		m.Plurals[0],
+		m.Plurals[1],
+		m.Plurals[2],
+	)
+}

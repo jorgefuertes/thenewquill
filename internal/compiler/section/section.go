@@ -48,7 +48,19 @@ func sectionNames() []string {
 }
 
 func (s Section) String() string {
+	if s < 0 || s >= Section(len(sectionNames())) {
+		return sectionNames()[None]
+	}
+
 	return sectionNames()[s]
+}
+
+func FromInt(i int) Section {
+	if i < 0 || i >= len(sectionNames()) {
+		return None
+	}
+
+	return Section(i)
 }
 
 func FromString(s string) Section {
