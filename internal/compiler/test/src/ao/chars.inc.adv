@@ -1,0 +1,15 @@
+SECTION CHARS
+
+player: jugador _
+	is at frontera
+	is created
+	is human
+
+elfo: elfo _
+	desc: "Es un elfo de la tierra"
+	is at bosque_1
+
+enano: enano _
+	desc: "Parece un enano llorón"
+	is at colina
+	is created

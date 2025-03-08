@@ -20,4 +20,7 @@ var (
 	ErrWrongItemWeight               = newCompilerError("wrong item weight")
 	ErrCannotRetrieveMessage         = newCompilerError("cannot retrieve message from store")
 	ErrWrongConfigDeclaration        = newCompilerError("wrong config declaration")
+	ErrWrongCharDeclaration          = newCompilerError("wrong character declaration")
+	ErrDuplicatedCharLabel           = newCompilerError("duplicated item label")
+	ErrOnlyOneHuman                  = newCompilerError("only one human character allowed")
 )

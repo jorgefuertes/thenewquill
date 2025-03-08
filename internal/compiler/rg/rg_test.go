@@ -157,19 +157,19 @@ func TestRegexps(t *testing.T) {
 		{
 			name:        "item declaration",
 			text:        `antorcha: antorcha _`,
-			rg:          rg.ItemDeclaration,
+			rg:          rg.LabelNounAdjDeclaration,
 			shouldMatch: true,
 		},
 		{
 			name:        "item declaration 2",
 			text:        `llave: llave dorada`,
-			rg:          rg.ItemDeclaration,
+			rg:          rg.LabelNounAdjDeclaration,
 			shouldMatch: true,
 		},
 		{
 			name:        "item location",
 			text:        `is in loc-004`,
-			rg:          rg.ItemLocation,
+			rg:          rg.IsAtLocation,
 			shouldMatch: true,
 		},
 		{

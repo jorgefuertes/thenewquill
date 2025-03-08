@@ -147,12 +147,12 @@ func (l Line) AsLocationConns() (map[string]string, bool) {
 }
 
 // AsItemDeclaration returns the item label, noun and adjective and true if it was found
-func (l Line) AsItemDeclaration() (label, noun, adjetive string, ok bool) {
-	if !rg.ItemDeclaration.MatchString(l.OptimizedText()) {
+func (l Line) AsLabelNounAdjDeclaration() (label, noun, adjetive string, ok bool) {
+	if !rg.LabelNounAdjDeclaration.MatchString(l.OptimizedText()) {
 		return "", "", "", false
 	}
 
-	m := rg.ItemDeclaration.FindStringSubmatch(l.OptimizedText())
+	m := rg.LabelNounAdjDeclaration.FindStringSubmatch(l.OptimizedText())
 	label = m[1]
 	noun = m[2]
 	adjetive = m[3]

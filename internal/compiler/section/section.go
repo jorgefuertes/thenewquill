@@ -1,6 +1,9 @@
 package section
 
-import "strings"
+import (
+	"slices"
+	"strings"
+)
 
 type Section int
 
@@ -18,45 +21,40 @@ const (
 )
 
 func Sections() []Section {
-	return []Section{
-		None,
-		Config,
-		Vars,
-		Words,
-		UserMsg,
-		SysMsg,
-		Items,
-		Locs,
-		Procs,
-		Chars,
+	sections := make([]Section, 0)
+
+	for sec := range sectionNamesAndAliases() {
+		sections = append(sections, sec)
 	}
+
+	return sections
 }
 
-func sectionNames() []string {
-	return []string{
-		"none",
-		"config",
-		"vars",
-		"words",
-		"user messages",
-		"system messages",
-		"items",
-		"locations",
-		"process tables",
-		"characters",
+func sectionNamesAndAliases() map[Section][]string {
+	return map[Section][]string{
+		None:    {"none", "unknown"},
+		Config:  {"config", "cfg", "configuration"},
+		Vars:    {"vars", "variables"},
+		Words:   {"words", "vocabulary", "voc"},
+		UserMsg: {"user messages", "user msgs", "usermsgs"},
+		SysMsg:  {"system messages", "sys msgs", "system msgs", "sysmsgs"},
+		Items:   {"items", "objects"},
+		Locs:    {"locations", "rooms", "locs"},
+		Procs:   {"process tables", "procs", "proc tables"},
+		Chars:   {"characters", "chars", "char"},
 	}
 }
 
 func (s Section) String() string {
-	if s < 0 || s >= Section(len(sectionNames())) {
-		return sectionNames()[None]
+	if s < 0 || s >= Section(len(sectionNamesAndAliases())) {
+		return sectionNamesAndAliases()[None][0]
 	}
 
-	return sectionNames()[s]
+	return sectionNamesAndAliases()[s][0]
 }
 
 func FromInt(i int) Section {
-	if i < 0 || i >= len(sectionNames()) {
+	if i < 0 || i >= len(sectionNamesAndAliases()) {
 		return None
 	}
 
@@ -66,9 +64,9 @@ func FromInt(i int) Section {
 func FromString(s string) Section {
 	s = strings.ToLower(s)
 
-	for i, name := range sectionNames() {
-		if name == s {
-			return Section(i)
+	for sec, names := range sectionNamesAndAliases() {
+		if slices.Contains(names, s) {
+			return sec
 		}
 	}
 

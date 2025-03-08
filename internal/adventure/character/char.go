@@ -2,6 +2,7 @@ package character
 
 import (
 	"thenewquill/internal/adventure/loc"
+	"thenewquill/internal/adventure/vars"
 	"thenewquill/internal/adventure/words"
 )
 
@@ -13,6 +14,7 @@ type Character struct {
 	Location    *loc.Location
 	Created     bool
 	Human       bool
+	Vars        vars.Store
 }
 
 func New(label string, name *words.Word, adjective *words.Word) *Character {
@@ -23,22 +25,12 @@ func New(label string, name *words.Word, adjective *words.Word) *Character {
 		Location:    nil,
 		Created:     false,
 		Human:       false,
+		Vars:        vars.NewStore(),
 	}
 }
 
-func NewHuman(label string) *Character {
-	return &Character{
-		Label:       label,
-		Name:        nil,
-		Description: "",
-		Location:    nil,
-		Created:     false,
-		Human:       true,
-	}
-}
-
-func (c *Character) export() map[string]any {
-	return map[string]any{
+func (c Character) export() map[string]any {
+	data := map[string]any{
 		"label":       c.Label,
 		"name":        c.Name.Label,
 		"adjective":   c.Adjective.Label,
@@ -47,4 +39,10 @@ func (c *Character) export() map[string]any {
 		"created":     c.Created,
 		"human":       c.Human,
 	}
+
+	for k, v := range c.Vars.GetAll() {
+		data["var:"+k] = v
+	}
+
+	return data
 }

@@ -2,6 +2,7 @@ SECTION WORDS
 
 // nouns
 
+noun: jugador
 noun: agua
 noun: aguijón
 noun: alfombra
@@ -33,8 +34,8 @@ noun: depresión
 noun: desconocido
 noun: diamante
 noun: e, este
-noun: elfito, elfo, figura
-noun: enano
+noun: elfo, elfito, figura
+noun: enano, enanito, dwarf, gnomo
 noun: escalera
 noun: esmeralda
 noun: espectro

@@ -30,8 +30,8 @@ var (
 	LocConns  = regexp.MustCompile(
 		`^\s*(exits|conns|connections)\s*:\s*(\s*([\d\p{L}\-_]+\s+[\d\p{L}\-_]+\s*,?))+.?$`,
 	)
-	ItemDeclaration = regexp.MustCompile(`^\s*([\d\p{L}\-_]+):\s+([\d\p{L}\-_]+)\s+([\d\p{L}\-_]+)\s*$`)
-	ItemLocation    = regexp.MustCompile(`^\s*is\s+(?:in|at)\s+([\d\p{L}\-_]+)\s*$`)
-	ItemWeight      = regexp.MustCompile(`^\s*has\s+weight\s+(\d+)\s*$`)
-	ItemMaxWeight   = regexp.MustCompile(`^\s*has\s+max\s+weight\s+(\d+)\s*$`)
+	LabelNounAdjDeclaration = regexp.MustCompile(`^\s*([\d\p{L}\-_]+):\s+([\d\p{L}\-_]+)\s+([\d\p{L}\-_]+)\s*$`)
+	IsAtLocation            = regexp.MustCompile(`^\s*is\s+(?:in|at)\s+([\d\p{L}\-_]+)\s*$`)
+	ItemWeight              = regexp.MustCompile(`^\s*has\s+weight\s+(\d+)\s*$`)
+	ItemMaxWeight           = regexp.MustCompile(`^\s*has\s+max\s+weight\s+(\d+)\s*$`)
 )

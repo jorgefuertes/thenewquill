@@ -57,8 +57,8 @@ func readItem(l line.Line, st *status.Status, a *adventure.Adventure) error {
 			return nil
 		}
 
-		if rg.ItemLocation.MatchString(o) {
-			m := rg.ItemLocation.FindStringSubmatch(o)
+		if rg.IsAtLocation.MatchString(o) {
+			m := rg.IsAtLocation.FindStringSubmatch(o)
 
 			inLoc := a.Locations.Get(m[1])
 			if inLoc == nil {
@@ -105,7 +105,7 @@ func readItem(l line.Line, st *status.Status, a *adventure.Adventure) error {
 		}
 	}
 
-	label, noun, adj, ok := l.AsItemDeclaration()
+	label, noun, adj, ok := l.AsLabelNounAdjDeclaration()
 	if ok {
 		if a.Items.Exists(label) {
 			return cerr.ErrDuplicatedItemLabel.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
