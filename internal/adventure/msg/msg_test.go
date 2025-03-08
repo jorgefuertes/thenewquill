@@ -21,7 +21,7 @@ func TestNew(t *testing.T) {
 	assert.Equal(t, "This is a true message.", m.Stringf(true))
 
 	m = msg.New(msg.SystemMsg, "foo.zero", "There are no foos.")
-	assert.Equal(t, "#plural#", m.Text)
+	assert.Equal(t, "", m.Text)
 	m.SetPluralTexts([3]string{"There are no foos.", "There is one foo.", "There are _ foos."})
 	assert.Equal(t, "There are no foos.", m.Stringf(0))
 	assert.Equal(t, "There is one foo.", m.Stringf(1))

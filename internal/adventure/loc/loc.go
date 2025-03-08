@@ -1,6 +1,10 @@
 package loc
 
-import "thenewquill/internal/adventure/words"
+import (
+	"strings"
+
+	"thenewquill/internal/adventure/words"
+)
 
 const Undefined = `undefined`
 
@@ -48,4 +52,21 @@ func (l *Location) GetConn(word *words.Word) *Location {
 	}
 
 	return nil
+}
+
+func (l Location) export() map[string]any {
+	data := map[string]any{
+		"label":       l.Label,
+		"title":       l.Title,
+		"description": l.Description,
+	}
+
+	conns := make([]string, 0)
+	for _, c := range l.Conns {
+		conns = append(conns, c.Word.Label+":"+c.To.Label)
+	}
+
+	data["conns"] = strings.Join(conns, ",")
+
+	return data
 }

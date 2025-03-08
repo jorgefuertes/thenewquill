@@ -56,11 +56,15 @@ func fieldToString(f any) string {
 func (db *DB) Write(w io.Writer) error {
 	// write plain headers
 	for _, h := range db.headers {
-		w.Write([]byte(h + "\n"))
+		if _, err := w.Write([]byte(h + "\n")); err != nil {
+			return err
+		}
 	}
 
 	// write begin records
-	w.Write([]byte{beginRecords})
+	if _, err := w.Write([]byte{beginRecords}); err != nil {
+		return err
+	}
 
 	// write zlib-compressed registers
 	zw := zlib.NewWriter(w)

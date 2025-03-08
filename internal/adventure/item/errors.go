@@ -17,4 +17,5 @@ var (
 	ErrItemCannotBeContainedInAndHaveLocation = errors.New("item cannot be contained in and have location")
 	ErrWeightShouldBeLessOrEqualThanMaxWeight = errors.New("weight should be less or equal than max weight")
 	ErrWeightCannotBeNegative                 = errors.New("weight nor max weight cannot be negative")
+	ErrItemValidationFailed                   = errors.New("item validation failed")
 )

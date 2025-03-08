@@ -5,6 +5,8 @@ import (
 	"regexp"
 	"strconv"
 	"sync"
+
+	"thenewquill/internal/compiler/section"
 )
 
 type Store struct {
@@ -160,4 +162,11 @@ func (s *Store) GetString(key string) string {
 	default:
 		return fmt.Sprintf("%v", v)
 	}
+}
+
+func (s Store) Export() (section.Section, map[string]any) {
+	s.lock.Lock()
+	defer s.lock.Unlock()
+
+	return section.Vars, s.Regs
 }

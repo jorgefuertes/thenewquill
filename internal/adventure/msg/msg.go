@@ -26,6 +26,7 @@ func New(t MsgType, label, text string) *Msg {
 	}
 
 	matches := pluralLabelRg.FindStringSubmatch(label)
+	m.Text = ""
 	m.Label = matches[1]
 
 	for i, p := range PluralNames {
@@ -106,15 +107,13 @@ func sprintf(format string, args ...any) string {
 	return format
 }
 
-func (m Msg) Dump() string {
-	return fmt.Sprintf(
-		"%d\x1F%d\x1F%s\x1F%s\x1F%s\x1F%s\x1F%s\x1E",
-		m.Type.Section(),
-		m.Type,
-		m.Label,
-		m.Text,
-		m.Plurals[0],
-		m.Plurals[1],
-		m.Plurals[2],
-	)
+func (m Msg) export() map[string]any {
+	return map[string]any{
+		"type":  int(m.Type),
+		"label": m.Label,
+		"text":  m.Text,
+		"zero":  m.Plurals[0],
+		"one":   m.Plurals[1],
+		"many":  m.Plurals[2],
+	}
 }

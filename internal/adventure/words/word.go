@@ -57,3 +57,14 @@ func (w Word) IsExactlyEqual(w2 Word) bool {
 func (w Word) IsEqual(w2 *Word) bool {
 	return w.Label == w2.Label && w.Type == w2.Type
 }
+
+func (w Word) export() map[string]any {
+	data := map[string]any{
+		"label": w.Label,
+		"type":  int(w.Type),
+	}
+
+	data["synonyms"] = strings.Join(w.Synonyms, ",")
+
+	return data
+}

@@ -3,6 +3,8 @@ package item
 import (
 	"errors"
 	"fmt"
+	"strings"
+
 	"thenewquill/internal/adventure/character"
 	"thenewquill/internal/adventure/loc"
 	"thenewquill/internal/adventure/vars"
@@ -127,4 +129,34 @@ func (i *Item) Destroy() {
 
 func (i *Item) SetCarriedBy(p *character.Character) {
 	i.CarriedBy = p
+}
+
+func (i Item) export() map[string]any {
+	data := map[string]any{
+		"label":       i.Label,
+		"noun":        i.Noun.Label,
+		"adjective":   i.Adjective.Label,
+		"description": i.Description,
+		"weight":      i.Weight,
+		"maxWeight":   i.MaxWeight,
+		"isContainer": i.IsContainer,
+		"isWearable":  i.IsWearable,
+		"isWorn":      i.IsWorn,
+		"isCreated":   i.IsCreated,
+		"isHeld":      i.IsHeld,
+		"location":    i.Location.Label,
+		"carriedBy":   i.CarriedBy.Label,
+	}
+
+	contentLabels := make([]string, 0)
+	for _, c := range i.Contents {
+		contentLabels = append(contentLabels, c.Label)
+	}
+	data["contents"] = strings.Join(contentLabels, ",")
+
+	for k, v := range i.Vars.GetAll() {
+		data["var:"+k] = v
+	}
+
+	return data
 }

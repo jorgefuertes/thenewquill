@@ -36,3 +36,15 @@ func NewHuman(label string) *Character {
 		Human:       true,
 	}
 }
+
+func (c *Character) export() map[string]any {
+	return map[string]any{
+		"label":       c.Label,
+		"name":        c.Name.Label,
+		"adjective":   c.Adjective.Label,
+		"description": c.Description,
+		"location":    c.Location.Label,
+		"created":     c.Created,
+		"human":       c.Human,
+	}
+}

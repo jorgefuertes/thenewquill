@@ -1,0 +1,22 @@
+SECTION CHARS
+
+/*
+	Label       string
+	Name        *words.Word
+	Adjective   *words.Word
+	Description string
+	Location    *loc.Location
+	Created     bool
+	Human       bool
+*/
+
+player: jugador _
+	is at frontera
+	is created
+	is human
+
+elfo: elfo _
+	desc: "Un elfo de la tierra"
+	is at bosque_1
+	is not created
+	is not human

@@ -3,6 +3,8 @@ package words
 import (
 	"slices"
 	"strings"
+
+	"thenewquill/internal/compiler/section"
 )
 
 type Store []*Word
@@ -105,4 +107,14 @@ func (s Store) FirstWithTypes(labelOrSynonym string, types ...WordType) *Word {
 
 func (s Store) Len() int {
 	return len(s)
+}
+
+func (s Store) Export() (section.Section, []map[string]any) {
+	words := make([]map[string]any, 0)
+
+	for _, w := range s {
+		words = append(words, w.export())
+	}
+
+	return section.Words, words
 }

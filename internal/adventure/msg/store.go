@@ -3,6 +3,8 @@ package msg
 import (
 	"errors"
 	"fmt"
+
+	"thenewquill/internal/compiler/section"
 )
 
 type Store []*Msg
@@ -84,4 +86,14 @@ func (s Store) Validate() error {
 	}
 
 	return nil
+}
+
+func (s Store) Export() (section.Section, []map[string]any) {
+	msgs := make([]map[string]any, 0)
+
+	for _, m := range s {
+		msgs = append(msgs, m.export())
+	}
+
+	return section.UserMsg, msgs
 }

@@ -1,6 +1,10 @@
 package character
 
-import "strings"
+import (
+	"strings"
+
+	"thenewquill/internal/compiler/section"
+)
 
 type Store []*Character
 
@@ -76,4 +80,14 @@ func (s *Store) Set(n *Character) error {
 	*s = append(*s, n)
 
 	return nil
+}
+
+func (s Store) Export() (section.Section, []map[string]any) {
+	chars := make([]map[string]any, 0)
+
+	for _, c := range s {
+		chars = append(chars, c.export())
+	}
+
+	return section.Chars, chars
 }

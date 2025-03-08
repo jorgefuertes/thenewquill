@@ -15,21 +15,26 @@ func TestMsgStore(t *testing.T) {
 	assert.Equal(t, 0, s.Len())
 
 	// I can add a message
-	s.Set(msg.New(msg.SystemMsg, "foo", "bar"))
+	err := s.Set(msg.New(msg.SystemMsg, "foo", "bar"))
+	require.NoError(t, err)
 	assert.Equal(t, 1, s.Len())
 
 	// I can add a message with plurals
-	s.Set(msg.New(msg.SystemMsg, "foos.zero", "There are no foos."))
+	err = s.Set(msg.New(msg.SystemMsg, "foos.zero", "There are no foos."))
+	require.NoError(t, err)
 	assert.Equal(t, 2, s.Len())
 
 	// I can add the remaining plurals
-	s.Set(msg.New(msg.SystemMsg, "foos.one", "There is one foo."))
+	err = s.Set(msg.New(msg.SystemMsg, "foos.one", "There is one foo."))
+	require.NoError(t, err)
 	assert.Equal(t, 2, s.Len())
-	s.Set(msg.New(msg.SystemMsg, "foos.many", "There are _ foos."))
+	err = s.Set(msg.New(msg.SystemMsg, "foos.many", "There are _ foos."))
+	require.NoError(t, err)
 	assert.Equal(t, 2, s.Len())
 
 	// I can add another message
-	s.Set(msg.New(msg.SystemMsg, "bar", "There is a bar."))
+	err = s.Set(msg.New(msg.SystemMsg, "bar", "There is a bar."))
+	require.NoError(t, err)
 	assert.Equal(t, 3, s.Len())
 
 	// I can get a plural string from a message

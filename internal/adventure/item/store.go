@@ -1,9 +1,11 @@
 package item
 
 import (
+	"errors"
 	"strings"
 
 	"thenewquill/internal/adventure/words"
+	"thenewquill/internal/compiler/section"
 )
 
 type Store []*Item
@@ -73,8 +75,19 @@ func (s *Store) Set(newItem *Item) error {
 func (s Store) Validate() error {
 	for _, item := range s {
 		if err := item.Validate(); err != nil {
-			return err
+			return errors.Join(ErrItemValidationFailed, err, errors.New(item.Label))
 		}
 	}
+
 	return nil
+}
+
+func (s Store) Export() (section.Section, []map[string]any) {
+	items := make([]map[string]any, 0)
+
+	for _, item := range s {
+		items = append(items, item.export())
+	}
+
+	return section.Items, items
 }
