@@ -1,9 +1,13 @@
 package character
 
 import (
+	"fmt"
+
 	"thenewquill/internal/adventure/loc"
 	"thenewquill/internal/adventure/vars"
 	"thenewquill/internal/adventure/words"
+	"thenewquill/internal/compiler/section"
+	"thenewquill/internal/util"
 )
 
 type Character struct {
@@ -29,19 +33,20 @@ func New(label string, name *words.Word, adjective *words.Word) *Character {
 	}
 }
 
-func (c Character) export() map[string]any {
-	data := map[string]any{
-		"label":       c.Label,
-		"name":        c.Name.Label,
-		"adjective":   c.Adjective.Label,
-		"description": c.Description,
-		"location":    c.Location.Label,
-		"created":     c.Created,
-		"human":       c.Human,
+func (c Character) export() []string {
+	data := []string{
+		util.ValueToString(section.Chars.ToInt()),
+		c.Label,
+		c.Name.Label,
+		c.Adjective.Label,
+		c.Description,
+		c.Location.Label,
+		util.ValueToString(c.Created),
+		util.ValueToString(c.Human),
 	}
 
 	for k, v := range c.Vars.GetAll() {
-		data["var:"+k] = v
+		data = append(data, fmt.Sprintf("var:%s=%s", k, util.ValueToString(v)))
 	}
 
 	return data

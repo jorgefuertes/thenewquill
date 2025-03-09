@@ -58,12 +58,12 @@ func (s Store) Len() int {
 	return len(s)
 }
 
-func (s Store) Export() (section.Section, []map[string]any) {
-	locations := make([]map[string]any, 0)
+func (s Store) Export() (section.Section, [][]string) {
+	data := make([][]string, 0)
 
 	for _, l := range s {
-		locations = append(locations, l.export())
+		data = append(data, l.export())
 	}
 
-	return section.Locs, locations
+	return section.Locs, data
 }

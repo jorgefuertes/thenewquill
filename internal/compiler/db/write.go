@@ -6,6 +6,7 @@ import (
 	"io"
 
 	"thenewquill/internal/compiler/section"
+	"thenewquill/internal/util"
 )
 
 const (
@@ -28,29 +29,10 @@ func (db *DB) AddReg(s section.Section, fields ...any) {
 	r := Register{Section: s, Fields: []string{}}
 
 	for _, f := range fields {
-		r.Fields = append(r.Fields, fieldToString(f))
+		r.Fields = append(r.Fields, util.ValueToString(f))
 	}
 
 	db.regs = append(db.regs, r)
-}
-
-func fieldToString(f any) string {
-	switch f.(type) {
-	case string:
-		return fmt.Sprintf("%s", f)
-	case int, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64:
-		return fmt.Sprintf("%d", f)
-	case float32, float64:
-		return fmt.Sprintf("%.4f", f)
-	case bool:
-		if f == true {
-			return "T"
-		} else {
-			return "F"
-		}
-	}
-
-	return fmt.Sprintf("%v", f)
 }
 
 func (db *DB) Write(w io.Writer) error {

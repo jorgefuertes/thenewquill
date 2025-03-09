@@ -9,18 +9,17 @@ import (
 )
 
 func TestNew(t *testing.T) {
-	m := msg.New(msg.SystemMsg, "foo", "bar")
-	assert.Equal(t, msg.SystemMsg, m.Type)
+	m := msg.New("foo", "bar")
 	assert.Equal(t, "foo", m.Label)
 	assert.Equal(t, "bar", m.Text)
 	assert.Equal(t, "bar", m.String())
 
-	m = msg.New(msg.SystemMsg, "foo", "This is a _ message.")
+	m = msg.New("foo", "This is a _ message.")
 	assert.Equal(t, "This is a test message.", m.Stringf("test"))
 	assert.Equal(t, "This is a 1 message.", m.Stringf(1))
 	assert.Equal(t, "This is a true message.", m.Stringf(true))
 
-	m = msg.New(msg.SystemMsg, "foo.zero", "There are no foos.")
+	m = msg.New("foo.zero", "There are no foos.")
 	assert.Equal(t, "", m.Text)
 	m.SetPluralTexts([3]string{"There are no foos.", "There is one foo.", "There are _ foos."})
 	assert.Equal(t, "There are no foos.", m.Stringf(0))
@@ -44,9 +43,9 @@ func TestNew(t *testing.T) {
 }
 
 func TestIsPluralized(t *testing.T) {
-	m := msg.New(msg.SystemMsg, "foo", "bar")
+	m := msg.New("foo", "bar")
 	assert.False(t, m.IsPluralized())
 
-	m = msg.New(msg.SystemMsg, "foo.zero", "There's no foos")
+	m = msg.New("foo.zero", "There's no foos")
 	assert.True(t, m.IsPluralized())
 }

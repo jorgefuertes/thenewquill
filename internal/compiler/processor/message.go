@@ -5,17 +5,11 @@ import (
 	"thenewquill/internal/adventure/msg"
 	cerr "thenewquill/internal/compiler/compiler_error"
 	"thenewquill/internal/compiler/line"
-	"thenewquill/internal/compiler/section"
 	"thenewquill/internal/compiler/status"
 )
 
 func readMessage(l line.Line, st *status.Status, a *adventure.Adventure) error {
-	t := msg.SystemMsg
-	if st.Section == section.UserMsg {
-		t = msg.UserMsg
-	}
-
-	m, ok := l.AsMsg(t)
+	m, ok := l.AsMsg()
 	if !ok {
 		return cerr.ErrWrongMessageDeclaration.WithSection(st.Section).WithStack(st.Stack).WithLine(l).
 			WithFilename(st.CurrentFilename())
@@ -30,7 +24,7 @@ func readMessage(l line.Line, st *status.Status, a *adventure.Adventure) error {
 
 	if m.IsPluralized() {
 		// recover it from the store
-		m = a.Messages.Get(m.Type, m.Label)
+		m = a.Messages.Get(m.Label)
 		if m == nil {
 			return cerr.ErrCannotRetrieveMessage.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
 				WithFilename(st.CurrentFilename())

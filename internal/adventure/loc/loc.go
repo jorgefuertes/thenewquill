@@ -54,11 +54,11 @@ func (l *Location) GetConn(word *words.Word) *Location {
 	return nil
 }
 
-func (l Location) export() map[string]any {
-	data := map[string]any{
-		"label":       l.Label,
-		"title":       l.Title,
-		"description": l.Description,
+func (l Location) export() []string {
+	data := []string{
+		l.Label,
+		l.Title,
+		l.Description,
 	}
 
 	conns := make([]string, 0)
@@ -66,7 +66,7 @@ func (l Location) export() map[string]any {
 		conns = append(conns, c.Word.Label+":"+c.To.Label)
 	}
 
-	data["conns"] = strings.Join(conns, ",")
+	data = append(data, strings.Join(conns, ","))
 
 	return data
 }

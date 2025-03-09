@@ -1,4 +1,4 @@
-SECTION SYSTEM MESSAGES
+SECTION MESSAGES
 
 dark:         "No se vé nada."
 loc-objects:  "Aquí hay"
@@ -31,3 +31,14 @@ overweight:   "_ pesa demasiado."
 and:  		  "y"
 err-save:     "Error al grabar el fichero _."
 filename: 	  "Nombre del fichero:"
+
+test:  "This is a test message."
+test2: "This is another \"test\" message."
+multiline: """
+	This is a message with a heredoc string.
+	Line 2.
+	Line 3.
+	Line 4 without carrige return \
+	at the end.
+		Line 5 and this line is indented.
+	"""

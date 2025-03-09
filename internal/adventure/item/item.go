@@ -9,6 +9,7 @@ import (
 	"thenewquill/internal/adventure/loc"
 	"thenewquill/internal/adventure/vars"
 	"thenewquill/internal/adventure/words"
+	"thenewquill/internal/util"
 )
 
 type Item struct {
@@ -131,31 +132,31 @@ func (i *Item) SetCarriedBy(p *character.Character) {
 	i.CarriedBy = p
 }
 
-func (i Item) export() map[string]any {
-	data := map[string]any{
-		"label":       i.Label,
-		"noun":        i.Noun.Label,
-		"adjective":   i.Adjective.Label,
-		"description": i.Description,
-		"weight":      i.Weight,
-		"maxWeight":   i.MaxWeight,
-		"isContainer": i.IsContainer,
-		"isWearable":  i.IsWearable,
-		"isWorn":      i.IsWorn,
-		"isCreated":   i.IsCreated,
-		"isHeld":      i.IsHeld,
-		"location":    i.Location.Label,
-		"carriedBy":   i.CarriedBy.Label,
+func (i Item) export() []string {
+	data := []string{
+		i.Label,
+		i.Noun.Label,
+		i.Adjective.Label,
+		i.Description,
+		util.ValueToString(i.Weight),
+		util.ValueToString(i.MaxWeight),
+		util.ValueToString(i.IsContainer),
+		util.ValueToString(i.IsWearable),
+		util.ValueToString(i.IsWorn),
+		util.ValueToString(i.IsCreated),
+		util.ValueToString(i.IsHeld),
+		i.Location.Label,
+		i.CarriedBy.Label,
 	}
 
 	contentLabels := make([]string, 0)
 	for _, c := range i.Contents {
 		contentLabels = append(contentLabels, c.Label)
 	}
-	data["contents"] = strings.Join(contentLabels, ",")
+	data = append(data, strings.Join(contentLabels, ","))
 
 	for k, v := range i.Vars.GetAll() {
-		data["var:"+k] = v
+		data = append(data, fmt.Sprintf("var:%s=%s", k, util.ValueToString(v)))
 	}
 
 	return data

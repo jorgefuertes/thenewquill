@@ -92,7 +92,7 @@ func (l Line) AsWord() (words.Word, bool) {
 	return w, true
 }
 
-func (l Line) AsMsg(t msg.MsgType) (*msg.Msg, bool) {
+func (l Line) AsMsg() (*msg.Msg, bool) {
 	if !rg.Msg.MatchString(l.text) {
 		return nil, false
 	}
@@ -102,7 +102,7 @@ func (l Line) AsMsg(t msg.MsgType) (*msg.Msg, bool) {
 		return nil, false
 	}
 
-	return msg.New(t, parts[1], parts[2]), true
+	return msg.New(parts[1], parts[2]), true
 }
 
 // AsLocationLabel returns the location label and true if it was found

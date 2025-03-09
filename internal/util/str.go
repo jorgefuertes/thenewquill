@@ -1,6 +1,9 @@
 package util
 
-import "strings"
+import (
+	"fmt"
+	"strings"
+)
 
 func LimitStr(s string, max int) string {
 	runes := []rune(s)
@@ -39,4 +42,23 @@ func RemoveSymbols(s string) string {
 	}
 
 	return output
+}
+
+func ValueToString(v any) string {
+	switch v.(type) {
+	case string:
+		return fmt.Sprintf("%s", v)
+	case int, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64:
+		return fmt.Sprintf("%d", v)
+	case float32, float64:
+		return fmt.Sprintf("%.4f", v)
+	case bool:
+		if v == true {
+			return "T"
+		} else {
+			return "F"
+		}
+	}
+
+	return fmt.Sprintf("%v", v)
 }

@@ -41,13 +41,15 @@ func (c *Config) Set(label Label, value string) error {
 	return nil
 }
 
-func (c Config) Export() (section.Section, map[string]any) {
-	return section.Config, map[string]any{
-		"title":       c.Title,
-		"author":      c.Author,
-		"description": c.Description,
-		"version":     c.Version,
-		"date":        c.Date,
-		"lang":        c.Lang,
+func (c Config) Export() (section.Section, [][]string) {
+	return section.Config, [][]string{
+		{
+			c.Title,
+			c.Author,
+			c.Description,
+			c.Version,
+			c.Date,
+			c.Lang.String(),
+		},
 	}
 }

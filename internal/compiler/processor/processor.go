@@ -15,7 +15,7 @@ func ProcessLine(l line.Line, st *status.Status, a *adventure.Adventure) error {
 		return readVar(l, st, a)
 	case section.Words:
 		return readWord(l, st, a)
-	case section.SysMsg, section.UserMsg:
+	case section.Messages:
 		return readMessage(l, st, a)
 	case section.Items:
 		return readItem(l, st, a)

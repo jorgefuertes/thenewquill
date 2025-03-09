@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"thenewquill/internal/compiler"
+	"thenewquill/internal/compiler/db"
 
 	"github.com/jedib0t/go-pretty/v6/table"
 	"github.com/urfave/cli/v2"
@@ -46,7 +47,7 @@ func main() {
 
 func compileAction(c *cli.Context) error {
 	inputFilename := c.String("input")
-	// outputFilename := c.String("output")
+	outputFilename := c.String("output")
 
 	start := time.Now()
 
@@ -55,23 +56,19 @@ func compileAction(c *cli.Context) error {
 		return err
 	}
 
-	// w := bytes.NewBuffer(nil)
-	// w.WriteString(fmt.Sprintf("%s\n(C)%s %s %s\n", a.Config.Title, a.Config.Date, a.Config.Author, a.Config.Version))
-	// w.WriteString(fmt.Sprintf("Compiled by The New Quill v%s, database v%s\n", compiler.VERSION, bin.DATABASE_VERSION))
-	// w.WriteString("#BEGIN#")
-	// zw := zlib.NewWriter(w)
-	// if err := bin.Export(a, zw); err != nil {
-	// 	return err
-	// }
-	// zw.Close()
-	// w.WriteString("#END#")
+	// binary db
+	binDB := db.NewDB()
+	binDB.From(a)
 
-	// hash := sha256.Sum256(w.Bytes())
-	// w.Write(hash[:])
+	f, err := os.Create(outputFilename)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
 
-	// if err := os.WriteFile(outputFilename, w.Bytes(), 0o644); err != nil {
-	// 	return err
-	// }
+	if err := binDB.Write(f); err != nil {
+		return err
+	}
 
 	elapsed := time.Since(start)
 

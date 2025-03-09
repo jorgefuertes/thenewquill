@@ -82,12 +82,12 @@ func (s Store) Validate() error {
 	return nil
 }
 
-func (s Store) Export() (section.Section, []map[string]any) {
-	items := make([]map[string]any, 0)
+func (s Store) Export() (section.Section, [][]string) {
+	data := make([][]string, 0)
 
 	for _, item := range s {
-		items = append(items, item.export())
+		data = append(data, item.export())
 	}
 
-	return section.Items, items
+	return section.Items, data
 }

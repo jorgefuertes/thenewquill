@@ -7,7 +7,6 @@ import (
 )
 
 type Msg struct {
-	Type    MsgType
 	Label   string
 	Text    string
 	Plurals [3]string
@@ -18,8 +17,8 @@ var (
 	pluralLabelRg = regexp.MustCompile(`^([\d\p{L}\-_]+)\.(zero|one|many)$`)
 )
 
-func New(t MsgType, label, text string) *Msg {
-	m := &Msg{Type: t, Label: label, Text: text}
+func New(label, text string) *Msg {
+	m := &Msg{Label: label, Text: text}
 
 	if !pluralLabelRg.MatchString(label) {
 		return m
@@ -107,13 +106,12 @@ func sprintf(format string, args ...any) string {
 	return format
 }
 
-func (m Msg) export() map[string]any {
-	return map[string]any{
-		"type":  int(m.Type),
-		"label": m.Label,
-		"text":  m.Text,
-		"zero":  m.Plurals[0],
-		"one":   m.Plurals[1],
-		"many":  m.Plurals[2],
+func (m Msg) export() []string {
+	return []string{
+		m.Label,
+		m.Text,
+		m.Plurals[0],
+		m.Plurals[1],
+		m.Plurals[2],
 	}
 }

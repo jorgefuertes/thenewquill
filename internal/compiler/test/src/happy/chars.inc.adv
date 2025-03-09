@@ -1,0 +1,6 @@
+SECTION CHARS
+
+player: jugador _
+	is at celda
+	is created
+	is human

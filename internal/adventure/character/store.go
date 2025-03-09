@@ -82,12 +82,12 @@ func (s *Store) Set(n *Character) error {
 	return nil
 }
 
-func (s Store) Export() (section.Section, []map[string]any) {
-	chars := make([]map[string]any, 0)
+func (s Store) Export() (section.Section, [][]string) {
+	data := make([][]string, 0)
 
 	for _, c := range s {
-		chars = append(chars, c.export())
+		data = append(data, c.export())
 	}
 
-	return section.Chars, chars
+	return section.Chars, data
 }

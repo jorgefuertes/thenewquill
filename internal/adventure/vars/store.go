@@ -7,6 +7,7 @@ import (
 	"sync"
 
 	"thenewquill/internal/compiler/section"
+	"thenewquill/internal/util"
 )
 
 type Store struct {
@@ -164,9 +165,15 @@ func (s *Store) GetString(key string) string {
 	}
 }
 
-func (s Store) Export() (section.Section, map[string]any) {
+func (s Store) Export() (section.Section, [][]string) {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 
-	return section.Vars, s.Regs
+	data := make([][]string, 0)
+
+	for k, v := range s.Regs {
+		data = append(data, []string{k, util.ValueToString(v)})
+	}
+
+	return section.Vars, data
 }

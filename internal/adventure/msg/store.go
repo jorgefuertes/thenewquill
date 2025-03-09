@@ -14,12 +14,12 @@ func NewStore() Store {
 }
 
 func (s *Store) Set(m *Msg) error {
-	if s.Exists(m.Type, m.Label) && !m.IsPluralized() {
+	if s.Exists(m.Label) && !m.IsPluralized() {
 		return ErrMsgAlreadyExists
 	}
 
-	if m.IsPluralized() && s.Exists(m.Type, m.Label) {
-		old := s.Get(m.Type, m.Label)
+	if m.IsPluralized() && s.Exists(m.Label) {
+		old := s.Get(m.Label)
 		if !old.IsPluralized() {
 			return ErrMsgAlreadyExists
 		}
@@ -44,9 +44,9 @@ func (s *Store) Set(m *Msg) error {
 	return nil
 }
 
-func (s Store) Exists(t MsgType, label string) bool {
+func (s Store) Exists(label string) bool {
 	for _, msg := range s {
-		if msg.Type == t && msg.Label == label {
+		if msg.Label == label {
 			return true
 		}
 	}
@@ -54,9 +54,9 @@ func (s Store) Exists(t MsgType, label string) bool {
 	return false
 }
 
-func (s Store) Get(t MsgType, label string) *Msg {
+func (s Store) Get(label string) *Msg {
 	for _, m := range s {
-		if m.Type == t && m.Label == label {
+		if m.Label == label {
 			return m
 		}
 	}
@@ -88,12 +88,12 @@ func (s Store) Validate() error {
 	return nil
 }
 
-func (s Store) Export() (section.Section, []map[string]any) {
-	msgs := make([]map[string]any, 0)
+func (s Store) Export() (section.Section, [][]string) {
+	data := make([][]string, 0)
 
 	for _, m := range s {
-		msgs = append(msgs, m.export())
+		data = append(data, m.export())
 	}
 
-	return section.UserMsg, msgs
+	return section.Messages, data
 }

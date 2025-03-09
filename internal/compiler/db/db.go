@@ -14,6 +14,18 @@ func NewDB() *DB {
 	}
 }
 
+func (db *DB) From(i Exportable) {
+	db.headers = append(db.headers, i.ExportHeaders()...)
+	for sec, rows := range i.Export() {
+		for _, row := range rows {
+			db.regs = append(db.regs, Register{
+				Section: sec,
+				Fields:  row,
+			})
+		}
+	}
+}
+
 func (db *DB) GetHeaders() []string {
 	return db.headers
 }
