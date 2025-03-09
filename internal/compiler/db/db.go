@@ -9,7 +9,7 @@ type DB struct {
 
 func NewDB() *DB {
 	return &DB{
-		headers: make([]string, 0),
+		headers: []string{"The New Quill Adventure Writing System"},
 		regs:    make([]Register, 0),
 	}
 }

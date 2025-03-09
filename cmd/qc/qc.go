@@ -1,5 +1,11 @@
 package main
 
+/*
+	The New Quill Compiler
+	Author: queru (github.com/queru) 2025
+	License: GPL-3.0
+*/
+
 import (
 	"fmt"
 	"os"
@@ -94,7 +100,13 @@ func compileAction(c *cli.Context) error {
 	fmt.Printf("> %s v%s\n> %s\n", a.Config.Title, a.Config.Version, a.Config.Author)
 	fmt.Printf("> Compiled in %dms\n", elapsed.Milliseconds())
 	fmt.Println("> Compiler: v" + compiler.VERSION)
-	// fmt.Printf("> %d bytes writen to \"%s\"\n", w.Len(), outputFilename)
+
+	stat, err := f.Stat()
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("> %d bytes writen to \"%s\"\n", stat.Size(), outputFilename)
 	fmt.Println()
 	t.Render()
 	fmt.Println()

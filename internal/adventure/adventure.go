@@ -13,6 +13,8 @@ import (
 	"thenewquill/internal/compiler/section"
 )
 
+const VERSION = 1
+
 type Adventure struct {
 	Config    config.Config
 	Vars      vars.Store
@@ -37,9 +39,9 @@ func New() *Adventure {
 
 func (a *Adventure) ExportHeaders() []string {
 	return []string{
+		fmt.Sprintf("Database version %03d with %03d sections", VERSION, len(a.Export())),
 		fmt.Sprintf("%s v%s", a.Config.Title, a.Config.Version),
 		fmt.Sprintf("By %s", a.Config.Author),
-		fmt.Sprintf("Sections: %d", len(a.Export())),
 	}
 }
 

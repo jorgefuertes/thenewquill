@@ -25,6 +25,7 @@ func New(label string, name *words.Word, adjective *words.Word) *Character {
 	return &Character{
 		Label:       label,
 		Name:        name,
+		Adjective:   adjective,
 		Description: "",
 		Location:    nil,
 		Created:     false,
@@ -34,13 +35,18 @@ func New(label string, name *words.Word, adjective *words.Word) *Character {
 }
 
 func (c Character) export() []string {
+	locationLabel := ""
+	if c.Location != nil {
+		locationLabel = c.Location.Label
+	}
+
 	data := []string{
 		util.ValueToString(section.Chars.ToInt()),
 		c.Label,
 		c.Name.Label,
 		c.Adjective.Label,
 		c.Description,
-		c.Location.Label,
+		locationLabel,
 		util.ValueToString(c.Created),
 		util.ValueToString(c.Human),
 	}

@@ -77,7 +77,8 @@ func (db *DB) Write(w io.Writer) error {
 }
 
 func writeReg(zw *zlib.Writer, r Register) error {
-	_, err := zw.Write([]byte(fmt.Sprintf("%d", r.Section)))
+	fmt.Printf("%d|", r.Section.ToInt())
+	_, err := zw.Write([]byte(fmt.Sprintf("%d", r.Section.ToInt())))
 	if err != nil {
 		return err
 	}
@@ -88,11 +89,13 @@ func writeReg(zw *zlib.Writer, r Register) error {
 	}
 
 	for _, f := range r.Fields {
+		fmt.Print(f)
 		_, err := zw.Write([]byte(f))
 		if err != nil {
 			return err
 		}
 
+		fmt.Print("|")
 		_, err = zw.Write([]byte{fieldSep})
 		if err != nil {
 			return err
@@ -102,6 +105,7 @@ func writeReg(zw *zlib.Writer, r Register) error {
 	if _, err := zw.Write([]byte{regSep}); err != nil {
 		return err
 	}
+	fmt.Println()
 
 	return nil
 }

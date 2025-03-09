@@ -133,6 +133,21 @@ func (i *Item) SetCarriedBy(p *character.Character) {
 }
 
 func (i Item) export() []string {
+	locationLabel := ""
+	if i.Location != nil {
+		locationLabel = i.Location.Label
+	}
+
+	carriedByLabel := ""
+	if i.CarriedBy != nil {
+		carriedByLabel = i.CarriedBy.Label
+	}
+
+	contentLabels := make([]string, 0)
+	for _, c := range i.Contents {
+		contentLabels = append(contentLabels, c.Label)
+	}
+
 	data := []string{
 		i.Label,
 		i.Noun.Label,
@@ -145,16 +160,12 @@ func (i Item) export() []string {
 		util.ValueToString(i.IsWorn),
 		util.ValueToString(i.IsCreated),
 		util.ValueToString(i.IsHeld),
-		i.Location.Label,
-		i.CarriedBy.Label,
+		locationLabel,
+		carriedByLabel,
+		strings.Join(contentLabels, ","),
 	}
 
-	contentLabels := make([]string, 0)
-	for _, c := range i.Contents {
-		contentLabels = append(contentLabels, c.Label)
-	}
-	data = append(data, strings.Join(contentLabels, ","))
-
+	// add vars at the end
 	for k, v := range i.Vars.GetAll() {
 		data = append(data, fmt.Sprintf("var:%s=%s", k, util.ValueToString(v)))
 	}

@@ -20,7 +20,7 @@ lang:    "ES"
 
 INCLUDE "vars.inc.adv"
 INCLUDE "words.inc.adv"
-INCLUDE "sysmsg.inc.adv"
+INCLUDE "msgs.inc.adv"
 INCLUDE "locs.inc.adv"
 INCLUDE "items.inc.adv"
 INCLUDE "chars.inc.adv"
