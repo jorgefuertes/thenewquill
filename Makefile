@@ -1,17 +1,20 @@
-.PHONY: test tmp
+.PHONY: test tmp dist
 
-compile-happy: tmp
-	@go run cmd/qc/qc.go c -i internal/compiler/test/src/happy/test.adv -o tmp/happy-test.db
+dist: lint test
+	@rm -rf dist
+	@mkdir -p dist
+	make compiler
+	make runtime
 
-compile-ao: tmp
-	@go run cmd/qc/qc.go c -i internal/compiler/test/src/ao/ao.adv -o tmp/ao.db
+compiler:
+	@go build -o dist/qc cmd/compiler/qc.go
 
-tmp:
-	@rm -Rf tmp
+runtime:
+	@go build -o dist/quill cmd/runtime/quill.go
+
+compile-ao:
 	@mkdir -p tmp
-
-run:
-	@go run .
+	@go run cmd/compiler/qc.go c -i internal/compiler/test/src/ao/ao.adv -o tmp/ao.db
 
 test:
 	@go test ./...

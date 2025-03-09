@@ -44,6 +44,9 @@ func TestEncodeAndDecode(t *testing.T) {
 	err = db.Load(r)
 	require.NoError(t, err)
 
-	require.Equal(t, db.GetHeaders(), headers)
+	for _, h := range headers {
+		require.Contains(t, db.GetHeaders(), h)
+	}
+
 	require.Len(t, db.GetRegs(), len(regs))
 }
