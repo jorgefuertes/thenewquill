@@ -20,9 +20,9 @@ import (
 
 func main() {
 	app := &cli.App{
-		Name:     "quill",
-		HelpName: "quill",
-		Usage:    "The New Quill compiler",
+		Name:     "qc",
+		HelpName: "qc",
+		Usage:    "The New Quill Compiler",
 		Commands: []*cli.Command{
 			{
 				Name:    "compile",
@@ -63,8 +63,8 @@ func compileAction(c *cli.Context) error {
 	}
 
 	// binary db
-	binDB := db.NewDB()
-	binDB.From(a)
+	d := db.NewDB()
+	a.Export(d)
 
 	f, err := os.Create(outputFilename)
 	if err != nil {
@@ -72,7 +72,7 @@ func compileAction(c *cli.Context) error {
 	}
 	defer f.Close()
 
-	if err := binDB.Write(f); err != nil {
+	if err := d.Write(f); err != nil {
 		return err
 	}
 

@@ -1,7 +1,5 @@
 package config
 
-import "thenewquill/internal/compiler/section"
-
 type Config struct {
 	Title       string
 	Author      string
@@ -39,17 +37,4 @@ func (c *Config) Set(label Label, value string) error {
 	}
 
 	return nil
-}
-
-func (c Config) Export() (section.Section, [][]string) {
-	return section.Config, [][]string{
-		{
-			c.Title,
-			c.Author,
-			c.Description,
-			c.Version,
-			c.Date,
-			c.Lang.String(),
-		},
-	}
 }

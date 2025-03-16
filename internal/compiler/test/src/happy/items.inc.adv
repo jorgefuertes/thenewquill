@@ -2,16 +2,18 @@ SECTION ITEMS
 
 ant-on: antorcha encendida
     desc: "Una antorcha."
+    on = false
 
 ant-off: antorcha apagada
     desc: "Una antorcha apagada."
     is created
-    is in tumba
+    is at tumba
 
 petaca: petaca _
     desc: "Una petaca."
-    is in cuartelillo
+    is at cuartelillo
     is container
+    is in bolsa
 
 llave1: llave dorada
     desc: "Una llave dorada."
@@ -34,3 +36,9 @@ denario: denario _
 ropa: ropa _
     desc: "Unas ropas de romano."
     is wearable
+    is in bolsa
+
+bolsa: bolsa _
+    desc: "Una bolsa."
+    is container
+

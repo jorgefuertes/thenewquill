@@ -5,6 +5,7 @@ import (
 )
 
 var (
+	Label          = regexp.MustCompile(`^([\d\p{L}\-_]+)$`)
 	InlineComment  = regexp.MustCompile(`(//.*|/\*.*)$`)
 	OneLinecomment = regexp.MustCompile(`^\s*(/\*.*\*/|//.*)\s*$`)
 	CommentBegin   = regexp.MustCompile(`^\s*/\*`)
@@ -31,7 +32,8 @@ var (
 		`^\s*(exits|conns|connections)\s*:\s*(\s*([\d\p{L}\-_]+\s+[\d\p{L}\-_]+\s*,?))+.?$`,
 	)
 	LabelNounAdjDeclaration = regexp.MustCompile(`^\s*([\d\p{L}\-_]+):\s+([\d\p{L}\-_]+)\s+([\d\p{L}\-_]+)\s*$`)
-	IsAtLocation            = regexp.MustCompile(`^\s*is\s+(?:in|at)\s+([\d\p{L}\-_]+)\s*$`)
-	ItemWeight              = regexp.MustCompile(`^\s*has\s+weight\s+(\d+)\s*$`)
-	ItemMaxWeight           = regexp.MustCompile(`^\s*has\s+max\s+weight\s+(\d+)\s*$`)
 )
+
+func IsValidLabel(label string) bool {
+	return Label.MatchString(label)
+}

@@ -1,6 +1,8 @@
 package compiler
 
 var (
+	ErrInvalidLabel                  = newCompilerError("invalid label")
+	ErrDuplicatedLabel               = newCompilerError("duplicated label")
 	ErrOutOfSection                  = newCompilerError("line outside of section")
 	ErrUnclosedComment               = newCompilerError("unclosed comment")
 	ErrUnclosedString                = newCompilerError("unclosed string")
@@ -16,11 +18,9 @@ var (
 	ErrUnresolvedLabel               = newCompilerError("unresolved label")
 	ErrRemainingUnresolvedLabels     = newCompilerError("remaining unresolved labels")
 	ErrWrongItemDeclaration          = newCompilerError("wrong item declaration")
-	ErrDuplicatedItemLabel           = newCompilerError("duplicated item label")
 	ErrWrongItemWeight               = newCompilerError("wrong item weight")
 	ErrCannotRetrieveMessage         = newCompilerError("cannot retrieve message from store")
 	ErrWrongConfigDeclaration        = newCompilerError("wrong config declaration")
 	ErrWrongCharDeclaration          = newCompilerError("wrong character declaration")
-	ErrDuplicatedCharLabel           = newCompilerError("duplicated item label")
 	ErrOnlyOneHuman                  = newCompilerError("only one human character allowed")
 )

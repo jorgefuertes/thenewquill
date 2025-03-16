@@ -129,4 +129,45 @@ func TestCompilerHappyPath(t *testing.T) {
 			})
 		}
 	})
+
+	t.Run("Characters", func(t *testing.T) {
+		testCases := []struct {
+			label         string
+			nameLabel     string
+			adjLabel      string
+			desc          string
+			created       bool
+			human         bool
+			locationLabel string
+			vars          map[string]any
+		}{
+			{"player", "jugador", "_", "Eres un pedazo de jugador", true, true, "celda", map[string]any{"health": 100}},
+			{
+				"enano",
+				"enano",
+				"_",
+				"Un enano cabreado",
+				true,
+				false,
+				"cuartelillo",
+				map[string]any{"patience": 255, "death": false},
+			},
+			{"elfo", "elfo", "_", "Un elfo llorica", false, false, "gradas", map[string]any{"hidden": true}},
+		}
+
+		for _, tc := range testCases {
+			t.Run(tc.label, func(t *testing.T) {
+				c := a.Chars.Get(tc.label)
+				require.NotNil(t, c)
+				assert.Equal(t, tc.label, c.Label)
+				assert.Equal(t, tc.nameLabel, c.Name.Label)
+				assert.Equal(t, tc.adjLabel, c.Adjective.Label)
+				assert.Equal(t, tc.desc, c.Description)
+				assert.Equal(t, tc.created, c.Created)
+				assert.Equal(t, tc.human, c.Human)
+				assert.Equal(t, tc.locationLabel, c.Location.Label)
+				assert.Equal(t, tc.vars, c.Vars.GetAll())
+			})
+		}
+	})
 }

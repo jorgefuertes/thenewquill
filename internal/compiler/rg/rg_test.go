@@ -167,24 +167,6 @@ func TestRegexps(t *testing.T) {
 			shouldMatch: true,
 		},
 		{
-			name:        "item location",
-			text:        `is in loc-004`,
-			rg:          rg.IsAtLocation,
-			shouldMatch: true,
-		},
-		{
-			name:        "item weight",
-			text:        `has weight 10`,
-			rg:          rg.ItemWeight,
-			shouldMatch: true,
-		},
-		{
-			name:        "item max weight",
-			text:        `has max weight 250`,
-			rg:          rg.ItemMaxWeight,
-			shouldMatch: true,
-		},
-		{
 			name:        "pluralized message",
 			text:        `foo.zero: "No foos."`,
 			rg:          rg.Msg,

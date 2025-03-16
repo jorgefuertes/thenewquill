@@ -20,6 +20,8 @@ verb: save, grabar, graba, grabo, salvar, salva, salvo
 verb: ram, ramsave
 
 noun: jugador
+noun: enano
+noun: elfo
 noun: norte, n, adelante
 noun: sur, s, atrás
 noun: este, e
@@ -36,6 +38,7 @@ noun: cinturón
 noun: petaca, botella
 noun: talismán, amuleto
 noun: ropa, vestido
+noun: bolsa, saco, petate
 
 pronoun: el, la, los, las
 

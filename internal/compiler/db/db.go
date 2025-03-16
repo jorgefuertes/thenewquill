@@ -1,5 +1,9 @@
 package db
 
+import (
+	"thenewquill/internal/compiler/section"
+)
+
 const VERSION = "1"
 
 type DB struct {
@@ -14,16 +18,8 @@ func NewDB() *DB {
 	}
 }
 
-func (db *DB) From(i Exportable) {
-	db.headers = append(db.headers, i.ExportHeaders()...)
-	for sec, rows := range i.Export() {
-		for _, row := range rows {
-			db.regs = append(db.regs, Register{
-				Section: sec,
-				Fields:  row,
-			})
-		}
-	}
+func (d *DB) Add(r Register) {
+	d.regs = append(d.regs, r)
 }
 
 func (db *DB) GetHeaders() []string {
@@ -32,4 +28,15 @@ func (db *DB) GetHeaders() []string {
 
 func (db *DB) GetRegs() []Register {
 	return db.regs
+}
+
+func (db *DB) GetRegsForSection(section section.Section) []Register {
+	var regs []Register
+	for _, r := range db.regs {
+		if r.Section == section {
+			regs = append(regs, r)
+		}
+	}
+
+	return regs
 }

@@ -2,6 +2,7 @@ package processor
 
 import (
 	"strconv"
+	"strings"
 
 	"thenewquill/internal/adventure"
 	"thenewquill/internal/adventure/item"
@@ -31,39 +32,42 @@ func readItem(l line.Line, st *status.Status, a *adventure.Adventure) error {
 
 		o := l.OptimizedText()
 
-		switch o {
-		case "is wearable":
+		if o == "is wearable" {
 			i.IsWearable = true
 
 			return nil
-		case "is worn":
+		}
+
+		if o == "is worn" {
 			i.IsWearable = true
 			i.Wear()
 
 			return nil
-		case "is created":
+		}
+
+		if o == "is created" {
 			i.Create()
 
 			return nil
-		case "is container":
+		}
+
+		if o == "is container" {
 			i.IsContainer = true
 
 			return nil
-		case "is held":
-			i.Hold()
-
-			return nil
-		case "is destroyed", "is not created", "is not held", "is not worn", "is not wearable":
-			return nil
 		}
 
-		if rg.IsAtLocation.MatchString(o) {
-			m := rg.IsAtLocation.FindStringSubmatch(o)
+		if strings.HasPrefix(o, "is at ") {
+			locLabel := strings.TrimPrefix(o, "is at ")
+			if !rg.IsValidLabel(locLabel) {
+				return cerr.ErrInvalidLabel.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
+					WithFilename(st.CurrentFilename())
+			}
 
-			inLoc := a.Locations.Get(m[1])
+			inLoc := a.Locations.Get(locLabel)
 			if inLoc == nil {
-				inLoc = a.Locations.Set(m[1], loc.Undefined, loc.Undefined)
-				st.SetUndef(m[1], section.Locs, l)
+				inLoc = a.Locations.Set(locLabel, loc.Undefined, loc.Undefined)
+				st.SetUndef(locLabel, section.Locs, l)
 			}
 
 			i.Location = inLoc
@@ -71,11 +75,37 @@ func readItem(l line.Line, st *status.Status, a *adventure.Adventure) error {
 			return nil
 		}
 
-		if rg.ItemWeight.MatchString(o) {
-			m := rg.ItemWeight.FindStringSubmatch(o)
-			w, err := strconv.Atoi(m[1])
+		if strings.HasPrefix(o, "is in ") {
+			containerLabel := strings.TrimPrefix(o, "is in ")
+			if !rg.IsValidLabel(containerLabel) {
+				return cerr.ErrInvalidLabel.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
+					WithFilename(st.CurrentFilename())
+			}
+
+			container := a.Items.Get(containerLabel)
+			if container == nil {
+				container := item.New(containerLabel, nil, nil)
+
+				if err := a.Items.Set(container); err != nil {
+					return cerr.ErrWrongItemDeclaration.WithStack(st.Stack).
+						WithSection(st.Section).
+						AddErr(err).
+						WithLine(l).
+						WithFilename(st.CurrentFilename())
+				}
+
+				st.SetUndef(containerLabel, section.Items, l)
+			}
+
+			i.Inside = container
+
+			return nil
+		}
+
+		if strings.HasPrefix(o, "has weight ") {
+			w, err := strconv.Atoi(strings.TrimPrefix(o, "has weight "))
 			if err != nil {
-				return cerr.ErrWrongItemWeight.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
+				return cerr.ErrWrongItemDeclaration.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
 					WithFilename(st.CurrentFilename())
 			}
 
@@ -84,11 +114,10 @@ func readItem(l line.Line, st *status.Status, a *adventure.Adventure) error {
 			return nil
 		}
 
-		if rg.ItemMaxWeight.MatchString(o) {
-			m := rg.ItemMaxWeight.FindStringSubmatch(o)
-			w, err := strconv.Atoi(m[1])
+		if strings.HasPrefix(o, "has max weight ") {
+			w, err := strconv.Atoi(strings.TrimPrefix(o, "has max weight "))
 			if err != nil {
-				return cerr.ErrWrongItemWeight.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
+				return cerr.ErrWrongItemDeclaration.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
 					WithFilename(st.CurrentFilename())
 			}
 
@@ -97,9 +126,16 @@ func readItem(l line.Line, st *status.Status, a *adventure.Adventure) error {
 			return nil
 		}
 
+		// vars
 		if rg.Var.MatchString(o) {
 			m := rg.Var.FindStringSubmatch(o)
-			i.Vars.Set(m[1], m[2])
+
+			if !rg.IsValidLabel(m[1]) {
+				return cerr.ErrInvalidLabel.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
+					WithFilename(st.CurrentFilename())
+			}
+
+			i.Vars.SetFromString(m[1], m[2])
 
 			return nil
 		}
@@ -107,8 +143,8 @@ func readItem(l line.Line, st *status.Status, a *adventure.Adventure) error {
 
 	label, noun, adj, ok := l.AsLabelNounAdjDeclaration()
 	if ok {
-		if a.Items.Exists(label) {
-			return cerr.ErrDuplicatedItemLabel.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
+		if !rg.IsValidLabel(label) {
+			return cerr.ErrInvalidLabel.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
 				WithFilename(st.CurrentFilename())
 		}
 

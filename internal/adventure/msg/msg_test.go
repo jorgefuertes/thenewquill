@@ -21,7 +21,7 @@ func TestNew(t *testing.T) {
 
 	m = msg.New("foo.zero", "There are no foos.")
 	assert.Equal(t, "", m.Text)
-	m.SetPluralTexts([3]string{"There are no foos.", "There is one foo.", "There are _ foos."})
+	m.SetPlurals([3]string{"There are no foos.", "There is one foo.", "There are _ foos."})
 	assert.Equal(t, "There are no foos.", m.Stringf(0))
 	assert.Equal(t, "There is one foo.", m.Stringf(1))
 	assert.Equal(t, "There are 2 foos.", m.Stringf(2))

@@ -17,7 +17,7 @@ func New(label string, t WordType, synonyms ...string) *Word {
 	return &Word{Label: label, Type: t, Synonyms: synonyms}
 }
 
-func (w Word) String() string {
+func (w Word) GetLabel() string {
 	return w.Label
 }
 
@@ -56,14 +56,4 @@ func (w Word) IsExactlyEqual(w2 Word) bool {
 
 func (w Word) IsEqual(w2 *Word) bool {
 	return w.Label == w2.Label && w.Type == w2.Type
-}
-
-func (w Word) export() []string {
-	data := []string{
-		w.Label,
-		util.ValueToString(int(w.Type)),
-		strings.Join(w.Synonyms, ","),
-	}
-
-	return data
 }

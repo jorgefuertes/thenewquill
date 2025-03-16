@@ -6,6 +6,7 @@ import (
 	"thenewquill/internal/adventure/words"
 	cerr "thenewquill/internal/compiler/compiler_error"
 	"thenewquill/internal/compiler/line"
+	"thenewquill/internal/compiler/rg"
 	"thenewquill/internal/compiler/section"
 	"thenewquill/internal/compiler/status"
 )
@@ -26,6 +27,22 @@ func readLocation(l line.Line, st *status.Status, a *adventure.Adventure) error 
 	}
 
 	currentLocation := a.Locations.Get(st.CurrentLabel)
+
+	o := l.OptimizedText()
+
+	// vars
+	if rg.Var.MatchString(o) {
+		m := rg.Var.FindStringSubmatch(o)
+
+		if !rg.IsValidLabel(m[1]) {
+			return cerr.ErrInvalidLabel.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
+				WithFilename(st.CurrentFilename())
+		}
+
+		currentLocation.Vars.SetFromString(m[1], m[2])
+
+		return nil
+	}
 
 	desc, ok := l.AsLocationDescription()
 	if ok {

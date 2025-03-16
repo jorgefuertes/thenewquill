@@ -37,7 +37,11 @@ func New(label, text string) *Msg {
 	return m
 }
 
-func (m *Msg) SetPluralTexts(texts [3]string) {
+func (m *Msg) GetLabel() string {
+	return m.Label
+}
+
+func (m *Msg) SetPlurals(texts [3]string) {
 	m.Plurals = texts
 }
 
@@ -104,14 +108,4 @@ func sprintf(format string, args ...any) string {
 	}
 
 	return format
-}
-
-func (m Msg) export() []string {
-	return []string{
-		m.Label,
-		m.Text,
-		m.Plurals[0],
-		m.Plurals[1],
-		m.Plurals[2],
-	}
 }

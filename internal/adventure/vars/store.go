@@ -6,8 +6,7 @@ import (
 	"strconv"
 	"sync"
 
-	"thenewquill/internal/compiler/section"
-	"thenewquill/internal/util"
+	"thenewquill/internal/compiler/rg"
 )
 
 type Store struct {
@@ -31,6 +30,31 @@ func (s *Store) Set(key string, value any) {
 	defer s.lock.Unlock()
 
 	s.Regs[key] = value
+}
+
+func (s *Store) SetFromString(key string, valueStr string) {
+	if rg.Float.MatchString(valueStr) {
+		value, _ := strconv.ParseFloat(valueStr, 64)
+		s.Set(key, value)
+
+		return
+	}
+
+	if rg.Int.MatchString(valueStr) {
+		value, _ := strconv.ParseInt(valueStr, 10, 64)
+		s.Set(key, int(value))
+
+		return
+	}
+
+	if rg.Bool.MatchString(valueStr) {
+		value, _ := strconv.ParseBool(valueStr)
+		s.Set(key, value)
+
+		return
+	}
+
+	s.Set(key, valueStr)
 }
 
 func (s *Store) SetAll(regs map[string]any) {
@@ -163,17 +187,4 @@ func (s *Store) GetString(key string) string {
 	default:
 		return fmt.Sprintf("%v", v)
 	}
-}
-
-func (s Store) Export() (section.Section, [][]string) {
-	s.lock.Lock()
-	defer s.lock.Unlock()
-
-	data := make([][]string, 0)
-
-	for k, v := range s.Regs {
-		data = append(data, []string{k, util.ValueToString(v)})
-	}
-
-	return section.Vars, data
 }

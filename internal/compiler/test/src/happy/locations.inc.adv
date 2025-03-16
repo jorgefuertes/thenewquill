@@ -67,10 +67,12 @@ gradas:
 	desc: "Desde las seis filas de escalinatas del Coliseo, los espectadores tienen una buena vista de los dramas que \
 	ocurren en la arena."
 	exits: salir coliseo, sur subasta
+	people = 500
 
 subasta:
 	title: "Subasta"
 	desc: "La sala de subastas de esclavos es un triste lugar que huele a sudor, miseria y doliente humanidad."
+	running = true
 
 templo:
 	title: "Templo"
@@ -86,6 +88,7 @@ via:
 	title: "Via Appia"
 	desc: "La Via Appia es la más importante calzada de comunicación entre la Ciudad Eterna y sus provincias."
 	exits: norte vestales, sur tumba
+	open = true
 
 tumba:
 	title: "Tumba"

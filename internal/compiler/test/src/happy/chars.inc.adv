@@ -1,6 +1,20 @@
 SECTION CHARS
 
 player: jugador _
+	desc: "Eres un pedazo de jugador"
 	is at celda
 	is created
 	is human
+	health = 100
+
+enano: enano _
+	desc: "Un enano cabreado"
+	is at cuartelillo
+	is created
+	patience = 255
+	death = false
+
+elfo: elfo _
+	desc: "Un elfo llorica"
+	is at gradas
+	hidden = true

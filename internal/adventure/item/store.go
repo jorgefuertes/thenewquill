@@ -3,23 +3,48 @@ package item
 import (
 	"errors"
 	"strings"
+	"sync"
 
 	"thenewquill/internal/adventure/words"
-	"thenewquill/internal/compiler/section"
 )
 
-type Store []*Item
+type Store struct {
+	lock  *sync.Mutex
+	items []*Item
+}
 
 func NewStore() Store {
-	return Store{}
+	return Store{
+		lock:  &sync.Mutex{},
+		items: make([]*Item, 0),
+	}
 }
 
-func (s Store) Len() int {
-	return len(s)
+func (s *Store) Len() int {
+	s.lock.Lock()
+	defer s.lock.Unlock()
+
+	return len(s.items)
 }
 
-func (s Store) Get(label string) *Item {
-	for _, item := range s {
+func (s *Store) getIndex(label string) int {
+	s.lock.Lock()
+	defer s.lock.Unlock()
+
+	for i, item := range s.items {
+		if item.Label == label {
+			return i
+		}
+	}
+
+	return -1
+}
+
+func (s *Store) Get(label string) *Item {
+	s.lock.Lock()
+	defer s.lock.Unlock()
+
+	for _, item := range s.items {
 		if item.Label == label {
 			return item
 		}
@@ -28,18 +53,17 @@ func (s Store) Get(label string) *Item {
 	return nil
 }
 
-func (s Store) Exists(label string) bool {
-	for _, item := range s {
-		if item.Label == label {
-			return true
-		}
-	}
+func (s *Store) Exists(label string) bool {
+	i := s.getIndex(label)
 
-	return false
+	return i > -1
 }
 
 func (s Store) ExistsNounAdj(noun, adjective *words.Word) bool {
-	for _, item := range s {
+	s.lock.Lock()
+	defer s.lock.Unlock()
+
+	for _, item := range s.items {
 		if item.Noun.IsEqual(noun) && item.Adjective.IsEqual(adjective) {
 			return true
 		}
@@ -48,46 +72,57 @@ func (s Store) ExistsNounAdj(noun, adjective *words.Word) bool {
 	return false
 }
 
+// Set a new item, if it already exists, it will be replaced
 func (s *Store) Set(newItem *Item) error {
-	if s.Exists(newItem.Label) {
-		return ErrDuplicateLabel
-	}
-
 	if newItem.Label == "" {
 		return ErrEmptyLabel
 	}
 
 	newItem.Label = strings.ToLower(newItem.Label)
 
-	if newItem.Noun == nil {
-		return ErrNounCannotBeNil
+	idx := s.getIndex(newItem.Label)
+	if idx > -1 {
+		s.lock.Lock()
+		defer s.lock.Unlock()
+
+		s.items[idx] = newItem
+
+		return nil
 	}
 
-	if newItem.Noun.Label == "_" {
-		return ErrNounCannotBeUnderscore
-	}
+	s.lock.Lock()
+	defer s.lock.Unlock()
 
-	*s = append(*s, newItem)
+	s.items = append(s.items, newItem)
 
 	return nil
 }
 
-func (s Store) Validate() error {
-	for _, item := range s {
-		if err := item.Validate(); err != nil {
+func (s *Store) Validate() error {
+	s.lock.Lock()
+	defer s.lock.Unlock()
+
+	for _, item := range s.items {
+		if err := item.validate(); err != nil {
 			return errors.Join(ErrItemValidationFailed, err, errors.New(item.Label))
 		}
 	}
 
-	return nil
-}
+	for i, item := range s.items {
+		for i2, item2 := range s.items {
+			if i == i2 {
+				continue
+			}
 
-func (s Store) Export() (section.Section, [][]string) {
-	data := make([][]string, 0)
+			if i != i2 && item.Label == item2.Label {
+				return errors.Join(ErrDuplicatedItemLabel, errors.New(item.Label))
+			}
 
-	for _, item := range s {
-		data = append(data, item.export())
+			if item.Noun.Label == item2.Noun.Label && item.Adjective.Label == item2.Adjective.Label {
+				return errors.Join(ErrDuplicatedNounAdj, errors.New(item.Label))
+			}
+		}
 	}
 
-	return section.Items, data
+	return nil
 }

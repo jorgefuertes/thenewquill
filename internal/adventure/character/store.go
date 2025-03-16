@@ -2,19 +2,28 @@ package character
 
 import (
 	"strings"
-
-	"thenewquill/internal/compiler/section"
+	"sync"
 )
 
-type Store []*Character
+type Store struct {
+	lock  *sync.Mutex
+	chars []*Character
+}
+
+func NewStore() Store {
+	return Store{lock: &sync.Mutex{}, chars: make([]*Character, 0)}
+}
 
 func (s Store) Validate() error {
 	if s.GetHuman() == nil {
 		return ErrNoHuman
 	}
 
+	s.lock.Lock()
+	defer s.lock.Unlock()
+
 	humans := 0
-	for _, p := range s {
+	for _, p := range s.chars {
 		if p.Human {
 			humans++
 		}
@@ -27,18 +36,20 @@ func (s Store) Validate() error {
 	return nil
 }
 
-func NewStore() Store {
-	return Store{}
-}
-
 func (s Store) Len() int {
-	return len(s)
+	s.lock.Lock()
+	defer s.lock.Unlock()
+
+	return len(s.chars)
 }
 
 func (s Store) Get(label string) *Character {
+	s.lock.Lock()
+	defer s.lock.Unlock()
+
 	label = strings.ToLower(label)
 
-	for _, p := range s {
+	for _, p := range s.chars {
 		if p.Label == label {
 			return p
 		}
@@ -48,9 +59,12 @@ func (s Store) Get(label string) *Character {
 }
 
 func (s Store) Exists(label string) bool {
+	s.lock.Lock()
+	defer s.lock.Unlock()
+
 	label = strings.ToLower(label)
 
-	for _, p := range s {
+	for _, p := range s.chars {
 		if p.Label == label {
 			return true
 		}
@@ -60,7 +74,10 @@ func (s Store) Exists(label string) bool {
 }
 
 func (s Store) GetHuman() *Character {
-	for _, p := range s {
+	s.lock.Lock()
+	defer s.lock.Unlock()
+
+	for _, p := range s.chars {
 		if p.Human {
 			return p
 		}
@@ -69,25 +86,40 @@ func (s Store) GetHuman() *Character {
 	return nil
 }
 
-// Set a new npc
-func (s *Store) Set(n *Character) error {
-	n.Label = strings.ToLower(n.Label)
+func (s *Store) getIndex(label string) int {
+	s.lock.Lock()
+	defer s.lock.Unlock()
 
-	if s.Exists(n.Label) {
-		return ErrDuplicatedPlayerLabel
+	label = strings.ToLower(label)
+
+	for i, p := range s.chars {
+		if p.Label == label {
+			return i
+		}
 	}
 
-	*s = append(*s, n)
-
-	return nil
+	return -1
 }
 
-func (s Store) Export() (section.Section, [][]string) {
-	data := make([][]string, 0)
+// Set a new npc, if it already exists, it will be replaced
+func (s *Store) Set(c *Character) error {
+	c.Label = strings.ToLower(c.Label)
 
-	for _, c := range s {
-		data = append(data, c.export())
+	if s.Exists(c.Label) {
+		i := s.getIndex(c.Label)
+
+		s.lock.Lock()
+		defer s.lock.Unlock()
+
+		s.chars[i] = c
+
+		return nil
 	}
 
-	return section.Chars, data
+	s.lock.Lock()
+	defer s.lock.Unlock()
+
+	s.chars = append(s.chars, c)
+
+	return nil
 }

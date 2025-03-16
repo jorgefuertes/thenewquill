@@ -5,11 +5,23 @@ import (
 	"strconv"
 
 	"thenewquill/internal/compiler/section"
+	"thenewquill/internal/util"
 )
 
 type Register struct {
 	Section section.Section
+	Label   string
 	Fields  []string
+}
+
+func NewRegister(section section.Section, label string, fields ...any) Register {
+	r := Register{Section: section, Label: label, Fields: make([]string, 0)}
+
+	for _, f := range fields {
+		r.Fields = append(r.Fields, util.ValueToString(f))
+	}
+
+	return r
 }
 
 func (r *Register) GetString() string {

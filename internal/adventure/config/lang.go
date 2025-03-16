@@ -10,6 +10,10 @@ const (
 	EN        = 2
 )
 
+func (l Lang) Int() int {
+	return int(l)
+}
+
 func (l Lang) String() string {
 	switch l {
 	case ES:

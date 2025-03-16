@@ -1,6 +1,8 @@
 package processor
 
 import (
+	"strings"
+
 	"thenewquill/internal/adventure"
 	"thenewquill/internal/adventure/character"
 	"thenewquill/internal/adventure/loc"
@@ -29,33 +31,35 @@ func readCharacter(l line.Line, st *status.Status, a *adventure.Adventure) error
 
 		o := l.OptimizedText()
 
-		switch o {
-		case "is created":
+		if o == "is created" {
 			c.Created = true
 
 			return nil
-		case "is human":
-			for _, p := range a.Chars {
-				if p.Label != c.Label && p.Human {
-					return cerr.ErrOnlyOneHuman.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
-						WithFilename(st.CurrentFilename())
-				}
+		}
+
+		if o == "is human" {
+			h := a.Chars.GetHuman()
+			if h != nil && h.Label != c.Label {
+				return cerr.ErrOnlyOneHuman.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
+					WithFilename(st.CurrentFilename())
 			}
 
 			c.Human = true
 
 			return nil
-		case "is destroyed", "is not created", "is not human":
-			return nil
 		}
 
-		if rg.IsAtLocation.MatchString(o) {
-			m := rg.IsAtLocation.FindStringSubmatch(o)
+		if strings.HasPrefix(o, "is at ") {
+			locLabel := strings.TrimPrefix(o, "is at ")
+			if !rg.IsValidLabel(locLabel) {
+				return cerr.ErrInvalidLabel.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
+					WithFilename(st.CurrentFilename())
+			}
 
-			inLoc := a.Locations.Get(m[1])
+			inLoc := a.Locations.Get(locLabel)
 			if inLoc == nil {
-				inLoc = a.Locations.Set(m[1], loc.Undefined, loc.Undefined)
-				st.SetUndef(m[1], section.Locs, l)
+				inLoc = a.Locations.Set(locLabel, loc.Undefined, loc.Undefined)
+				st.SetUndef(locLabel, section.Locs, l)
 			}
 
 			c.Location = inLoc
@@ -65,7 +69,7 @@ func readCharacter(l line.Line, st *status.Status, a *adventure.Adventure) error
 
 		if rg.Var.MatchString(o) {
 			m := rg.Var.FindStringSubmatch(o)
-			c.Vars.Set(m[1], m[2])
+			c.Vars.SetFromString(m[1], m[2])
 
 			return nil
 		}
@@ -73,11 +77,6 @@ func readCharacter(l line.Line, st *status.Status, a *adventure.Adventure) error
 
 	label, noun, adj, ok := l.AsLabelNounAdjDeclaration()
 	if ok {
-		if a.Chars.Exists(label) {
-			return cerr.ErrDuplicatedCharLabel.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
-				WithFilename(st.CurrentFilename())
-		}
-
 		st.CurrentLabel = label
 		st.SetDef(label, section.Chars)
 

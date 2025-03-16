@@ -1,8 +1,7 @@
 package loc
 
 import (
-	"strings"
-
+	"thenewquill/internal/adventure/vars"
 	"thenewquill/internal/adventure/words"
 )
 
@@ -13,6 +12,7 @@ type Location struct {
 	Title       string
 	Description string
 	Conns       []Connection
+	Vars        vars.Store
 }
 
 func New(label, title, desc string) *Location {
@@ -21,7 +21,12 @@ func New(label, title, desc string) *Location {
 		Title:       title,
 		Description: desc,
 		Conns:       make([]Connection, 0),
+		Vars:        vars.NewStore(),
 	}
+}
+
+func (l *Location) GetLabel() string {
+	return l.Label
 }
 
 func (l *Location) connIndex(word *words.Word) int {
@@ -52,21 +57,4 @@ func (l *Location) GetConn(word *words.Word) *Location {
 	}
 
 	return nil
-}
-
-func (l Location) export() []string {
-	data := []string{
-		l.Label,
-		l.Title,
-		l.Description,
-	}
-
-	conns := make([]string, 0)
-	for _, c := range l.Conns {
-		conns = append(conns, c.Word.Label+":"+c.To.Label)
-	}
-
-	data = append(data, strings.Join(conns, ","))
-
-	return data
 }

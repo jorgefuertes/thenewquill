@@ -2,8 +2,6 @@ package loc
 
 import (
 	"strings"
-
-	"thenewquill/internal/compiler/section"
 )
 
 type Store []*Location
@@ -56,14 +54,4 @@ func (s Store) Exists(label string) bool {
 
 func (s Store) Len() int {
 	return len(s)
-}
-
-func (s Store) Export() (section.Section, [][]string) {
-	data := make([][]string, 0)
-
-	for _, l := range s {
-		data = append(data, l.export())
-	}
-
-	return section.Locs, data
 }

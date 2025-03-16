@@ -16,7 +16,7 @@ const (
 )
 
 func wordTypes() []WordType {
-	return []WordType{Verb, Noun, Pronoun, Adjective, Adverb, Preposition, Conjunction}
+	return []WordType{Unknown, Verb, Noun, Pronoun, Adjective, Adverb, Preposition, Conjunction}
 }
 
 func (t WordType) String() string {
@@ -38,6 +38,10 @@ func (t WordType) String() string {
 	default:
 		return "unknown"
 	}
+}
+
+func (t WordType) Int() int {
+	return int(t)
 }
 
 func WordTypeFromString(s string) WordType {
