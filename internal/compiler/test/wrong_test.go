@@ -18,6 +18,7 @@ func TestWrongFiles(t *testing.T) {
 	}{
 		{"unclosed comment", "src/wrong/unclosed_comment.adv", cerr.ErrUnclosedComment},
 		{"unclosed string", "src/wrong/unclosed_string.adv", cerr.ErrUnclosedMultiline},
+		{"duplicated synonyms", "src/wrong/duped_syn.adv", cerr.ErrDuplicatedSynonym},
 	}
 
 	t.Run("test wrong files", func(t *testing.T) {

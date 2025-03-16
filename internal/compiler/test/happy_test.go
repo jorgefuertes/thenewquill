@@ -49,6 +49,15 @@ func TestCompilerHappyPath(t *testing.T) {
 			label string
 			syns  []string
 		}{
+			{words.Unknown, "_", []string{}},
+			{words.Verb, "_", []string{}},
+			{words.Noun, "_", []string{}},
+			{words.Pronoun, "_", []string{}},
+			{words.Adjective, "_", []string{}},
+			{words.Adverb, "_", []string{}},
+			{words.Conjunction, "_", []string{}},
+			{words.Preposition, "_", []string{}},
+			{words.Verb, "entrar", []string{"entro", "entra"}},
 			{words.Verb, "subir", []string{"sube", "subo"}},
 			{words.Verb, "bajar", []string{"bajo", "baja"}},
 			{words.Verb, "salir", []string{"salgo", "sal"}},
@@ -66,6 +75,9 @@ func TestCompilerHappyPath(t *testing.T) {
 			{words.Verb, "ex", []string{"exam", "examinar", "examina", "mirar", "mira", "miro"}},
 			{words.Verb, "save", []string{"grabar", "graba", "grabo", "salvar", "salva", "salvo"}},
 			{words.Verb, "ram", []string{"ramsave"}},
+			{words.Noun, "jugador", []string{}},
+			{words.Noun, "enano", []string{}},
+			{words.Noun, "elfo", []string{}},
 			{words.Noun, "norte", []string{"n", "adelante"}},
 			{words.Noun, "sur", []string{"s", "atrás"}},
 			{words.Noun, "este", []string{"e"}},
@@ -74,7 +86,19 @@ func TestCompilerHappyPath(t *testing.T) {
 			{words.Noun, "guantes", []string{}},
 			{words.Noun, "cofre", []string{"arcón"}},
 			{words.Noun, "monedas", []string{"dinero"}},
+			{words.Noun, "denario", []string{}},
 			{words.Noun, "carta", []string{"papel"}},
+			{words.Noun, "antorcha", []string{"tea", "linterna"}},
+			{words.Noun, "llave", []string{}},
+			{words.Noun, "cinturón", []string{}},
+			{words.Noun, "petaca", []string{"botella"}},
+			{words.Noun, "talismán", []string{"amuleto"}},
+			{words.Noun, "ropa", []string{"vestido"}},
+			{words.Noun, "bolsa", []string{"saco", "petate"}},
+			{words.Adjective, "encendida", []string{}},
+			{words.Adjective, "apagada", []string{}},
+			{words.Adjective, "dorada", []string{}},
+			{words.Adjective, "plateada", []string{}},
 			{words.Pronoun, "el", []string{"la", "los", "las"}},
 			{words.Preposition, "dentro", []string{"adentro"}},
 			{words.Conjunction, "enton", []string{"luego", "tras", "y"}},
@@ -86,9 +110,25 @@ func TestCompilerHappyPath(t *testing.T) {
 				require.NotNil(t, w)
 				assert.Equal(t, tc.label, w.Label)
 				assert.Equal(t, tc.kind, w.Type)
-				assert.Len(t, w.Synonyms, len(tc.syns))
-				assert.Equal(t, tc.syns, w.Synonyms)
+				assert.Equal(t, tc.syns, w.Synonyms, "synonyms for %s doesn't match", tc.label)
+				for _, syn := range tc.syns {
+					wFromSyn := a.Words.First(syn)
+					assert.Equal(t, w, wFromSyn)
+					assert.True(t, w.Is(syn))
+				}
 			})
+		}
+
+		for _, w := range a.Words {
+			existsHere := false
+			for _, tc := range testCases {
+				if tc.label == w.Label && tc.kind == w.Type {
+					existsHere = true
+					break
+				}
+			}
+
+			assert.True(t, existsHere, "%s with label %s doesn't exist in the test cases", w.Type.String(), w.Label)
 		}
 	})
 

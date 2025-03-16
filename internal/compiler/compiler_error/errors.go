@@ -3,6 +3,7 @@ package compiler
 var (
 	ErrInvalidLabel                  = newCompilerError("invalid label")
 	ErrDuplicatedLabel               = newCompilerError("duplicated label")
+	ErrDuplicatedSynonym             = newCompilerError("duplicated synonym")
 	ErrOutOfSection                  = newCompilerError("line outside of section")
 	ErrUnclosedComment               = newCompilerError("unclosed comment")
 	ErrUnclosedString                = newCompilerError("unclosed string")
