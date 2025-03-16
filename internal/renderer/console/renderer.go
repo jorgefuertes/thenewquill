@@ -27,10 +27,18 @@ func (r *ConsoleRenderer) Input() string {
 		return ""
 	}
 
-	var input string
-	fmt.Scanln(&input)
+	for {
+		var input string
 
-	return input
+		n, err := fmt.Scanln(&input)
+		if err != nil {
+			fmt.Printf("error reading input: %v\n", err)
+		}
+
+		if n > 0 {
+			return input
+		}
+	}
 }
 
 func (r *ConsoleRenderer) Cls() {
