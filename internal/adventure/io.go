@@ -21,16 +21,27 @@ func (a *Adventure) Export(d *db.DB) {
 }
 
 func (a *Adventure) Import(d *db.DB) error {
-	a = New()
+	a.Reset()
 
-	a.Config.Import(d)
-	a.Words.Import(d)
-	a.Messages.Import(d)
-	a.Locations.Import(d, a.Words)
-
-	if err := a.Chars.Import(d, a.Words, a.Locations); err != nil {
+	if err := a.Config.Import(d); err != nil {
 		return err
 	}
+
+	if err := a.Vars.Import(d); err != nil {
+		return err
+	}
+
+	a.Words.Import(d)
+
+	if err := a.Messages.Import(d); err != nil {
+		return err
+	}
+
+	if err := a.Locations.Import(d, a.Words); err != nil {
+		return err
+	}
+
+	a.Chars.Import(d, a.Words, a.Locations)
 
 	if err := a.Items.Import(d, a.Words, a.Locations, a.Chars); err != nil {
 		return err

@@ -7,25 +7,27 @@ import (
 	"thenewquill/internal/compiler/section"
 )
 
-func (w Word) export() db.Register {
-	return db.NewRegister(section.Words, w.Label,
-		w.Label,
-		w.Type.Int(),
-		strings.Join(w.Synonyms, ","),
-	)
-}
-
 func (s Store) Export(d *db.DB) {
 	for _, w := range s {
-		d.Add(w.export())
+		d.Append(section.Words, w.Label,
+			w.Type.Int(),
+			strings.Join(w.Synonyms, ","),
+		)
 	}
 }
 
 func (s *Store) Import(d *db.DB) {
-	for _, r := range d.GetRegsForSection(section.Words) {
-		label := r.GetString()
-		t := WordType(r.GetInt())
-		syns := strings.Split(r.GetString(), ",")
+	it := d.NewIterator(section.Words)
+
+	for {
+		r := it.Next()
+		if r == nil {
+			break
+		}
+
+		label := r.Label
+		t := WordType(r.FieldAsInt(0))
+		syns := strings.Split(r.FieldAsString(1), ",")
 
 		s.Set(label, t, syns...)
 	}

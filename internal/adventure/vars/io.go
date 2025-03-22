@@ -3,7 +3,6 @@ package vars
 import (
 	"thenewquill/internal/compiler/db"
 	"thenewquill/internal/compiler/section"
-	"thenewquill/internal/util"
 )
 
 func (s *Store) Export(d *db.DB) {
@@ -11,16 +10,20 @@ func (s *Store) Export(d *db.DB) {
 	defer s.lock.Unlock()
 
 	for k, v := range s.Regs {
-		d.Add(db.NewRegister(section.Vars, k, util.ValueToString(v)))
+		d.Append(section.Vars, k, v)
 	}
 }
 
 func (s *Store) Import(d *db.DB) error {
-	s.lock.Lock()
-	defer s.lock.Unlock()
+	it := d.NewIterator(section.Vars)
 
-	for _, r := range d.GetRegsForSection(section.Vars) {
-		s.SetFromString(r.GetString(), r.GetString())
+	for {
+		r := it.Next()
+		if r == nil {
+			break
+		}
+
+		s.Set(r.Label, r.Fields[0])
 	}
 
 	return nil

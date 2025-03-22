@@ -21,6 +21,13 @@ func NewStore() Store {
 	}
 }
 
+func NewStoreFromMap(m map[string]any) Store {
+	return Store{
+		lock: &sync.Mutex{},
+		Regs: m,
+	}
+}
+
 func (s Store) Len() int {
 	return len(s.Regs)
 }

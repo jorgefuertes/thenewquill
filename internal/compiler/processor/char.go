@@ -92,10 +92,7 @@ func readCharacter(l line.Line, st *status.Status, a *adventure.Adventure) error
 			st.SetUndef(adj, section.Words, l)
 		}
 
-		if err := a.Chars.Set(character.New(label, nounWord, adjWord)); err != nil {
-			return cerr.ErrWrongCharDeclaration.WithStack(st.Stack).WithSection(st.Section).AddErr(err).WithLine(l).
-				WithFilename(st.CurrentFilename())
-		}
+		a.Chars.Set(character.New(label, nounWord, adjWord))
 
 		st.SetDef(label, section.Chars)
 

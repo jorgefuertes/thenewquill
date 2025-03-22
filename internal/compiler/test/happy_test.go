@@ -203,9 +203,9 @@ func TestCompilerHappyPath(t *testing.T) {
 				assert.Equal(t, tc.nameLabel, c.Name.Label)
 				assert.Equal(t, tc.adjLabel, c.Adjective.Label)
 				assert.Equal(t, tc.desc, c.Description)
+				assert.Equal(t, tc.locationLabel, c.Location.Label)
 				assert.Equal(t, tc.created, c.Created)
 				assert.Equal(t, tc.human, c.Human)
-				assert.Equal(t, tc.locationLabel, c.Location.Label)
 				assert.Equal(t, tc.vars, c.Vars.GetAll())
 			})
 		}

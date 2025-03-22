@@ -2,7 +2,7 @@ package config
 
 import "strings"
 
-type Lang int8
+type Lang byte
 
 const (
 	Undefined = 0
@@ -10,8 +10,8 @@ const (
 	EN        = 2
 )
 
-func (l Lang) Int() int {
-	return int(l)
+func (l Lang) Byte() byte {
+	return byte(l)
 }
 
 func (l Lang) String() string {

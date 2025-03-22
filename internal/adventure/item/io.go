@@ -1,79 +1,98 @@
 package item
 
 import (
-	"fmt"
-	"strings"
-
 	"thenewquill/internal/adventure/character"
 	"thenewquill/internal/adventure/loc"
+	"thenewquill/internal/adventure/vars"
 	"thenewquill/internal/adventure/words"
 	"thenewquill/internal/compiler/db"
 	"thenewquill/internal/compiler/section"
-	"thenewquill/internal/util"
 )
 
 func (s Store) Export(d *db.DB) {
 	for _, item := range s.items {
-		d.Add(item.export())
+		locationLabel := ""
+		if item.Location != nil {
+			locationLabel = item.Location.Label
+		}
+
+		insideLabel := ""
+		if item.Inside != nil {
+			insideLabel = item.Inside.Label
+		}
+
+		carriedByLabel := ""
+		if item.CarriedBy != nil {
+			carriedByLabel = item.CarriedBy.Label
+		}
+
+		wornByLabel := ""
+		if item.WornBy != nil {
+			wornByLabel = item.WornBy.Label
+		}
+
+		d.Append(section.Items, item.Label,
+			item.Noun.Label,
+			item.Adjective.Label,
+			item.Description,
+			item.Weight,
+			item.MaxWeight,
+			item.IsContainer,
+			item.IsWearable,
+			item.IsCreated,
+			locationLabel,
+			insideLabel,
+			carriedByLabel,
+			wornByLabel,
+			item.Vars.GetAll(),
+		)
 	}
-}
-
-func (i Item) export() db.Register {
-	r := db.NewRegister(section.Items, i.Label,
-		util.ToLabel(i.Noun),
-		util.ToLabel(i.Adjective),
-		i.Description,
-		util.ValueToString(i.Weight),
-		util.ValueToString(i.MaxWeight),
-		util.ValueToString(i.IsContainer),
-		util.ValueToString(i.IsWearable),
-		util.ValueToString(i.IsCreated),
-		util.ToLabel(i.Location),
-		util.ToLabel(i.Inside),
-		util.ToLabel(i.CarriedBy),
-		util.ToLabel(i.WornBy),
-	)
-
-	// add vars at the end
-	for k, v := range i.Vars.GetAll() {
-		r.Fields = append(r.Fields, fmt.Sprintf("%s=%s", k, util.ValueToString(v)))
-	}
-
-	return r
 }
 
 func (s *Store) Import(d *db.DB, sw words.Store, locs loc.Store, cs character.Store) error {
-	for _, r := range d.GetRegsForSection(section.Items) {
-		label := r.GetString()
-		noun := sw.Get(words.Noun, r.GetString())
-		adj := sw.Get(words.Adjective, r.GetString())
+	it := d.NewIterator(section.Items)
 
-		i := New(label, noun, adj)
+	for {
+		r := it.Next()
+		if r == nil {
+			break
+		}
 
-		i.Description = r.GetString()
-		i.Weight = r.GetInt()
-		i.MaxWeight = r.GetInt()
-		i.IsContainer = r.GetBool()
-		i.IsWearable = r.GetBool()
-		i.IsCreated = r.GetBool()
-		i.Location = locs.Get(r.GetString())
-		insideLabel := r.GetString()
-		i.Inside = s.Get(insideLabel)
-		i.CarriedBy = cs.Get(r.GetString())
-		i.WornBy = cs.Get(r.GetString())
+		location := locs.Get(r.FieldAsString(8))
+		if location == nil {
+			location = locs.CreateEmpty(r.FieldAsString(8))
+		}
 
-		for {
-			v := r.GetString()
-			if v == "" {
-				break
-			}
+		insideContainer := s.Get(r.FieldAsString(9))
+		if insideContainer == nil {
+			insideContainer = s.CreateEmpty(r.FieldAsString(9))
+		}
 
-			parts := strings.Split(v, "=")
-			if len(parts) != 2 {
-				continue
-			}
+		carriedByChar := cs.Get(r.FieldAsString(10))
+		if carriedByChar == nil {
+			carriedByChar = cs.CreateEmpty(r.FieldAsString(10))
+		}
 
-			i.Vars.Set(parts[0], parts[1])
+		wornByChar := cs.Get(r.FieldAsString(11))
+		if wornByChar == nil {
+			wornByChar = cs.CreateEmpty(r.FieldAsString(11))
+		}
+
+		i := &Item{
+			Label:       r.Label,
+			Noun:        sw.Get(words.Noun, r.FieldAsString(0)),
+			Adjective:   sw.Get(words.Adjective, r.FieldAsString(1)),
+			Description: r.FieldAsString(2),
+			Weight:      r.FieldAsInt(3),
+			MaxWeight:   r.FieldAsInt(4),
+			IsContainer: r.FieldAsBool(5),
+			IsWearable:  r.FieldAsBool(6),
+			IsCreated:   r.FieldAsBool(7),
+			Location:    location,
+			Inside:      insideContainer,
+			CarriedBy:   carriedByChar,
+			WornBy:      wornByChar,
+			Vars:        vars.NewStoreFromMap(r.FieldAsMap(12)),
 		}
 
 		if err := s.Set(i); err != nil {

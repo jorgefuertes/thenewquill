@@ -1,82 +1,55 @@
 package character
 
 import (
-	"fmt"
-	"strings"
-
 	"thenewquill/internal/adventure/loc"
 	"thenewquill/internal/adventure/vars"
 	"thenewquill/internal/adventure/words"
 	"thenewquill/internal/compiler/db"
 	"thenewquill/internal/compiler/section"
-	"thenewquill/internal/util"
 )
 
 func (s Store) Export(d *db.DB) {
-	s.lock.Lock()
-	defer s.lock.Unlock()
+	s.mut.Lock()
+	defer s.mut.Unlock()
 
 	for _, c := range s.chars {
-		d.Add(c.export())
+		locationLabel := ""
+		if c.Location != nil {
+			locationLabel = c.Location.Label
+		}
+
+		d.Append(section.Chars, c.Label,
+			c.Name.Label,
+			c.Adjective.Label,
+			c.Description,
+			locationLabel,
+			c.Created,
+			c.Human,
+			c.Vars.GetAll(),
+		)
 	}
 }
 
-func (c Character) export() db.Register {
-	locationLabel := ""
-	if c.Location != nil {
-		locationLabel = c.Location.Label
-	}
+func (s *Store) Import(d *db.DB, sw words.Store, locs loc.Store) {
+	it := d.NewIterator(section.Chars)
 
-	r := db.NewRegister(section.Chars, c.Label,
-		c.Name.Label,
-		c.Adjective.Label,
-		c.Description,
-		locationLabel,
-		util.ValueToString(c.Created),
-		util.ValueToString(c.Human),
-	)
+	for {
+		r := it.Next()
+		if r == nil {
+			break
+		}
 
-	for k, v := range c.Vars.GetAll() {
-		r.Fields = append(r.Fields, fmt.Sprintf("%s=%s", k, util.ValueToString(v)))
-	}
-
-	return r
-}
-
-func (s *Store) Import(d *db.DB, sw words.Store, locs loc.Store) error {
-	s.lock.Lock()
-	defer s.lock.Unlock()
-
-	for _, r := range d.GetRegsForSection(section.Chars) {
 		c := &Character{
-			Label:       r.GetString(),
-			Name:        sw.Get(words.Noun, r.GetString()),
-			Adjective:   sw.Get(words.Adjective, r.GetString()),
-			Description: r.GetString(),
-			Location:    locs.Get(r.GetString()),
-			Created:     r.GetBool(),
-			Human:       r.GetBool(),
-			Vars:        vars.NewStore(),
+			Label:       r.Label,
+			Name:        sw.Get(words.Noun, r.FieldAsString(0)),
+			Adjective:   sw.Get(words.Adjective, r.FieldAsString(1)),
+			Description: r.FieldAsString(2),
+			Location:    locs.Get(r.FieldAsString(3)),
+			Created:     r.FieldAsBool(4),
+			Human:       r.FieldAsBool(5),
+			Vars:        vars.NewStoreFromMap(r.FieldAsMap(6)),
 		}
 
-		for {
-			v := r.GetString()
-			if v == "" {
-				break
-			}
-
-			parts := strings.Split(v, "=")
-			if len(parts) != 2 {
-				continue
-			}
-
-			c.Vars.Set(parts[0], parts[1])
-		}
-
-		if err := s.Set(c); err != nil {
-			return err
-		}
+		s.Set(c)
 	}
-
-	return nil
 }

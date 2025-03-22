@@ -11,6 +11,10 @@ func NewStore() Store {
 }
 
 func (s Store) Get(label string) *Location {
+	if label == "" {
+		return nil
+	}
+
 	label = strings.ToLower(label)
 
 	for _, l := range s {
@@ -20,6 +24,10 @@ func (s Store) Get(label string) *Location {
 	}
 
 	return nil
+}
+
+func (s *Store) CreateEmpty(label string) *Location {
+	return s.Set(label, Undefined, Undefined)
 }
 
 // Set a new location

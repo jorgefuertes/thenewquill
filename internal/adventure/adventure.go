@@ -33,3 +33,13 @@ func New() *Adventure {
 		Chars:     character.NewStore(),
 	}
 }
+
+func (a *Adventure) Reset() {
+	a.Config = config.New()
+	a.Vars = vars.NewStore()
+	a.Words = words.NewStore()
+	a.Messages = msg.NewStore()
+	a.Locations = loc.NewStore()
+	a.Items = item.NewStore()
+	a.Chars = character.NewStore()
+}

@@ -2,7 +2,7 @@ package words
 
 import "strings"
 
-type WordType int
+type WordType byte
 
 const (
 	Unknown     WordType = 0

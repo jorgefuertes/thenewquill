@@ -41,6 +41,10 @@ func (s *Store) getIndex(label string) int {
 }
 
 func (s *Store) Get(label string) *Item {
+	if label == "" {
+		return nil
+	}
+
 	s.lock.Lock()
 	defer s.lock.Unlock()
 
@@ -70,6 +74,13 @@ func (s Store) ExistsNounAdj(noun, adjective *words.Word) bool {
 	}
 
 	return false
+}
+
+func (s *Store) CreateEmpty(label string) *Item {
+	i := New(label, nil, nil)
+	s.Set(i)
+
+	return i
 }
 
 // Set a new item, if it already exists, it will be replaced

@@ -63,7 +63,7 @@ func compileAction(c *cli.Context) error {
 	}
 
 	// binary db
-	d := db.NewDB()
+	d := db.New()
 	a.Export(d)
 
 	f, err := os.Create(outputFilename)
@@ -72,7 +72,7 @@ func compileAction(c *cli.Context) error {
 	}
 	defer f.Close()
 
-	if err := d.Write(f); err != nil {
+	if err := d.Save(f); err != nil {
 		return err
 	}
 

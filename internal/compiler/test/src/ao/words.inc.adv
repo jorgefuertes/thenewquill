@@ -95,11 +95,12 @@ noun: xyzzy
 
 // verbs
 
+verb: usar, usa, usando
 verb: bajar, abajo, bajo
 verb: abandonar, fin, retirarse, rindo, rendirse, rendir, quit, terminar, termino
 verb: abrir, abro, empujar, empujo, abre
 verb: ad, quill, compiler, compilador, versión
-verb: coger, agarrar, buscar, busco, cojo, coge, agarro, agarra, busca
+verb: coger, agarrar, cojo, coge, agarro, agarra
 verb: mover, agitar, agito, agita, muevo, mueve, sacude, sacudir
 verb: apagar, apago, apaga
 verb: subir, arriba, subo, sube, trepar, trepo, trepa
@@ -136,12 +137,10 @@ verb: saltar, salto, salta, brinca, brinco, brincar
 verb: saludar, saludo, saluda
 verb: sentar, siento, sienta
 verb: vaciar, vacía, vacío
-verb: usar, usa, usando, agitar, agita, agito, agudo, mover, muevo, mueve
 verb: aceitar
 verb: apartar, aparta, aparto
 verb: buscar, busca, busco, atrapar, atrapo, atrapa, cazar, cazo, caza
 verb: nadar, nado, nada, bucear, buceo, bucea
-verb: empujar, empujo, empuja
 verb: palpar, palpo, palpa, tocar, toco, toca
 
 // adjectives

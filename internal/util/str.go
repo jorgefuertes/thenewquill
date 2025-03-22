@@ -47,18 +47,18 @@ func RemoveSymbols(s string) string {
 func ValueToString(v any) string {
 	switch v.(type) {
 	case string:
-		return fmt.Sprintf("%s", v)
+		return fmt.Sprintf("s:%s", v)
 	case int, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64:
-		return fmt.Sprintf("%d", v)
+		return fmt.Sprintf("i:%d", v)
 	case float32, float64:
-		return fmt.Sprintf("%.4f", v)
+		return fmt.Sprintf("f:%.4f", v)
 	case bool:
 		if v == true {
-			return "T"
+			return "b:T"
 		} else {
-			return "F"
+			return "b:F"
 		}
 	}
 
-	return fmt.Sprintf("%v", v)
+	return fmt.Sprintf("s:%v", v)
 }

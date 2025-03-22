@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-type Section int
+type Section byte
 
 const (
 	None     Section = 0
@@ -52,16 +52,16 @@ func (s Section) String() string {
 	return names[0]
 }
 
-func (s Section) ToInt() int {
-	return int(s)
+func (s Section) Byte() byte {
+	return byte(s)
 }
 
-func FromInt(i int) Section {
-	if i < 0 || i >= len(sectionNamesAndAliases()) {
+func FromByte(b byte) Section {
+	if int(b) < 0 || int(b) >= len(sectionNamesAndAliases()) {
 		return None
 	}
 
-	return Section(i)
+	return Section(b)
 }
 
 func FromString(s string) Section {

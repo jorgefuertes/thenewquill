@@ -10,7 +10,19 @@ type Config struct {
 }
 
 func New() Config {
-	return Config{}
+	c := Config{}
+	c.Reset()
+
+	return c
+}
+
+func (c *Config) Reset() {
+	c.Title = "No Title"
+	c.Author = "Unknown Author"
+	c.Description = "No Description"
+	c.Version = "1.0.0"
+	c.Date = "2025-01-01"
+	c.Lang = ES
 }
 
 func (c *Config) Set(label Label, value string) error {

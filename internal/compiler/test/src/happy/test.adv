@@ -15,6 +15,15 @@
 // Beginning of the file
 // We will begin with some variable declarations
 
+SECTION CONFIG
+
+title:   "Una aventura sin sentido para pruebas"
+author:  "queru"
+desc:    "Este fuente debería compilar sin errores"
+lang:    "es"
+version: "1.0.0"
+date:    "16-03-2025"
+
 SECTION VARS
 
 testTrue  = true // bool
