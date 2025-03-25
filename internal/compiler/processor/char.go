@@ -5,7 +5,6 @@ import (
 
 	"thenewquill/internal/adventure"
 	"thenewquill/internal/adventure/character"
-	"thenewquill/internal/adventure/loc"
 	"thenewquill/internal/adventure/words"
 	cerr "thenewquill/internal/compiler/compiler_error"
 	"thenewquill/internal/compiler/line"
@@ -58,7 +57,13 @@ func readCharacter(l line.Line, st *status.Status, a *adventure.Adventure) error
 
 			inLoc := a.Locations.Get(locLabel)
 			if inLoc == nil {
-				inLoc = a.Locations.Set(locLabel, loc.Undefined, loc.Undefined)
+				var err error
+				inLoc, err = a.Locations.New(locLabel)
+				if err != nil {
+					return cerr.ErrCannotCreateCharacter.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
+						WithFilename(st.CurrentFilename()).AddErr(err)
+				}
+
 				st.SetUndef(locLabel, section.Locs, l)
 			}
 
@@ -93,7 +98,6 @@ func readCharacter(l line.Line, st *status.Status, a *adventure.Adventure) error
 		}
 
 		a.Chars.Set(character.New(label, nounWord, adjWord))
-
 		st.SetDef(label, section.Chars)
 
 		return nil

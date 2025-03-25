@@ -37,20 +37,26 @@ func TestLocations(t *testing.T) {
 
 	t.Run("create locations", func(t *testing.T) {
 		for _, d := range definitions {
-			l := locs.Set(d.label, d.title, d.desc)
+			l := loc.New(d.label, d.title, d.desc)
 			require.NotNil(t, l, "set should return a location for %s", d.label)
 			assert.Equal(t, d.title, l.Title, "location %s title should match", d.label)
 			assert.Equal(t, d.desc, l.Description, "location %s description should match", d.label)
 			assert.Len(t, l.Conns, 0, "conns sould be empty for %s", d.label)
+
 			for w, label := range d.exits {
 				to := locs.Get(label)
 				if to == nil {
 					// create an empty location
-					to = locs.Set(label, "", "")
+					var err error
+
+					to, err = locs.New(label)
+					require.NoError(t, err)
 				}
 
 				l.SetConn(w, to)
 			}
+
+			require.NoError(t, locs.Set(l))
 		}
 	})
 

@@ -24,4 +24,6 @@ var (
 	ErrWrongConfigDeclaration        = newCompilerError("wrong config declaration")
 	ErrWrongCharDeclaration          = newCompilerError("wrong character declaration")
 	ErrOnlyOneHuman                  = newCompilerError("only one human character allowed")
+	ErrCannotCreateLocation          = newCompilerError("cannot create location")
+	ErrCannotCreateCharacter         = newCompilerError("cannot create character")
 )

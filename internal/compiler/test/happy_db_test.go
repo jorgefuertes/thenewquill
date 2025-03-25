@@ -1,69 +1,79 @@
 package compiler_test
 
-// func TestCompilerDB(t *testing.T) {
-// 	const srcFilename = "src/happy/test.adv"
+import (
+	"bytes"
+	"testing"
 
-// 	var a *adventure.Adventure
-// 	var database *db.DB
-// 	var save *bytes.Buffer
-// 	var load *bytes.Buffer
+	"thenewquill/internal/adventure"
+	"thenewquill/internal/compiler"
+	"thenewquill/internal/compiler/db"
 
-// 	var a2 *adventure.Adventure
-// 	var database2 *db.DB
+	"github.com/stretchr/testify/require"
+)
 
-// 	t.Run("compile", func(t *testing.T) {
-// 		var err error
+func TestCompilerDB(t *testing.T) {
+	const srcFilename = "src/happy/test.adv"
 
-// 		a, err = compiler.Compile(srcFilename)
-// 		require.NoError(t, err)
-// 		require.NotNil(t, a)
+	var a *adventure.Adventure
+	var database *db.DB
+	var save *bytes.Buffer
+	var load *bytes.Buffer
 
-// 		t.Run("adventure to DB", func(t *testing.T) {
-// 			database = db.NewDB()
-// 			a.Export(database)
-// 			require.NotNil(t, database)
-// 			require.NotEmpty(t, database.GetHeaders())
-// 			require.NotEmpty(t, database.GetRegs())
-// 			for i, r := range database.GetRegs() {
-// 				require.NotEmpty(t, r.Section, "section empty in reg %d", i)
-// 				require.NotEmpty(t, r.Label, "label empty in reg %d", i)
-// 				require.NotEmpty(t, r.Fields, "fields empty in reg %d", i)
-// 			}
+	var a2 *adventure.Adventure
+	var database2 *db.DB
 
-// 			t.Run("DB to file", func(t *testing.T) {
-// 				save = bytes.NewBuffer(nil)
-// 				err := database.Write(save)
-// 				require.NoError(t, err)
-// 				require.NotNil(t, save)
-// 				require.NotZero(t, save.Len())
-// 				load = bytes.NewBuffer(save.Bytes())
+	t.Run("compile", func(t *testing.T) {
+		var err error
 
-// 				t.Run("file to DB", func(t *testing.T) {
-// 					database2 = db.NewDB()
-// 					err := database2.Load(load)
-// 					require.NoError(t, err)
+		a, err = compiler.Compile(srcFilename)
+		require.NoError(t, err)
+		require.NotNil(t, a)
 
-// 					require.Equal(t, database.Hash(), database2.Hash())
-// 					require.Equal(t, database.GetHeaders(), database2.GetHeaders())
-// 					for i, r := range database.GetRegs() {
-// 						require.Equal(t, r, database2.GetRegs()[i])
-// 					}
+		t.Run("adventure to DB", func(t *testing.T) {
+			database = db.New()
+			a.Export(database)
+			require.NotNil(t, database)
+			require.NotEmpty(t, database.Headers)
+			require.NotEmpty(t, database.Records)
+			for i, r := range database.Records {
+				require.NotEmpty(t, r.Section, "section empty in reg %d", i)
+				require.NotEmpty(t, r.Label, "label empty in reg %d", i)
+				require.NotEmpty(t, r.Fields, "fields empty in reg %d", i)
+			}
 
-// 					t.Run("adventure from DB", func(t *testing.T) {
-// 						a2 = adventure.New()
-// 						err := a2.Import(database2)
-// 						require.NoError(t, err)
+			t.Run("DB to file", func(t *testing.T) {
+				save = bytes.NewBuffer(nil)
+				err := database.Save(save)
+				require.NoError(t, err)
+				require.NotNil(t, save)
+				require.NotZero(t, save.Len())
+				load = bytes.NewBuffer(save.Bytes())
 
-// 						require.Equal(t, a.Config, a2.Config)
-// 						require.Equal(t, a.Vars, a2.Vars)
-// 						require.Equal(t, a.Words, a2.Words)
-// 						require.Equal(t, a.Messages, a2.Messages)
-// 						require.Equal(t, a.Locations, a2.Locations)
-// 						require.Equal(t, a.Items, a2.Items)
-// 						require.Equal(t, a.Chars, a2.Chars)
-// 					})
-// 				})
-// 			})
-// 		})
-// 	})
-// }
+				t.Run("file to DB", func(t *testing.T) {
+					database2 = db.New()
+					err := database2.Load(load)
+					require.NoError(t, err)
+
+					h1, err := database.Hash()
+					require.NoError(t, err)
+					h2, err := database2.Hash()
+					require.NoError(t, err)
+					require.Equal(t, h1, h2)
+
+					require.Equal(t, database.Headers, database2.Headers)
+					for i, r := range database.Records {
+						require.Equal(t, r, database2.Records[i])
+					}
+
+					t.Run("adventure from DB", func(t *testing.T) {
+						a2 = adventure.New()
+						err := a2.Import(database2)
+						require.NoError(t, err)
+
+						assertEqualAventures(t, a, a2)
+					})
+				})
+			})
+		})
+	})
+}

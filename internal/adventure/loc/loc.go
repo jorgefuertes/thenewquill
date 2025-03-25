@@ -1,6 +1,8 @@
 package loc
 
 import (
+	"strings"
+
 	"thenewquill/internal/adventure/vars"
 	"thenewquill/internal/adventure/words"
 )
@@ -57,4 +59,8 @@ func (l *Location) GetConn(word *words.Word) *Location {
 	}
 
 	return nil
+}
+
+func (l *Location) toLower() {
+	l.Label = strings.ToLower(l.Label)
 }

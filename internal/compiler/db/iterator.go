@@ -25,14 +25,16 @@ func (i *iterator) Next() *Record {
 		return nil
 	}
 
-	for i.index < len(i.db.Records) {
+	for i.index < len(i.db.Records)-1 {
+		if i.db.Records[i.index].Section != i.sec {
+			i.index++
+			continue
+		}
+
+		r := i.db.Records[i.index]
 		i.index++
 
-		if i.db.Records[i.index].Section == i.sec {
-			r := i.db.Records[i.index]
-
-			return &r
-		}
+		return &r
 	}
 
 	return nil

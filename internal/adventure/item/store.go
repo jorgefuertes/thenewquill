@@ -1,7 +1,6 @@
 package item
 
 import (
-	"errors"
 	"strings"
 	"sync"
 
@@ -28,6 +27,10 @@ func (s *Store) Len() int {
 }
 
 func (s *Store) getIndex(label string) int {
+	if label == "" {
+		return -1
+	}
+
 	s.lock.Lock()
 	defer s.lock.Unlock()
 
@@ -57,10 +60,15 @@ func (s *Store) Get(label string) *Item {
 	return nil
 }
 
-func (s *Store) Exists(label string) bool {
-	i := s.getIndex(label)
+func (s *Store) GetAll() []*Item {
+	s.lock.Lock()
+	defer s.lock.Unlock()
 
-	return i > -1
+	return s.items
+}
+
+func (s *Store) Exists(label string) bool {
+	return s.getIndex(label) > -1
 }
 
 func (s Store) ExistsNounAdj(noun, adjective *words.Word) bool {
@@ -76,14 +84,17 @@ func (s Store) ExistsNounAdj(noun, adjective *words.Word) bool {
 	return false
 }
 
-func (s *Store) CreateEmpty(label string) *Item {
+// Set a new empty item
+func (s *Store) New(label string) (*Item, error) {
 	i := New(label, nil, nil)
-	s.Set(i)
+	if err := s.Set(i); err != nil {
+		return nil, err
+	}
 
-	return i
+	return i, nil
 }
 
-// Set a new item, if it already exists, it will be replaced
+// Set or replace an item
 func (s *Store) Set(newItem *Item) error {
 	if newItem.Label == "" {
 		return ErrEmptyLabel
@@ -105,35 +116,6 @@ func (s *Store) Set(newItem *Item) error {
 	defer s.lock.Unlock()
 
 	s.items = append(s.items, newItem)
-
-	return nil
-}
-
-func (s *Store) Validate() error {
-	s.lock.Lock()
-	defer s.lock.Unlock()
-
-	for _, item := range s.items {
-		if err := item.validate(); err != nil {
-			return errors.Join(ErrItemValidationFailed, err, errors.New(item.Label))
-		}
-	}
-
-	for i, item := range s.items {
-		for i2, item2 := range s.items {
-			if i == i2 {
-				continue
-			}
-
-			if i != i2 && item.Label == item2.Label {
-				return errors.Join(ErrDuplicatedItemLabel, errors.New(item.Label))
-			}
-
-			if item.Noun.Label == item2.Noun.Label && item.Adjective.Label == item2.Adjective.Label {
-				return errors.Join(ErrDuplicatedNounAdj, errors.New(item.Label))
-			}
-		}
-	}
 
 	return nil
 }

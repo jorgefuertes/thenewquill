@@ -6,7 +6,6 @@ import (
 
 	"thenewquill/internal/adventure"
 	"thenewquill/internal/adventure/item"
-	"thenewquill/internal/adventure/loc"
 	"thenewquill/internal/adventure/words"
 	cerr "thenewquill/internal/compiler/compiler_error"
 	"thenewquill/internal/compiler/line"
@@ -66,7 +65,13 @@ func readItem(l line.Line, st *status.Status, a *adventure.Adventure) error {
 
 			inLoc := a.Locations.Get(locLabel)
 			if inLoc == nil {
-				inLoc = a.Locations.Set(locLabel, loc.Undefined, loc.Undefined)
+				var err error
+				inLoc, err = a.Locations.New(locLabel)
+				if err != nil {
+					return cerr.ErrCannotCreateLocation.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
+						WithFilename(st.CurrentFilename()).AddErr(err)
+				}
+
 				st.SetUndef(locLabel, section.Locs, l)
 			}
 

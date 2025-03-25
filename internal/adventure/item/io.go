@@ -59,23 +59,31 @@ func (s *Store) Import(d *db.DB, sw words.Store, locs loc.Store, cs character.St
 		}
 
 		location := locs.Get(r.FieldAsString(8))
-		if location == nil {
-			location = locs.CreateEmpty(r.FieldAsString(8))
+		if location == nil && r.FieldAsString(8) != "" {
+			var err error
+			location, err = locs.New(r.FieldAsString(8))
+			if err != nil {
+				return err
+			}
 		}
 
 		insideContainer := s.Get(r.FieldAsString(9))
-		if insideContainer == nil {
-			insideContainer = s.CreateEmpty(r.FieldAsString(9))
+		if insideContainer == nil && r.FieldAsString(9) != "" {
+			var err error
+			insideContainer, err = s.New(r.FieldAsString(9))
+			if err != nil {
+				return err
+			}
 		}
 
 		carriedByChar := cs.Get(r.FieldAsString(10))
 		if carriedByChar == nil {
-			carriedByChar = cs.CreateEmpty(r.FieldAsString(10))
+			carriedByChar = cs.New(r.FieldAsString(10))
 		}
 
 		wornByChar := cs.Get(r.FieldAsString(11))
 		if wornByChar == nil {
-			wornByChar = cs.CreateEmpty(r.FieldAsString(11))
+			wornByChar = cs.New(r.FieldAsString(11))
 		}
 
 		i := &Item{
@@ -92,7 +100,7 @@ func (s *Store) Import(d *db.DB, sw words.Store, locs loc.Store, cs character.St
 			Inside:      insideContainer,
 			CarriedBy:   carriedByChar,
 			WornBy:      wornByChar,
-			Vars:        vars.NewStoreFromMap(r.FieldAsMap(12)),
+			Vars:        vars.NewStoreFromMap(r.FieldAsMapAny(12)),
 		}
 
 		if err := s.Set(i); err != nil {

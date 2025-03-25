@@ -24,6 +24,7 @@ test-v:
 
 lint:
 	@echo "Linting..."
+	@go tool gofumpt -l -d .
 	@go tool staticcheck ./...
 	@go tool golangci-lint run ./...
 

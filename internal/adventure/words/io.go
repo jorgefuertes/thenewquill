@@ -27,7 +27,11 @@ func (s *Store) Import(d *db.DB) {
 
 		label := r.Label
 		t := WordType(r.FieldAsInt(0))
+
 		syns := strings.Split(r.FieldAsString(1), ",")
+		if len(syns) == 1 && syns[0] == "" {
+			syns = []string{}
+		}
 
 		s.Set(label, t, syns...)
 	}

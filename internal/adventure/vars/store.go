@@ -28,7 +28,7 @@ func NewStoreFromMap(m map[string]any) Store {
 	}
 }
 
-func (s Store) Len() int {
+func (s *Store) Len() int {
 	return len(s.Regs)
 }
 

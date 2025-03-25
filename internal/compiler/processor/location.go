@@ -2,7 +2,6 @@ package processor
 
 import (
 	"thenewquill/internal/adventure"
-	"thenewquill/internal/adventure/loc"
 	"thenewquill/internal/adventure/words"
 	cerr "thenewquill/internal/compiler/compiler_error"
 	"thenewquill/internal/compiler/line"
@@ -15,7 +14,13 @@ func readLocation(l line.Line, st *status.Status, a *adventure.Adventure) error 
 	label, ok := l.AsLocationLabel()
 	if ok {
 		st.CurrentLabel = label
-		a.Locations.Set(label, loc.Undefined, loc.Undefined)
+
+		_, err := a.Locations.New(label)
+		if err != nil {
+			return cerr.ErrCannotCreateLocation.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
+				WithFilename(st.CurrentFilename()).AddErr(err)
+		}
+
 		st.SetDef(label, section.Locs)
 
 		return nil
@@ -27,6 +32,10 @@ func readLocation(l line.Line, st *status.Status, a *adventure.Adventure) error 
 	}
 
 	currentLocation := a.Locations.Get(st.CurrentLabel)
+	if currentLocation == nil {
+		return cerr.ErrWrongLocationLabelDeclaration.WithSection(st.Section).WithStack(st.Stack).WithLine(l).
+			WithFilename(st.CurrentFilename())
+	}
 
 	o := l.OptimizedText()
 
@@ -69,7 +78,13 @@ func readLocation(l line.Line, st *status.Status, a *adventure.Adventure) error 
 
 			dest := a.Locations.Get(destLabel)
 			if dest == nil {
-				dest = a.Locations.Set(destLabel, loc.Undefined, loc.Undefined)
+				var err error
+				dest, err = a.Locations.New(destLabel)
+				if err != nil {
+					return cerr.ErrCannotCreateLocation.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
+						WithFilename(st.CurrentFilename()).AddErr(err)
+				}
+
 				st.SetUndef(destLabel, section.Locs, l)
 			}
 

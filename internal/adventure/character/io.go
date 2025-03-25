@@ -39,7 +39,7 @@ func (s *Store) Import(d *db.DB, sw words.Store, locs loc.Store) {
 			break
 		}
 
-		c := &Character{
+		s.Set(&Character{
 			Label:       r.Label,
 			Name:        sw.Get(words.Noun, r.FieldAsString(0)),
 			Adjective:   sw.Get(words.Adjective, r.FieldAsString(1)),
@@ -47,9 +47,7 @@ func (s *Store) Import(d *db.DB, sw words.Store, locs loc.Store) {
 			Location:    locs.Get(r.FieldAsString(3)),
 			Created:     r.FieldAsBool(4),
 			Human:       r.FieldAsBool(5),
-			Vars:        vars.NewStoreFromMap(r.FieldAsMap(6)),
-		}
-
-		s.Set(c)
+			Vars:        vars.NewStoreFromMap(r.FieldAsMapAny(6)),
+		})
 	}
 }

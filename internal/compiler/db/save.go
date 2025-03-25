@@ -14,7 +14,9 @@ func (db *DB) Save(w io.Writer) error {
 		}
 	}
 
-	w.Write([]byte{EOH})
+	if _, err := w.Write([]byte{EOH}); err != nil {
+		return err
+	}
 
 	// crunched part
 	zw := zlib.NewWriter(w)
@@ -31,7 +33,9 @@ func (db *DB) Save(w io.Writer) error {
 	}
 
 	// end of records
-	w.Write([]byte{EOR})
+	if _, err := w.Write([]byte{EOR}); err != nil {
+		return err
+	}
 
 	// hash
 	hash, err := db.Hash()

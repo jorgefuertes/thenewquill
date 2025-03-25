@@ -20,13 +20,22 @@ func (r *Record) Append(fields ...any) {
 	r.Fields = append(r.Fields, fields...)
 }
 
-func (r Record) FieldAsMap(index int) map[string]any {
+func (r Record) FieldAsMapAny(index int) map[string]any {
 	v, ok := r.Fields[index].(map[string]any)
 	if ok {
 		return v
 	}
 
 	return map[string]any{}
+}
+
+func (r Record) FieldAsMapString(index int) map[string]string {
+	v, ok := r.Fields[index].(map[string]string)
+	if ok {
+		return v
+	}
+
+	return map[string]string{}
 }
 
 func (r Record) FieldAsString(index int) string {

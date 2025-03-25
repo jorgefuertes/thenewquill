@@ -9,7 +9,10 @@ import (
 )
 
 func (s Store) Export(d *db.DB) {
-	for _, l := range s {
+	s.mut.Lock()
+	defer s.mut.Unlock()
+
+	for _, l := range s.data {
 		cMap := make(map[string]string, 0)
 		for _, c := range l.Conns {
 			cMap[c.Word.Label] = c.To.Label
@@ -33,26 +36,29 @@ func (s *Store) Import(d *db.DB, sw words.Store) error {
 			break
 		}
 
-		l := s.Set(r.Label, r.FieldAsString(0), r.FieldAsString(1))
-		l.Vars.SetAll(r.FieldAsMap(3))
+		l := New(r.Label, r.FieldAsString(0), r.FieldAsString(1))
+		l.Vars.SetAll(r.FieldAsMapAny(3))
 
-		for k, v := range r.FieldAsMap(2) {
-			w := sw.First(k)
+		for wordLabel, toLabel := range r.FieldAsMapString(2) {
+			w := sw.First(wordLabel)
 			if w == nil {
-				return fmt.Errorf("cannot find word %s for connection in location %s", k, l.Label)
-			}
-
-			toLabel, ok := v.(string)
-			if !ok {
-				return fmt.Errorf("cannot convert value %v to string for connection in location %s", v, l.Label)
+				return fmt.Errorf("cannot find word %s for connection in location %s", wordLabel, l.Label)
 			}
 
 			to := s.Get(toLabel)
 			if to == nil {
-				to = s.Set(toLabel, Undefined, Undefined)
+				var err error
+
+				if to, err = s.New(toLabel); err != nil {
+					return err
+				}
 			}
 
 			l.SetConn(w, to)
+		}
+
+		if err := s.Set(l); err != nil {
+			return err
 		}
 	}
 
