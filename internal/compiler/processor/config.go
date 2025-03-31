@@ -10,7 +10,7 @@ import (
 
 func readConfig(l line.Line, st *status.Status, a *adventure.Adventure) error {
 	label, value, ok := l.AsConfig()
-	if !ok || label == config.UnknownLabel {
+	if !ok || label == config.UnknownField {
 		return cerr.ErrWrongConfigDeclaration.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
 			WithFilename(st.CurrentFilename())
 	}

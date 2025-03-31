@@ -1,6 +1,9 @@
 package log
 
-import "fmt"
+import (
+	"fmt"
+	"os"
+)
 
 type LogLevel int
 
@@ -52,4 +55,9 @@ func Warning(format string, args ...any) {
 
 func Error(err error) {
 	Send(ErrorLevel, "%s", err.Error())
+}
+
+func Fatal(err error) {
+	Error(err)
+	os.Exit(1)
 }

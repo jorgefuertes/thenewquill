@@ -77,12 +77,12 @@ func (s *Store) Import(d *db.DB, sw words.Store, locs loc.Store, cs character.St
 		}
 
 		carriedByChar := cs.Get(r.FieldAsString(10))
-		if carriedByChar == nil {
+		if carriedByChar == nil && r.FieldAsString(10) != "" {
 			carriedByChar = cs.New(r.FieldAsString(10))
 		}
 
 		wornByChar := cs.Get(r.FieldAsString(11))
-		if wornByChar == nil {
+		if wornByChar == nil && r.FieldAsString(11) != "" {
 			wornByChar = cs.New(r.FieldAsString(11))
 		}
 

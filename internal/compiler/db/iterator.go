@@ -21,11 +21,11 @@ func (i *iterator) Next() *Record {
 	i.mut.Lock()
 	defer i.mut.Unlock()
 
-	if i.index >= len(i.db.Records) {
+	if i.index > len(i.db.Records) {
 		return nil
 	}
 
-	for i.index < len(i.db.Records)-1 {
+	for i.index < len(i.db.Records) {
 		if i.db.Records[i.index].Section != i.sec {
 			i.index++
 			continue

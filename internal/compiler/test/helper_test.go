@@ -147,9 +147,9 @@ func assertEqualLocations(t *testing.T, expected, actual loc.Store) {
 		}
 
 		l2 := actual.Get(l.Label)
-		assert.Equal(t, l.Title, l2.Title, "title for %s doesn't match", l.Label)
-		assert.Equal(t, l.Description, l2.Description, "description for %s doesn't match", l.Label)
-		assert.Equal(t, len(l.Conns), len(l2.Conns), "connections for %s differ in length", l.Label)
+		assert.Equal(t, l.Title, l2.Title, "location %s.Title doesn't match", l.Label)
+		assert.Equal(t, l.Description, l2.Description, "location %s.Description doesn't match", l.Label)
+		assert.Equal(t, len(l.Conns), len(l2.Conns), "location %s.Conns length differs", l.Label)
 		for _, c := range l.Conns {
 			to2 := l2.GetConn(c.Word)
 			assert.NotNil(t, to2, "connection %s for %s doesn't exist", c.Word.Label, l.Label)
@@ -178,42 +178,42 @@ func assertEqualItems(t *testing.T, expected, actual item.Store) {
 		}
 
 		i2 := actual.Get(i.Label)
-		assert.Equal(t, i.Noun.Label, i2.Noun.Label, "noun for %s doesn't match", i.Label)
-		assert.Equal(t, i.Adjective.Label, i2.Adjective.Label, "adjective for %s doesn't match", i.Label)
-		assert.Equal(t, i.Description, i2.Description, "description for %s doesn't match", i.Label)
-		assert.Equal(t, i.Weight, i2.Weight, "weight for %s doesn't match", i.Label)
-		assert.Equal(t, i.MaxWeight, i2.MaxWeight, "max weight for %s doesn't match", i.Label)
-		assert.Equal(t, i.IsContainer, i2.IsContainer, "is container for %s doesn't match", i.Label)
-		assert.Equal(t, i.IsWearable, i2.IsWearable, "is wearable for %s doesn't match", i.Label)
-		assert.Equal(t, i.IsCreated, i2.IsCreated, "is created for %s doesn't match", i.Label)
+		assert.Equal(t, i.Noun.Label, i2.Noun.Label, "item %s.Noun doesn't match", i.Label)
+		assert.Equal(t, i.Adjective.Label, i2.Adjective.Label, "item %s.Adjective doesn't match", i.Label)
+		assert.Equal(t, i.Description, i2.Description, "item %s.Description doesn't match", i.Label)
+		assert.Equal(t, i.Weight, i2.Weight, "item %s.Weight doesn't match", i.Label)
+		assert.Equal(t, i.MaxWeight, i2.MaxWeight, "item %s.MaxWeight doesn't match", i.Label)
+		assert.Equal(t, i.IsContainer, i2.IsContainer, "item %s.IsContainer doesn't match", i.Label)
+		assert.Equal(t, i.IsWearable, i2.IsWearable, "item %s.IsWearable doesn't match", i.Label)
+		assert.Equal(t, i.IsCreated, i2.IsCreated, "item %s.IsCreated doesn't match", i.Label)
 
 		if i.Location != nil {
-			assert.Equal(t, i.Location.Label, i2.Location.Label, "location for %s doesn't match", i.Label)
+			assert.Equal(t, i.Location.Label, i2.Location.Label, "item %s.Location doesn't match", i.Label)
 		} else {
-			assert.Nil(t, i2.Location, "location for %s should be nil", i.Label)
+			assert.Nil(t, i2.Location, "item %s.Location should be nil", i.Label)
 		}
 
 		if i.Inside != nil {
-			assert.Equal(t, i.Inside.Label, i2.Inside.Label, "inside for %s doesn't match", i.Label)
+			assert.Equal(t, i.Inside.Label, i2.Inside.Label, "item %s.Inside doesn't match", i.Label)
 		} else {
-			assert.Nil(t, i2.Inside, "inside for %s should be nil", i.Label)
+			assert.Nil(t, i2.Inside, "item %s.Inside should be nil", i.Label)
 		}
 
 		if i.CarriedBy != nil {
-			assert.Equal(t, i.CarriedBy.Label, i2.CarriedBy.Label, "carried by for %s doesn't match", i.Label)
+			assert.Equal(t, i.CarriedBy.Label, i2.CarriedBy.Label, "item %s.CarriedBy doesn't match", i.Label)
 		} else {
-			assert.Nil(t, i2.CarriedBy, "carried by for %s should be nil", i.Label)
+			assert.Nil(t, i2.CarriedBy, "item %s.CarriedBy should be nil", i.Label)
 		}
 
 		if i.WornBy != nil {
-			assert.Equal(t, i.WornBy.Label, i2.WornBy.Label, "worn by for %s doesn't match", i.Label)
+			assert.Equal(t, i.WornBy.Label, i2.WornBy.Label, "item %s.WornBy doesn't match", i.Label)
 		} else {
-			assert.Nil(t, i2.WornBy, "worn by for %s should be nil", i.Label)
+			assert.Nil(t, i2.WornBy, "item %s.WornBy should be nil", i.Label)
 		}
 
-		assert.Equal(t, len(i.Vars.Regs), len(i2.Vars.Regs), "vars for %s differ in length", i.Label)
+		assert.Equal(t, len(i.Vars.Regs), len(i2.Vars.Regs), "item %s.Vars length differs", i.Label)
 		for k, v := range i.Vars.Regs {
-			assert.Equal(t, v, i2.Vars.Regs[k], "var %s for %s doesn't match", k, i.Label)
+			assert.Equal(t, v, i2.Vars.Regs[k], "item %s.Vars[%s] doesn't match", k, i.Label)
 		}
 	}
 }

@@ -25,19 +25,19 @@ func (c *Config) Reset() {
 	c.Lang = ES
 }
 
-func (c *Config) Set(label Label, value string) error {
-	switch label {
-	case TitleLabel:
+func (c *Config) Set(field Field, value string) error {
+	switch field {
+	case TitleField:
 		c.Title = value
-	case AuthorLabel:
+	case AuthorField:
 		c.Author = value
-	case DescriptionLabel, DescLabel:
+	case DescriptionField, DescField:
 		c.Description = value
-	case VersionLabel:
+	case VersionField:
 		c.Version = value
-	case DateLabel:
+	case DateField:
 		c.Date = value
-	case LangLabel:
+	case LangField:
 		lang := LangFromString(value)
 		if lang == Undefined {
 			return ErrUnrecognizedLanguage
@@ -45,7 +45,7 @@ func (c *Config) Set(label Label, value string) error {
 
 		c.Lang = lang
 	default:
-		return ErrUnrecognizedConfigLabel
+		return ErrUnrecognizedConfigField
 	}
 
 	return nil

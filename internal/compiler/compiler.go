@@ -3,6 +3,7 @@ package compiler
 import (
 	"bufio"
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 
@@ -66,7 +67,12 @@ func compileFile(st *status.Status, filename string, a *adventure.Adventure) err
 		return err
 	}
 
-	defer file.Close()
+	defer func() {
+		if err := file.Close(); err != nil {
+			log.Fatal(err)
+		}
+	}()
+
 	st.PushFilename(filename)
 	defer st.PopFilename()
 

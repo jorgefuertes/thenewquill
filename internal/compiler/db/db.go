@@ -56,7 +56,7 @@ func (db *DB) Hash() ([]byte, error) {
 
 		// fields
 		for _, f := range r.Fields {
-			_, err := hasher.Write([]byte(fmt.Sprintf("%v", f)))
+			_, err := fmt.Fprintf(hasher, "%v", f)
 			if err != nil {
 				return nil, err
 			}

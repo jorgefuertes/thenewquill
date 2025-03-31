@@ -13,6 +13,7 @@ import (
 
 	"thenewquill/internal/compiler"
 	"thenewquill/internal/compiler/db"
+	"thenewquill/internal/log"
 
 	"github.com/jedib0t/go-pretty/v6/table"
 	"github.com/urfave/cli/v2"
@@ -46,8 +47,7 @@ func main() {
 
 	err := app.Run(os.Args)
 	if err != nil {
-		fmt.Println("❗ ERROR: ", err)
-		os.Exit(1)
+		log.Fatal(err)
 	}
 }
 
@@ -70,7 +70,11 @@ func compileAction(c *cli.Context) error {
 	if err != nil {
 		return err
 	}
-	defer f.Close()
+	defer func() {
+		if err := f.Close(); err != nil {
+			log.Fatal(err)
+		}
+	}()
 
 	if err := d.Save(f); err != nil {
 		return err

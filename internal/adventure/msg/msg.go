@@ -64,7 +64,7 @@ func (m Msg) Stringf(args ...any) string {
 		return pluralize(m.Plurals, args[0])
 	}
 
-	format := strings.Replace(m.Text, "_", "%v", -1)
+	format := strings.ReplaceAll(m.Text, "_", "%v")
 	return fmt.Sprintf(format, args...)
 }
 
@@ -80,10 +80,10 @@ func pluralize(texts [3]string, arg any) string {
 			return sprintf(texts[2], arg)
 		}
 	case float64:
-		switch {
-		case arg == 0:
+		switch arg {
+		case 0:
 			return sprintf(texts[0], 0)
-		case arg == 1:
+		case 1:
 			return sprintf(texts[1], 1)
 		default:
 			return sprintf(texts[2], fmt.Sprintf("%.2f", arg))
@@ -104,7 +104,7 @@ func pluralize(texts [3]string, arg any) string {
 
 func sprintf(format string, args ...any) string {
 	if strings.Contains(format, "_") {
-		return fmt.Sprintf(strings.Replace(format, "_", "%v", -1), args...)
+		return fmt.Sprintf(strings.ReplaceAll(format, "_", "%v"), args...)
 	}
 
 	return format

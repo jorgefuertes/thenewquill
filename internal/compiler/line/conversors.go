@@ -160,13 +160,13 @@ func (l Line) AsLabelNounAdjDeclaration() (label, noun, adjetive string, ok bool
 	return label, noun, adjetive, true
 }
 
-func (l Line) AsConfig() (label config.Label, value string, ok bool) {
-	for _, label := range config.Labels() {
+func (l Line) AsConfig() (label config.Field, value string, ok bool) {
+	for _, label := range config.Fields() {
 		value, ok := l.GetTextForLabel(label.String())
 		if ok {
 			return label, value, true
 		}
 	}
 
-	return config.UnknownLabel, value, false
+	return config.UnknownField, value, false
 }
