@@ -10,11 +10,14 @@ compiler:
 	@go build -o dist/qc cmd/compiler/qc.go
 
 runtime:
-	@go build -o dist/quill cmd/runtime/quill.go
+	@go build -o dist/quill cmd/runtime/*.go
 
 compile-ao:
 	@mkdir -p tmp
 	@go run cmd/compiler/qc.go c -i internal/compiler/test/src/ao/ao.adv -o tmp/ao.db
+
+run-ao: compile-ao runtime
+	@./dist/quill tmp/ao.db
 
 test:
 	@go test ./...
