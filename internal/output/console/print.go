@@ -7,47 +7,34 @@ import (
 	"github.com/mitchellh/go-wordwrap"
 )
 
+func (c *console) print(r rune) {
+	switch r {
+	case '\n':
+		c.incRow()
+	case '\r':
+		c.at.Col = 0
+	case '\t':
+		c.at.Col += 4
+		c.at.Col -= c.at.Col % 4
+	default:
+		c.screen.SetContent(c.at.Col, c.at.Row, r, nil, c.style)
+		c.moveCursor(1)
+	}
+}
+
 func (c *console) Print(s string) {
 	c.mut.Lock()
 	defer c.mut.Unlock()
 
-	beforeCol := c.col
-	beforeRow := c.row
-
 	for _, r := range s {
-		switch r {
-		case '\n':
-			c.row++
-			c.col = 0
-		case '\r':
-			c.col = 0
-		case '\t':
-			c.col += 4
-			c.col -= c.col % 4
-		default:
-			c.screen.SetContent(c.col, c.row, r, nil, c.style.Reverse(true))
-			if c.Delay > 0 {
-				c.screen.Show()
-				time.Sleep(c.Delay)
-			}
-
-			c.screen.SetContent(c.col, c.row, r, nil, c.style)
+		c.print(r)
+		if c.Delay > 0 {
+			c.screen.SetContent(c.at.Col, c.at.Row, cursorShape, nil, c.style)
 			c.screen.Show()
-			c.col++
+			time.Sleep(c.Delay)
+			c.screen.SetContent(c.at.Col, c.at.Row, ' ', nil, c.style)
 		}
 
-		if c.col >= c.Cols() {
-			c.row++
-			c.col = 0
-		}
-
-		if c.row >= c.Rows() {
-			c.row = c.Rows() - 1
-			c.scroll()
-		}
-	}
-
-	if c.Delay > 0 && beforeCol != c.col || beforeRow != c.row {
 		c.screen.Show()
 	}
 }
@@ -65,8 +52,8 @@ func (c *console) Cls() {
 	defer c.mut.Unlock()
 
 	c.screen.Clear()
-	c.row = 0
-	c.col = 0
+	c.at.Row = 0
+	c.at.Col = 0
 	c.screen.Show()
 }
 

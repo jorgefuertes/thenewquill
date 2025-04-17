@@ -16,33 +16,38 @@ import (
 func TestConsole(t *testing.T) {
 	c, err := console.New()
 	require.NoError(t, err)
-
+	c.Delay = time.Millisecond * 2
 	go c.Run()
 
-	c.Delay = time.Millisecond * 2
+	t.Run("Scroll", func(t *testing.T) {
+		for i := 0; i <= 100; i++ {
+			c.Printf("[%04d] Hello, World!\n", i)
+		}
 
-	for i := 0; i <= 100; i++ {
-		c.Printf("[%04d] Hello, World!\n", i)
-	}
+		time.Sleep(time.Second * 2)
 
-	time.Sleep(time.Second * 2)
+		c.Cls()
+	})
 
-	c.Cls()
+	t.Run("Long text", func(t *testing.T) {
+		for i := 0; i <= 25; i++ {
+			c.WrapPrintf("%s\n\n", lorem.Sentence(20, 80))
+		}
 
-	for i := 0; i <= 25; i++ {
-		c.WrapPrintf("%s\n\n", lorem.Sentence(20, 80))
-	}
+		time.Sleep(time.Second * 2)
 
-	time.Sleep(time.Second * 2)
+		c.Cls()
+	})
 
-	c.Cls()
-	c.Delay = time.Millisecond * 0
+	t.Run("Quick text", func(t *testing.T) {
+		c.Delay = time.Millisecond * 0
 
-	for i := 0; i <= 25; i++ {
-		c.WrapPrintf("%s\n\n", lorem.Sentence(20, 80))
-	}
+		for i := 0; i <= 25; i++ {
+			c.WrapPrintf("%s\n\n", lorem.Sentence(20, 80))
+		}
 
-	time.Sleep(time.Second * 2)
+		time.Sleep(time.Second * 2)
+	})
 
 	c.Close()
 }
