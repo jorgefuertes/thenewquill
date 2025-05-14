@@ -4,56 +4,60 @@ import (
 	"slices"
 	"strings"
 
-	"thenewquill/internal/util"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/db"
+	"github.com/jorgefuertes/thenewquill/internal/util"
 )
 
 type Word struct {
-	Label    string
-	Type     WordType
+	ID       db.ID
+	Type     db.SubKind
 	Synonyms []string
 }
 
-func New(label string, t WordType, synonyms ...string) *Word {
-	return &Word{Label: label, Type: t, Synonyms: synonyms}
+func New(id db.ID, t db.SubKind, synonyms ...string) *Word {
+	for i, s := range synonyms {
+		synonyms[i] = strings.ToLower(s)
+	}
+
+	return &Word{ID: id, Type: t, Synonyms: synonyms}
 }
 
-func (w Word) GetLabel() string {
-	return w.Label
+func (w Word) GetID() db.ID {
+	return w.ID
 }
 
-func (w Word) Is(labelOrSynonym string) bool {
-	labelOrSynonym = strings.ToLower(labelOrSynonym)
+func (w Word) GetKind() (db.Kind, db.SubKind) {
+	return db.Words, w.Type
+}
+
+func (w Word) Is(syn string) bool {
+	syn = strings.ToLower(syn)
 
 	// check for exact match
-	if w.Label == labelOrSynonym || slices.Contains(w.Synonyms, labelOrSynonym) {
+	if slices.Contains(w.Synonyms, syn) {
 		return true
 	}
 
 	// check without accent or symbols
-	labelOrSynonym = util.RemoveAccents(labelOrSynonym)
-	labelOrSynonym = util.RemoveSymbols(labelOrSynonym)
+	syn = util.RemoveAccents(syn)
+	syn = util.RemoveSymbols(syn)
 
-	return w.Label == labelOrSynonym || slices.Contains(w.Synonyms, labelOrSynonym)
+	return slices.Contains(w.Synonyms, syn)
 }
 
-func (w Word) IsExactlyEqual(w2 Word) bool {
-	if w.Label != w2.Label || w.Type != w2.Type {
+func (w Word) IsSynonymAndType(syn string, t db.SubKind) bool {
+	if w.Type != t {
 		return false
 	}
 
-	if len(w.Synonyms) != len(w2.Synonyms) {
-		return false
+	syn = strings.ToLower(syn)
+	if slices.Contains(w.Synonyms, syn) {
+		return true
 	}
 
-	for _, s := range w.Synonyms {
-		if !slices.Contains(w2.Synonyms, s) {
-			return false
-		}
-	}
+	// check without accent or symbols
+	syn = util.RemoveAccents(syn)
+	syn = util.RemoveSymbols(syn)
 
-	return true
-}
-
-func (w Word) IsEqual(w2 *Word) bool {
-	return w.Label == w2.Label && w.Type == w2.Type
+	return slices.Contains(w.Synonyms, syn)
 }

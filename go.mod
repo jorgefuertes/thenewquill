@@ -1,4 +1,4 @@
-module thenewquill
+module github.com/jorgefuertes/thenewquill
 
 go 1.24
 

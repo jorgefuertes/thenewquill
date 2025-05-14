@@ -3,8 +3,8 @@ package compiler
 import (
 	"fmt"
 
-	"thenewquill/internal/compiler/line"
-	"thenewquill/internal/compiler/section"
+	"github.com/jorgefuertes/thenewquill/internal/compiler/line"
+	"github.com/jorgefuertes/thenewquill/internal/compiler/section"
 )
 
 type CompilerError struct {

@@ -1,11 +1,11 @@
 package processor
 
 import (
-	"thenewquill/internal/adventure"
-	cerr "thenewquill/internal/compiler/compiler_error"
-	"thenewquill/internal/compiler/line"
-	"thenewquill/internal/compiler/section"
-	"thenewquill/internal/compiler/status"
+	"github.com/jorgefuertes/thenewquill/internal/adventure"
+	cerr "github.com/jorgefuertes/thenewquill/internal/compiler/compiler_error"
+	"github.com/jorgefuertes/thenewquill/internal/compiler/line"
+	"github.com/jorgefuertes/thenewquill/internal/compiler/section"
+	"github.com/jorgefuertes/thenewquill/internal/compiler/status"
 )
 
 func readVar(l line.Line, st *status.Status, a *adventure.Adventure) error {

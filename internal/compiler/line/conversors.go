@@ -4,11 +4,11 @@ import (
 	"strconv"
 	"strings"
 
-	"thenewquill/internal/adventure/config"
-	"thenewquill/internal/adventure/msg"
-	"thenewquill/internal/adventure/words"
-	"thenewquill/internal/compiler/rg"
-	"thenewquill/internal/compiler/section"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/config"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/msg"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/words"
+	"github.com/jorgefuertes/thenewquill/internal/compiler/rg"
+	"github.com/jorgefuertes/thenewquill/internal/compiler/section"
 )
 
 // AsInclude returns the include filename string and true if it was found

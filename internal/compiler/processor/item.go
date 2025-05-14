@@ -4,14 +4,14 @@ import (
 	"strconv"
 	"strings"
 
-	"thenewquill/internal/adventure"
-	"thenewquill/internal/adventure/item"
-	"thenewquill/internal/adventure/words"
-	cerr "thenewquill/internal/compiler/compiler_error"
-	"thenewquill/internal/compiler/line"
-	"thenewquill/internal/compiler/rg"
-	"thenewquill/internal/compiler/section"
-	"thenewquill/internal/compiler/status"
+	"github.com/jorgefuertes/thenewquill/internal/adventure"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/item"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/words"
+	cerr "github.com/jorgefuertes/thenewquill/internal/compiler/compiler_error"
+	"github.com/jorgefuertes/thenewquill/internal/compiler/line"
+	"github.com/jorgefuertes/thenewquill/internal/compiler/rg"
+	"github.com/jorgefuertes/thenewquill/internal/compiler/section"
+	"github.com/jorgefuertes/thenewquill/internal/compiler/status"
 )
 
 func readItem(l line.Line, st *status.Status, a *adventure.Adventure) error {

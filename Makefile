@@ -25,13 +25,18 @@ test:
 test-v:
 	go test -v ./...
 
+test-clean:
+	@go clean -testcache
+
+test-input: test-clean
+	@go test -run "TestConsoleInput" ./internal/output/console/. -tags manual
+
 lint:
 	@echo "Linting..."
 	@go tool gofumpt -l -d .
 	@go tool staticcheck ./...
 	@go tool golangci-lint run ./...
 
-clean:
-	@go clean -testcache
+clean: test-clean
 	@rm -Rf dist
 	@rm -Rf tmp

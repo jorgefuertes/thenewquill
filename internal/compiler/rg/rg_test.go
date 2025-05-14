@@ -4,7 +4,7 @@ import (
 	"regexp"
 	"testing"
 
-	"thenewquill/internal/compiler/rg"
+	"github.com/jorgefuertes/thenewquill/internal/compiler/rg"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

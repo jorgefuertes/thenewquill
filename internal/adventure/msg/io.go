@@ -1,8 +1,8 @@
 package msg
 
 import (
-	"thenewquill/internal/compiler/db"
-	"thenewquill/internal/compiler/section"
+	"github.com/jorgefuertes/thenewquill/internal/compiler/db"
+	"github.com/jorgefuertes/thenewquill/internal/compiler/section"
 )
 
 func (s Store) Export(d *db.DB) {

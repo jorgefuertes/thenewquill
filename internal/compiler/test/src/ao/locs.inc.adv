@@ -2,6 +2,7 @@ SECTION LOCATIONS
 
 start:
 	title: "La aventura original"
+	desc: "Bienvenido a la aventura original."
 
 frontera:
 	title: "Frontera"

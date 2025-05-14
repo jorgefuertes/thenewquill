@@ -3,6 +3,7 @@ package log
 import (
 	"fmt"
 	"os"
+	"strings"
 )
 
 type LogLevel int
@@ -38,7 +39,9 @@ func Send(level LogLevel, format string, args ...any) {
 		return
 	}
 
-	fmt.Printf("[%5s] %s\n", level.String(), fmt.Sprintf(format, args...))
+	for _, line := range strings.Split(fmt.Sprintf(format, args...), "\n") {
+		fmt.Printf("[%5s] %s\n", level.String(), line)
+	}
 }
 
 func Debug(format string, args ...any) {
@@ -54,7 +57,7 @@ func Warning(format string, args ...any) {
 }
 
 func Error(err error) {
-	Send(ErrorLevel, "%s", err.Error())
+	Send(ErrorLevel, "%s", err)
 }
 
 func Fatal(err error) {

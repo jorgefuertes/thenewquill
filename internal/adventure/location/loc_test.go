@@ -1,17 +1,19 @@
-package loc_test
+package location_test
 
 import (
 	"testing"
 
-	"thenewquill/internal/adventure/loc"
-	"thenewquill/internal/adventure/words"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/label"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/loc"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/words"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func TestLocations(t *testing.T) {
-	locs := loc.NewStore()
+	labelStore := label.NewStore()
+	locs := loc.NewStore(labelStore)
 
 	north := &words.Word{Label: "north", Type: words.Verb}
 	east := &words.Word{Label: "east", Type: words.Verb}

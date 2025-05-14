@@ -1,6 +1,6 @@
 package line
 
-import "thenewquill/internal/compiler/rg"
+import "github.com/jorgefuertes/thenewquill/internal/compiler/rg"
 
 func (l Line) IsCommentBegin() bool {
 	return rg.CommentBegin.MatchString(l.text)

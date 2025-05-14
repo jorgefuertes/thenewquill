@@ -3,7 +3,7 @@ package vars_test
 import (
 	"testing"
 
-	"thenewquill/internal/adventure/vars"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/vars"
 
 	"github.com/stretchr/testify/require"
 )

@@ -4,7 +4,7 @@ import (
 	"regexp"
 	"strings"
 
-	"thenewquill/internal/compiler/rg"
+	"github.com/jorgefuertes/thenewquill/internal/compiler/rg"
 )
 
 type Line struct {

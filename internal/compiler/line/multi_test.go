@@ -3,7 +3,7 @@ package line_test
 import (
 	"testing"
 
-	"thenewquill/internal/compiler/line"
+	"github.com/jorgefuertes/thenewquill/internal/compiler/line"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

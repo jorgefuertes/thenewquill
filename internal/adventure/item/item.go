@@ -1,108 +1,41 @@
 package item
 
 import (
-	"thenewquill/internal/adventure/character"
-	"thenewquill/internal/adventure/loc"
-	"thenewquill/internal/adventure/vars"
-	"thenewquill/internal/adventure/words"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/db"
 )
 
 type Item struct {
-	Label       string
-	Noun        *words.Word
-	Adjective   *words.Word
+	ID          db.ID
+	NounID      db.ID
+	AdjectiveID db.ID
 	Description string
 	Weight      int
 	MaxWeight   int
 	IsContainer bool
+	Contains    []db.ID
 	IsWearable  bool
+	WornBy      db.ID
 	IsCreated   bool
-	Location    *loc.Location
-	Inside      *Item
-	CarriedBy   *character.Character
-	WornBy      *character.Character
-	Vars        vars.Store
+	LocationID  db.ID
 }
 
-func (i *Item) validate() error {
-	if i.Noun == nil {
-		return ErrNounCannotBeNil
-	}
+var _ db.Storeable = Item{}
 
-	if i.Noun.Is("_") {
-		return ErrNounCannotBeUnderscore
-	}
+func (i Item) GetID() db.ID {
+	return i.ID
+}
 
-	if i.Adjective == nil {
-		return ErrAdjectiveCannotBeNil
-	}
-
-	if i.Weight > i.MaxWeight {
-		return ErrWeightShouldBeLessOrEqualThanMaxWeight
-	}
-
-	if i.Weight < 0 || i.MaxWeight < 0 {
-		return ErrWeightCannotBeNegative
-	}
-
-	return nil
+func (i Item) GetKind() (db.Kind, db.SubKind) {
+	return db.Items, db.NoSubKind
 }
 
 // simple Item
-func New(label string, noun *words.Word, adjective *words.Word) *Item {
-	return &Item{
-		Label:     label,
-		Noun:      noun,
-		Adjective: adjective,
-		Weight:    0,
-		MaxWeight: 100,
-		Vars:      vars.NewStore(),
+func New(id db.ID, nounID db.ID, adjectiveID db.ID) Item {
+	return Item{
+		ID:          id,
+		NounID:      nounID,
+		AdjectiveID: adjectiveID,
+		Weight:      0,
+		MaxWeight:   100,
 	}
-}
-
-func (i *Item) GetLabel() string {
-	return i.Label
-}
-
-func (i *Item) Wear() {
-	if i.IsWearable {
-		i.WornBy = i.CarriedBy
-		i.CarriedBy = nil
-		i.Location = nil
-		i.Inside = nil
-	}
-}
-
-func (i *Item) Unwear() {
-	i.CarriedBy = i.WornBy
-	i.WornBy = nil
-	i.Location = nil
-}
-
-func (i *Item) Drop(l *loc.Location) {
-	i.WornBy = nil
-	i.Inside = nil
-	i.CarriedBy = nil
-	i.Location = l
-}
-
-func (i *Item) Give(c *character.Character) {
-	i.WornBy = nil
-	i.Location = nil
-	i.Inside = nil
-	i.CarriedBy = c
-}
-
-func (i *Item) Create() {
-	i.WornBy = nil
-	i.Inside = nil
-	i.CarriedBy = nil
-	i.IsCreated = true
-}
-
-func (i *Item) Destroy() {
-	i.WornBy = nil
-	i.Inside = nil
-	i.CarriedBy = nil
-	i.IsCreated = false
 }

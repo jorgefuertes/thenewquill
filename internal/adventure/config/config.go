@@ -9,8 +9,8 @@ type Config struct {
 	Lang        Lang
 }
 
-func New() Config {
-	c := Config{}
+func New() *Config {
+	c := &Config{}
 	c.Reset()
 
 	return c

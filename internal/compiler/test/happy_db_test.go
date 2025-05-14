@@ -4,9 +4,9 @@ import (
 	"bytes"
 	"testing"
 
-	"thenewquill/internal/adventure"
-	"thenewquill/internal/compiler"
-	"thenewquill/internal/compiler/db"
+	"github.com/jorgefuertes/thenewquill/internal/adventure"
+	"github.com/jorgefuertes/thenewquill/internal/compiler"
+	"github.com/jorgefuertes/thenewquill/internal/compiler/db"
 
 	"github.com/stretchr/testify/require"
 )

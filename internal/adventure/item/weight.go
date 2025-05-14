@@ -1,23 +1,29 @@
 package item
 
-func (i *Item) TotalWeight(s *Store) int {
-	s.lock.Lock()
-	defer s.lock.Unlock()
+import (
+	"github.com/jorgefuertes/thenewquill/internal/adventure/db"
+)
 
-	return s.recursiveWeight(i)
-}
-
-func (s *Store) recursiveWeight(i *Item) int {
+func TotalWeightOf(i Item, d *db.DB) (int, error) {
 	if !i.IsContainer {
-		return i.Weight
+		return i.Weight, nil
 	}
 
 	w := i.Weight
-	for _, f := range s.items {
-		if f.Inside == i {
-			w += s.recursiveWeight(f)
+	for _, containedID := range i.Contains {
+		var containedItem Item
+
+		if err := d.GetAs(containedID, &containedItem); err != nil {
+			return w, err
 		}
+
+		w2, err := TotalWeightOf(containedItem, d)
+		if err != nil {
+			return w, err
+		}
+
+		w += w2
 	}
 
-	return w
+	return w, nil
 }

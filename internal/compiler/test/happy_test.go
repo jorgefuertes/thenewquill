@@ -3,8 +3,8 @@ package compiler_test
 import (
 	"testing"
 
-	"thenewquill/internal/adventure/words"
-	"thenewquill/internal/compiler"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/words"
+	"github.com/jorgefuertes/thenewquill/internal/compiler"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -68,7 +68,7 @@ func TestCompilerHappyPath(t *testing.T) {
 			{words.Verb, "abrir", []string{"abro", "abre"}},
 			{words.Verb, "cerrar", []string{"cierro", "cierra"}},
 			{words.Verb, "fin", []string{"terminar", "acabar", "sistema"}},
-			{words.Verb, "quill", []string{"thenewquill", "tnq"}},
+			{words.Verb, "quill", []string{"github.com/jorgefuertes/thenewquill", "tnq"}},
 			{words.Verb, "ad", []string{}},
 			{words.Verb, "decir", []string{"di", "hablar", "habla"}},
 			{words.Verb, "ir", []string{"voy", "vamos", "ve"}},

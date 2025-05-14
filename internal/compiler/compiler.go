@@ -7,12 +7,12 @@ import (
 	"os"
 	"path/filepath"
 
-	"thenewquill/internal/adventure"
-	cerr "thenewquill/internal/compiler/compiler_error"
-	"thenewquill/internal/compiler/line"
-	"thenewquill/internal/compiler/processor"
-	"thenewquill/internal/compiler/section"
-	"thenewquill/internal/compiler/status"
+	"github.com/jorgefuertes/thenewquill/internal/adventure"
+	cerr "github.com/jorgefuertes/thenewquill/internal/compiler/compiler_error"
+	"github.com/jorgefuertes/thenewquill/internal/compiler/line"
+	"github.com/jorgefuertes/thenewquill/internal/compiler/processor"
+	"github.com/jorgefuertes/thenewquill/internal/compiler/section"
+	"github.com/jorgefuertes/thenewquill/internal/compiler/status"
 )
 
 const VERSION = "1.0.0"
@@ -43,22 +43,7 @@ func Compile(filename string) (*adventure.Adventure, error) {
 		return a, err
 	}
 
-	// check messages
-	if err := a.Messages.Validate(); err != nil {
-		return a, err
-	}
-
-	// check items
-	if err := a.Items.Validate(); err != nil {
-		return a, err
-	}
-
-	// check characters
-	if err := a.Chars.Validate(); err != nil {
-		return a, err
-	}
-
-	return a, nil
+	return a, a.Validate()
 }
 
 func compileFile(st *status.Status, filename string, a *adventure.Adventure) error {

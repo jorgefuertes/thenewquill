@@ -3,9 +3,9 @@ package compiler_test
 import (
 	"testing"
 
-	"thenewquill/internal/compiler"
+	"github.com/jorgefuertes/thenewquill/internal/compiler"
 
-	cerr "thenewquill/internal/compiler/compiler_error"
+	cerr "github.com/jorgefuertes/thenewquill/internal/compiler/compiler_error"
 
 	"github.com/stretchr/testify/require"
 )

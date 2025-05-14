@@ -4,14 +4,14 @@ import (
 	"reflect"
 	"testing"
 
-	"thenewquill/internal/adventure"
-	"thenewquill/internal/adventure/character"
-	"thenewquill/internal/adventure/config"
-	"thenewquill/internal/adventure/item"
-	"thenewquill/internal/adventure/loc"
-	"thenewquill/internal/adventure/msg"
-	"thenewquill/internal/adventure/vars"
-	"thenewquill/internal/adventure/words"
+	"github.com/jorgefuertes/thenewquill/internal/adventure"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/character"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/config"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/item"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/loc"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/msg"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/vars"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/words"
 
 	"github.com/stretchr/testify/assert"
 )

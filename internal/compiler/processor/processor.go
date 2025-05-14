@@ -1,10 +1,10 @@
 package processor
 
 import (
-	"thenewquill/internal/adventure"
-	"thenewquill/internal/compiler/line"
-	"thenewquill/internal/compiler/section"
-	"thenewquill/internal/compiler/status"
+	"github.com/jorgefuertes/thenewquill/internal/adventure"
+	"github.com/jorgefuertes/thenewquill/internal/compiler/line"
+	"github.com/jorgefuertes/thenewquill/internal/compiler/section"
+	"github.com/jorgefuertes/thenewquill/internal/compiler/status"
 )
 
 func ProcessLine(l line.Line, st *status.Status, a *adventure.Adventure) error {

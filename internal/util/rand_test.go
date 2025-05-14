@@ -3,7 +3,7 @@ package util_test
 import (
 	"testing"
 
-	"thenewquill/internal/util"
+	"github.com/jorgefuertes/thenewquill/internal/util"
 
 	"github.com/stretchr/testify/assert"
 )

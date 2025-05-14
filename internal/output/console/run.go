@@ -3,11 +3,12 @@ package console
 import (
 	"unicode"
 
-	"thenewquill/internal/log"
+	"github.com/jorgefuertes/thenewquill/internal/log"
 
 	"github.com/gdamore/tcell/v2"
 )
 
+// Run starts the console, blocking until the user closes it, you should run it in a goroutine.
 func (c *console) Run() {
 	for {
 		ev := c.screen.PollEvent()

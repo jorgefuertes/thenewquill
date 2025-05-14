@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"thenewquill/internal/output/console"
+	"github.com/jorgefuertes/thenewquill/internal/output/console"
 
 	"github.com/stretchr/testify/require"
 )

@@ -3,7 +3,7 @@ package msg_test
 import (
 	"testing"
 
-	"thenewquill/internal/adventure/msg"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/msg"
 
 	"github.com/stretchr/testify/assert"
 )

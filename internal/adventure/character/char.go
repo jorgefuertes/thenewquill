@@ -1,35 +1,53 @@
 package character
 
 import (
-	"thenewquill/internal/adventure/loc"
-	"thenewquill/internal/adventure/vars"
-	"thenewquill/internal/adventure/words"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/db"
 )
 
 type Character struct {
-	Label       string
-	Name        *words.Word
-	Adjective   *words.Word
+	ID          db.ID
+	NameID      db.ID
+	AdjectiveID db.ID
 	Description string
-	Location    *loc.Location
+	LocationID  db.ID
 	Created     bool
 	Human       bool
-	Vars        vars.Store
 }
 
-func New(label string, name *words.Word, adjective *words.Word) *Character {
-	return &Character{
-		Label:       label,
-		Name:        name,
-		Adjective:   adjective,
+var _ db.Storeable = Character{}
+
+func (c Character) GetID() db.ID {
+	return c.ID
+}
+
+func (c Character) GetKind() (db.Kind, db.SubKind) {
+	return db.Chars, db.NoSubKind
+}
+
+func New(id db.ID, nameID db.ID, adjectiveID db.ID) Character {
+	return Character{
+		ID:          id,
+		NameID:      nameID,
+		AdjectiveID: adjectiveID,
 		Description: "",
-		Location:    nil,
+		LocationID:  db.UndefinedLabel.ID,
 		Created:     false,
 		Human:       false,
-		Vars:        vars.NewStore(),
 	}
 }
 
-func (c Character) GetLabel() string {
-	return c.Label
+func (c Character) Validate() error {
+	if c.ID == db.UndefinedLabel.ID {
+		return ErrEmptyLabel
+	}
+
+	if c.ID < db.MinMeaningfulID {
+		return ErrWrongLabel
+	}
+
+	if c.Description == "" {
+		return ErrEmptyDescription
+	}
+
+	return nil
 }

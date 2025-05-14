@@ -16,4 +16,5 @@ var (
 	ErrItemCannotBeWornAndHaveLocation        = errors.New("item cannot be worn and have location")
 	ErrDuplicatedItemLabel                    = errors.New("duplicated item label")
 	ErrDuplicatedNounAdj                      = errors.New("duplicated noun and adjective")
+	ErrItemIsNotWearableButIsWorn             = errors.New("item is not wearable but is worn")
 )

@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"sync"
 
-	"thenewquill/internal/compiler/rg"
+	"github.com/jorgefuertes/thenewquill/internal/compiler/rg"
 )
 
 type Store struct {
@@ -19,6 +19,13 @@ func NewStore() Store {
 		lock: &sync.Mutex{},
 		Regs: make(map[string]any, 0),
 	}
+}
+
+func (s *Store) Reset() {
+	s.lock.Lock()
+	defer s.lock.Unlock()
+
+	s.Regs = make(map[string]any, 0)
 }
 
 func NewStoreFromMap(m map[string]any) Store {

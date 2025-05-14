@@ -1,11 +1,11 @@
 package processor
 
 import (
-	"thenewquill/internal/adventure"
-	"thenewquill/internal/adventure/config"
-	cerr "thenewquill/internal/compiler/compiler_error"
-	"thenewquill/internal/compiler/line"
-	"thenewquill/internal/compiler/status"
+	"github.com/jorgefuertes/thenewquill/internal/adventure"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/config"
+	cerr "github.com/jorgefuertes/thenewquill/internal/compiler/compiler_error"
+	"github.com/jorgefuertes/thenewquill/internal/compiler/line"
+	"github.com/jorgefuertes/thenewquill/internal/compiler/status"
 )
 
 func readConfig(l line.Line, st *status.Status, a *adventure.Adventure) error {
