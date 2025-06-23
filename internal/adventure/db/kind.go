@@ -8,15 +8,15 @@ import (
 type Kind byte
 
 const (
-	None      Kind = 0
-	Config    Kind = 1
-	Variables Kind = 2
-	Words     Kind = 3
-	Messages  Kind = 4
-	Items     Kind = 5
-	Locations Kind = 6
-	Processes Kind = 7
-	Chars     Kind = 8
+	None       Kind = 0
+	Config     Kind = 1
+	Variables  Kind = 2
+	Words      Kind = 3
+	Messages   Kind = 4
+	Items      Kind = 5
+	Locations  Kind = 6
+	Processes  Kind = 7
+	Characters Kind = 8
 )
 
 func Kinds() []Kind {
@@ -73,18 +73,4 @@ func FromString(s string) Kind {
 	}
 
 	return None
-}
-
-func isKind(s Storeable, k Kind, sk SubKind) bool {
-	k2, sk2 := s.GetKind()
-
-	if k != k2 {
-		return false
-	}
-
-	if sk2 != AnySubKind && sk != sk2 {
-		return false
-	}
-
-	return true
 }

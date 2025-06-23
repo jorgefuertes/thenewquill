@@ -1,18 +1,47 @@
 package character
 
 import (
+	"fmt"
+
 	"github.com/jorgefuertes/thenewquill/internal/adventure/db"
 )
 
-func ValidateAll(d *db.DB) error {
-	humans := 0
-
-	chars := make([]Character, 0)
-	if err := d.GetByKindAs(db.Chars, db.NoSubKind, &chars); err != nil {
+func (c Character) Validate(allowNoID db.Allow) error {
+	if err := c.ID.Validate(db.DontAllowSpecial); err != nil && !allowNoID {
 		return err
 	}
 
-	for _, c := range chars {
+	if c.Description == "" {
+		return ErrEmptyDescription
+	}
+
+	if err := c.NounID.Validate(db.DontAllowSpecial); err != nil {
+		return fmt.Errorf("name ID %q: %w", c.NounID, err)
+	}
+
+	if err := c.AdjectiveID.Validate(db.AllowSpecial); err != nil {
+		return fmt.Errorf("adjective ID %q: %w", c.AdjectiveID, err)
+	}
+
+	if err := c.LocationID.Validate(db.DontAllowSpecial); err != nil {
+		return fmt.Errorf("location ID %q: %w", c.LocationID, err)
+	}
+
+	return nil
+}
+
+func (s *Service) ValidateAll() error {
+	humans := 0
+
+	chars := s.db.Query(db.Characters)
+	defer chars.Close()
+
+	c := Character{}
+	for chars.Next(&c) {
+		if err := c.Validate(db.DontAllowNoID); err != nil {
+			return err
+		}
+
 		if c.Human {
 			humans++
 		}

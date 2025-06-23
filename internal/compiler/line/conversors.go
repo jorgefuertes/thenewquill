@@ -5,10 +5,9 @@ import (
 	"strings"
 
 	"github.com/jorgefuertes/thenewquill/internal/adventure/config"
-	"github.com/jorgefuertes/thenewquill/internal/adventure/msg"
-	"github.com/jorgefuertes/thenewquill/internal/adventure/words"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/db"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/message"
 	"github.com/jorgefuertes/thenewquill/internal/compiler/rg"
-	"github.com/jorgefuertes/thenewquill/internal/compiler/section"
 )
 
 // AsInclude returns the include filename string and true if it was found
@@ -21,12 +20,12 @@ func (l Line) AsInclude() (string, bool) {
 }
 
 // AsSection returns the section and true if it was found
-func (l Line) AsSection() (section.Section, bool) {
+func (l Line) AsSection() (db.Kind, bool) {
 	if !rg.Section.MatchString(l.OptimizedText()) {
-		return section.None, false
+		return db.None, false
 	}
 
-	return section.FromString(rg.Section.FindStringSubmatch(l.OptimizedText())[1]), true
+	return db.FromString(rg.Section.FindStringSubmatch(l.OptimizedText())[1]), true
 }
 
 // AsVar returns the variable name and value and true if it was found
@@ -61,48 +60,55 @@ func (l Line) AsVar() (string, any, bool) {
 	return name, valueStr, true
 }
 
-// AsWord returns the word and true if it was found
-func (l Line) AsWord() (words.Word, bool) {
+// AsWord returns the word name, synonyms and true if it was found
+func (l Line) AsWord() (string, []string, bool) {
 	o := l.OptimizedText()
 
 	if !rg.Word.MatchString(o) {
-		return words.Word{}, false
+		return "", nil, false
 	}
-
-	w := words.Word{}
 
 	parts := strings.Split(o, ":")
 	if len(parts) != 2 {
-		return words.Word{}, false
+		return "", nil, false
 	}
 
-	w.Type = words.WordTypeFromString(parts[0])
+	labelName := parts[1]
 
-	words := strings.Split(parts[1], ",")
-	for i, word := range words {
-		if i == 0 {
-			w.Label = strings.TrimSpace(word)
-
+	syns := strings.Split(parts[1], ",")
+	for i, syn := range syns {
+		syns[i] = strings.TrimSpace(syn)
+		if syns[i] == "" {
+			syns = append(syns[:i], syns[i+1:]...)
 			continue
 		}
-
-		w.Synonyms = append(w.Synonyms, strings.TrimSpace(word))
 	}
 
-	return w, true
+	return labelName, syns, true
 }
 
-func (l Line) AsMsg() (*msg.Msg, bool) {
+// AsMsg returns the label name, text, plural name and result
+func (l Line) AsMsg() (string, string, message.Plural, bool) {
 	if !rg.Msg.MatchString(l.text) {
-		return nil, false
+		return "", "", message.Zero, false
+	}
+
+	// is a plural?
+	if rg.MsgPlural.MatchString(l.text) {
+		parts := rg.MsgPlural.FindStringSubmatch(l.text)
+		if len(parts) != 4 {
+			return "", "", message.Zero, false
+		}
+
+		return parts[2], parts[3], message.PluralFromString(parts[1]), true
 	}
 
 	parts := rg.Msg.FindStringSubmatch(l.text)
 	if len(parts) != 3 {
-		return nil, false
+		return "", "", message.Zero, false
 	}
 
-	return msg.New(parts[1], parts[2]), true
+	return parts[1], parts[2], message.Zero, true
 }
 
 // AsLocationLabel returns the location label and true if it was found
@@ -116,12 +122,12 @@ func (l Line) AsLocationLabel() (string, bool) {
 
 // AsLocationDescription returns the location description and true if it was found
 func (l Line) AsLocationDescription() (string, bool) {
-	return l.GetTextForLabel("desc")
+	return l.GetTextForLabelName("desc")
 }
 
 // AsLocationTitle returns the location title and true if it was found
 func (l Line) AsLocationTitle() (string, bool) {
-	return l.GetTextForLabel("title")
+	return l.GetTextForLabelName("title")
 }
 
 // AsLocationConns returns the location connections and true if it was found
@@ -147,26 +153,28 @@ func (l Line) AsLocationConns() (map[string]string, bool) {
 }
 
 // AsItemDeclaration returns the item label, noun and adjective and true if it was found
-func (l Line) AsLabelNounAdjDeclaration() (label, noun, adjetive string, ok bool) {
+func (l Line) AsLabelNounAdjDeclaration() (labelName, nounName, adjetiveName string, ok bool) {
 	if !rg.LabelNounAdjDeclaration.MatchString(l.OptimizedText()) {
 		return "", "", "", false
 	}
 
 	m := rg.LabelNounAdjDeclaration.FindStringSubmatch(l.OptimizedText())
-	label = m[1]
-	noun = m[2]
-	adjetive = m[3]
+	labelName = m[1]
+	nounName = m[2]
+	adjetiveName = m[3]
 
-	return label, noun, adjetive, true
+	return labelName, nounName, adjetiveName, true
 }
 
-func (l Line) AsConfig() (label config.Field, value string, ok bool) {
-	for _, label := range config.Fields() {
-		value, ok := l.GetTextForLabel(label.String())
+// AsConfig returns the config field name and value and true if it was found
+func (l Line) AsConfig() (string, string, bool) {
+	for _, f := range config.AllowedFieldNames() {
+		v, ok := l.GetTextForLabelName(f)
+
 		if ok {
-			return label, value, true
+			return f, v, true
 		}
 	}
 
-	return config.UnknownField, value, false
+	return "", "", false
 }

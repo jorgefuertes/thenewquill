@@ -8,8 +8,10 @@ import (
 )
 
 const (
-	Limit              = math.MaxInt32
-	MinMeaningfulID ID = 4
+	Limit                  = math.MaxInt32
+	MinMeaningfulID  ID    = 4
+	AllowSpecial     Allow = true
+	DontAllowSpecial Allow = false
 )
 
 type ID uint32
@@ -20,6 +22,27 @@ func (id ID) String() string {
 
 func (id ID) UInt32() uint32 {
 	return uint32(id)
+}
+
+func (id ID) IsDefined() bool {
+	return id != UndefinedLabel.ID
+}
+
+// Validate checks if the ID is valid, allowSpecial allows _ and * to be valid IDs
+func (id ID) Validate(allowSpecial Allow) error {
+	if id == UndefinedLabel.ID {
+		return ErrUndefinedLabel
+	}
+
+	if id < MinMeaningfulID && !allowSpecial {
+		return ErrInvalidLabelID
+	}
+
+	if id >= Limit {
+		return ErrInvalidLabelID
+	}
+
+	return nil
 }
 
 type Label struct {
@@ -34,12 +57,16 @@ var (
 	WildcardLabel   = Label{ID: 3, Name: "*"}
 )
 
-func (d *DB) AddLabel(name string) (Label, error) {
+func (d *DB) AddLabel(name string, allowDot bool) (Label, error) {
 	if d.ExistsLabelName(name) {
 		return d.GetLabelByName(name)
 	}
 
-	if !IsValidLabelName(name) {
+	if !IsValidLabelName(name) && !allowDot {
+		return Label{}, errors.Join(ErrInvalidLabelName, errors.New(name))
+	}
+
+	if allowDot && !IsVarValidLabelName(name) {
 		return Label{}, errors.Join(ErrInvalidLabelName, errors.New(name))
 	}
 
@@ -107,4 +134,8 @@ func (d *DB) ExistsLabelName(name string) bool {
 
 func IsValidLabelName(name string) bool {
 	return regexp.MustCompile(`^[\d\p{L}\-_]{1,25}$`).MatchString(name)
+}
+
+func IsVarValidLabelName(name string) bool {
+	return regexp.MustCompile(`^[\d\p{L}\-_\.]{1,25}$`).MatchString(name)
 }

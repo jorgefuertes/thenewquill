@@ -4,8 +4,13 @@ import (
 	"regexp"
 )
 
+const (
+	labelGroup      = `([\d\p{L}\-_]+)`
+	intOrFloatGroup = `(\d+|\d+\.\d+)`
+)
+
 var (
-	Label          = regexp.MustCompile(`^([\d\p{L}\-_]+)$`)
+	Label          = regexp.MustCompile(`^` + labelGroup + `$`)
 	InlineComment  = regexp.MustCompile(`(//.*|/\*.*)$`)
 	OneLinecomment = regexp.MustCompile(`^\s*(/\*.*\*/|//.*)\s*$`)
 	CommentBegin   = regexp.MustCompile(`^\s*/\*`)
@@ -18,20 +23,25 @@ var (
 	Blank   = regexp.MustCompile(`^\s*$`)
 	Include = regexp.MustCompile(`^INCLUDE\s+"(.*)"$`)
 	Section = regexp.MustCompile(`(?i)^SECTION\s+([\p{L}\s]+)$`)
-	Var     = regexp.MustCompile(`^([\d\p{L}\-_]+)\s*=\s*"?((?:[^"]|.\\")+)"?$`)
+	Var     = regexp.MustCompile(`^` + labelGroup + `\s*=\s*"?((?:[^"]|.\\")+)"?$`)
 	Float   = regexp.MustCompile(`^(\d+\.\d+)$`)
 	Int     = regexp.MustCompile(`^(\d+)$`)
 	Bool    = regexp.MustCompile(`^(true|false)$`)
-	Word    = regexp.MustCompile(`^([\d\p{L}\-_]+):\s*((?:[\d\p{L}\-_^]+),*\s*)+$`)
+	Word    = regexp.MustCompile(`^` + labelGroup + `:\s*((?:[\d\p{L}\-_^]+),*\s*)+$`)
 	Msg     = regexp.MustCompile(
 		`(?s)^((?:[\d\p{L}\-_]+)(?:\.(?:zero|one|many)){0,1}):\s+["^(\\")]{1}(.+)["^(\\")]{1}$`,
 	)
-	MsgPlural = regexp.MustCompile(`(?s)^([\d\p{L}\-_]+)\.(zero|one|many):\s+["^(\\")]{1}(.+)["^(\\")]{1}$`)
-	LocLabel  = regexp.MustCompile(`^\s*([\d\p{L}\-_]+):\s*$`)
+	MsgPlural = regexp.MustCompile(`(?s)^` + labelGroup + `\.(zero|one|many):\s+["^(\\")]{1}(.+)["^(\\")]{1}$`)
+	LocLabel  = regexp.MustCompile(`^\s*` + labelGroup + `:\s*$`)
 	LocConns  = regexp.MustCompile(
 		`^\s*(exits|conns|connections)\s*:\s*(\s*([\d\p{L}\-_]+\s+[\d\p{L}\-_]+\s*,?))+.?$`,
 	)
-	LabelNounAdjDeclaration = regexp.MustCompile(`^\s*([\d\p{L}\-_]+):\s+([\d\p{L}\-_]+)\s+([\d\p{L}\-_]+)\s*$`)
+	LabelNounAdjDeclaration = regexp.MustCompile(
+		`^\s*` + labelGroup + `:\s+` + labelGroup + `\s+` + labelGroup + `\s*$`,
+	)
+	ItemAt        = regexp.MustCompile(`^\s*(is at|is in|is worn by)\s+` + labelGroup + `\s*$`)
+	ItemWeight    = regexp.MustCompile(`^\s*(has weight|weight|weighs)\s+` + intOrFloatGroup + `\s*$`)
+	ItemMaxWeight = regexp.MustCompile(`^\s*(has max weight|max weight)\s+` + intOrFloatGroup + `\s*$`)
 )
 
 func IsValidLabel(label string) bool {

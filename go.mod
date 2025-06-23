@@ -6,6 +6,7 @@ require (
 	github.com/drhodes/golorem v0.0.0-20220328165741-da82e5b29246
 	github.com/gdamore/tcell/v2 v2.8.1
 	github.com/jedib0t/go-pretty/v6 v6.6.7
+	github.com/mitchellh/go-wordwrap v1.0.1
 	github.com/stretchr/testify v1.10.0
 	github.com/urfave/cli/v2 v2.27.6
 )
@@ -138,7 +139,6 @@ require (
 	github.com/mgechev/revive v1.7.0 // indirect
 	github.com/mgutz/ansi v0.0.0-20200706080929-d51e80ef957d // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
-	github.com/mitchellh/go-wordwrap v1.0.1 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/moricho/tparallel v0.3.2 // indirect
 	github.com/muesli/termenv v0.16.0 // indirect

@@ -1,52 +1,58 @@
 package config
 
-type Config struct {
-	Title       string
-	Author      string
-	Description string
-	Version     string
-	Date        string
-	Lang        Lang
+import "github.com/jorgefuertes/thenewquill/internal/adventure/db"
+
+type allowed struct {
+	labelName string
+	required  bool
 }
 
-func New() *Config {
-	c := &Config{}
-	c.Reset()
-
-	return c
+var allowedFields = []allowed{
+	{"title", true},
+	{"author", true},
+	{"description", true},
+	{"version", true},
+	{"date", true},
+	{"lang", true},
 }
 
-func (c *Config) Reset() {
-	c.Title = "No Title"
-	c.Author = "Unknown Author"
-	c.Description = "No Description"
-	c.Version = "1.0.0"
-	c.Date = "2025-01-01"
-	c.Lang = ES
-}
+func AllowedFieldNames() []string {
+	fields := make([]string, 0)
 
-func (c *Config) Set(field Field, value string) error {
-	switch field {
-	case TitleField:
-		c.Title = value
-	case AuthorField:
-		c.Author = value
-	case DescriptionField, DescField:
-		c.Description = value
-	case VersionField:
-		c.Version = value
-	case DateField:
-		c.Date = value
-	case LangField:
-		lang := LangFromString(value)
-		if lang == Undefined {
-			return ErrUnrecognizedLanguage
-		}
-
-		c.Lang = lang
-	default:
-		return ErrUnrecognizedConfigField
+	for _, allowed := range allowedFields {
+		fields = append(fields, allowed.labelName)
 	}
 
-	return nil
+	return fields
+}
+
+type Value struct {
+	ID db.ID
+	V  string
+}
+
+var _ db.Storeable = Value{}
+
+func (v Value) GetID() db.ID {
+	return v.ID
+}
+
+func (v Value) GetKind() db.Kind {
+	return db.Config
+}
+
+func (v Value) SetID(id db.ID) db.Storeable {
+	v.ID = id
+
+	return v
+}
+
+func isKeyAllowed(key string) bool {
+	for _, allowed := range allowedFields {
+		if key == allowed.labelName {
+			return true
+		}
+	}
+
+	return false
 }

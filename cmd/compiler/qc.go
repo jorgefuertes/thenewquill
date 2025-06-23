@@ -12,7 +12,6 @@ import (
 	"time"
 
 	"github.com/jorgefuertes/thenewquill/internal/compiler"
-	"github.com/jorgefuertes/thenewquill/internal/compiler/db"
 	"github.com/jorgefuertes/thenewquill/internal/log"
 
 	"github.com/jedib0t/go-pretty/v6/table"
@@ -62,10 +61,6 @@ func compileAction(c *cli.Context) error {
 		return err
 	}
 
-	// binary db
-	d := db.New()
-	a.Export(d)
-
 	f, err := os.Create(outputFilename)
 	if err != nil {
 		return err
@@ -76,7 +71,7 @@ func compileAction(c *cli.Context) error {
 		}
 	}()
 
-	if err := d.Save(f); err != nil {
+	if err := a.DB.Export(f); err != nil {
 		return err
 	}
 
@@ -86,22 +81,22 @@ func compileAction(c *cli.Context) error {
 	t.SetOutputMirror(os.Stdout)
 	t.AppendHeader(table.Row{"Section", "Entries"})
 	t.AppendRows([]table.Row{
-		{"vars", fmt.Sprintf("%d", a.Vars.Len())},
-		{"vocabulary", fmt.Sprintf("%d", a.Words.Len())},
-		{"messages", fmt.Sprintf("%d", a.Messages.Len())},
-		{"locations", fmt.Sprintf("%d", a.Locations.Len())},
-		{"items", fmt.Sprintf("%d", a.Items.Len())},
-		{"characters", fmt.Sprintf("%d", a.Chars.Len())},
+		{"vars", fmt.Sprintf("%d", a.Variables.Count())},
+		{"vocabulary", fmt.Sprintf("%d", a.Words.Count())},
+		{"messages", fmt.Sprintf("%d", a.Messages.Count())},
+		{"locations", fmt.Sprintf("%d", a.Locations.Count())},
+		{"items", fmt.Sprintf("%d", a.Items.Count())},
+		{"characters", fmt.Sprintf("%d", a.Characters.Count())},
 	})
-	t.AppendFooter(
-		table.Row{
-			"Total",
-			fmt.Sprintf("%d entries", a.Vars.Len()+a.Words.Len()+a.Messages.Len()+a.Locations.Len()+a.Items.Len()),
-		},
-	)
+	t.AppendFooter(table.Row{"Total", fmt.Sprintf("%d entries", a.DB.Count())})
 	t.SetStyle(table.StyleColoredCyanWhiteOnBlack)
 	fmt.Println()
-	fmt.Printf("> %s v%s\n> %s\n", a.Config.Title, a.Config.Version, a.Config.Author)
+	fmt.Printf(
+		"> %s v%s\n> %s\n",
+		a.Config.GetField("title"),
+		a.Config.GetField("version"),
+		a.Config.GetField("author"),
+	)
 	fmt.Printf("> Compiled in %dms\n", elapsed.Milliseconds())
 	fmt.Println("> Compiler: v" + compiler.VERSION)
 

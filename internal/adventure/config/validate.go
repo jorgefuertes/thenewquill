@@ -1,30 +1,44 @@
 package config
 
-import "errors"
+import (
+	"fmt"
+	"slices"
 
-func (c *Config) Validate() error {
-	if c.Title == "" {
-		return errors.Join(ErrMissingConfigField, errors.New("title"))
+	"github.com/jorgefuertes/thenewquill/internal/adventure/db"
+)
+
+var allowedLanguages = []string{"en", "es"}
+
+func (v Value) Validate(allowNoID db.Allow) error {
+	if err := v.ID.Validate(db.DontAllowSpecial); err != nil && !allowNoID {
+		return err
 	}
 
-	if c.Author == "" {
-		return errors.Join(ErrMissingConfigField, errors.New("author"))
+	if fmt.Sprintf("%v", v.V) == "" {
+		return ErrValueIsEmpty
 	}
 
-	if c.Description == "" {
-		return errors.Join(ErrMissingConfigField, errors.New("description"))
-	}
+	return nil
+}
 
-	if c.Version == "" {
-		return errors.Join(ErrMissingConfigField, errors.New("version"))
-	}
+func (s *Service) ValidateAll() error {
+	for _, v := range s.All() {
+		if err := v.Validate(false); err != nil {
+			return err
+		}
 
-	if c.Date == "" {
-		return errors.Join(ErrMissingConfigField, errors.New("date"))
-	}
+		label, err := s.db.GetLabelByName(v.ID.String())
+		if err != nil {
+			return err
+		}
 
-	if c.Lang == Undefined {
-		return errors.Join(ErrMissingConfigField, errors.New("lang"))
+		if !isKeyAllowed(label.Name) {
+			return ErrUnrecognizedConfigField
+		}
+
+		if label.Name == "lang" && !slices.Contains(allowedLanguages, fmt.Sprintf("%v", v.V)) {
+			return ErrUnrecognizedLanguage
+		}
 	}
 
 	return nil

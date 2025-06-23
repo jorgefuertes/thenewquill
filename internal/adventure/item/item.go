@@ -11,31 +11,35 @@ type Item struct {
 	Description string
 	Weight      int
 	MaxWeight   int
-	IsContainer bool
-	Contains    []db.ID
-	IsWearable  bool
-	WornBy      db.ID
-	IsCreated   bool
-	LocationID  db.ID
+	Container   bool
+	Wearable    bool
+	Created     bool
+	At          db.ID
+	Worn        bool
 }
 
 var _ db.Storeable = Item{}
 
-func (i Item) GetID() db.ID {
-	return i.ID
-}
-
-func (i Item) GetKind() (db.Kind, db.SubKind) {
-	return db.Items, db.NoSubKind
-}
-
-// simple Item
-func New(id db.ID, nounID db.ID, adjectiveID db.ID) Item {
+func New(nounID db.ID, adjectiveID db.ID) Item {
 	return Item{
-		ID:          id,
+		ID:          db.UndefinedLabel.ID,
 		NounID:      nounID,
 		AdjectiveID: adjectiveID,
 		Weight:      0,
 		MaxWeight:   100,
 	}
+}
+
+func (i Item) SetID(id db.ID) db.Storeable {
+	i.ID = id
+
+	return i
+}
+
+func (i Item) GetID() db.ID {
+	return i.ID
+}
+
+func (i Item) GetKind() db.Kind {
+	return db.Items
 }

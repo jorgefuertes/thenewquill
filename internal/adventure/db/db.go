@@ -7,10 +7,18 @@ import (
 
 const NotFound int = -1
 
+type Allow bool
+
+const (
+	AllowNoID     Allow = true
+	DontAllowNoID Allow = false
+)
+
 type Storeable interface {
 	GetID() ID
-	GetKind() (Kind, SubKind)
-	Validate() error
+	SetID(id ID) Storeable
+	GetKind() Kind
+	Validate(allowNoID Allow) error
 }
 
 type DB struct {
@@ -36,9 +44,9 @@ func (d *DB) Len() int {
 	return len(d.Data)
 }
 
-func (d *DB) indexOf(id ID, k Kind, sk SubKind) int {
+func (d *DB) indexOf(id ID, k Kind) int {
 	for i, r := range d.Data {
-		if !isKind(r, k, sk) {
+		if r.GetKind() != k {
 			continue
 		}
 
@@ -50,26 +58,47 @@ func (d *DB) indexOf(id ID, k Kind, sk SubKind) int {
 	return NotFound
 }
 
-func (d *DB) Exists(id ID, k Kind, sk SubKind) bool {
+func (d *DB) Exists(id ID, k Kind) bool {
 	d.mut.Lock()
 	defer d.mut.Unlock()
 
-	return d.indexOf(id, k, sk) != -1
+	return d.indexOf(id, k) != -1
+}
+
+func (d *DB) Create(labelName string, s Storeable) (ID, error) {
+	if s.GetID() != UndefinedLabel.ID {
+		return UndefinedLabel.ID, ErrCannotCreateWithDefinedID
+	}
+
+	if err := s.Validate(AllowNoID); err != nil {
+		return UndefinedLabel.ID, err
+	}
+
+	label, err := d.AddLabel(labelName, s.GetKind() == Variables)
+	if err != nil {
+		return UndefinedLabel.ID, err
+	}
+
+	s = s.SetID(label.ID)
+
+	return label.ID, d.Append(s)
 }
 
 func (d *DB) Append(s Storeable) error {
-	k, sk := s.GetKind()
-
-	if k == None {
+	if s.GetKind() == None {
 		return ErrKindCannotBeNone
 	}
 
-	if sk == AnySubKind {
-		return ErrSubKindMustBeDefined
+	if d.Exists(s.GetID(), s.GetKind()) {
+		return ErrDuplicatedRecord
 	}
 
-	if d.Exists(s.GetID(), k, sk) {
-		return ErrDuplicatedRecord
+	if err := s.GetID().Validate(true); err != nil {
+		return err
+	}
+
+	if err := s.Validate(AllowNoID); err != nil {
+		return err
 	}
 
 	d.mut.Lock()
@@ -81,15 +110,14 @@ func (d *DB) Append(s Storeable) error {
 }
 
 func (d *DB) Update(s Storeable) error {
-	k, sk := s.GetKind()
-	if !d.Exists(s.GetID(), k, sk) {
+	if !d.Exists(s.GetID(), s.GetKind()) {
 		return ErrRecordNotFound
 	}
 
 	d.mut.Lock()
 	defer d.mut.Unlock()
 
-	idx := d.indexOf(s.GetID(), k, sk)
+	idx := d.indexOf(s.GetID(), s.GetKind())
 
 	d.Data = append(d.Data[:idx], d.Data[idx+1:]...)
 	d.Data = append(d.Data, s)
@@ -97,23 +125,18 @@ func (d *DB) Update(s Storeable) error {
 	return nil
 }
 
-func (d *DB) Get(kind Kind, sub SubKind, id ID) (Storeable, error) {
-	d.mut.Lock()
-	defer d.mut.Unlock()
-
-	for _, r := range d.Data {
-		if r.GetID() == id && isKind(r, kind, sub) {
-			return r, nil
-		}
-	}
-
-	return nil, ErrRecordNotFound
-}
-
-func (d *DB) GetAs(id ID, kind Kind, sub SubKind, dst Storeable) error {
-	r, err := d.Get(kind, sub, id)
+func (d *DB) GetByLabel(labelName string, kind Kind, dst any) error {
+	label, err := d.GetLabelByName(labelName)
 	if err != nil {
 		return err
+	}
+
+	return d.Get(label.ID, kind, dst)
+}
+
+func (d *DB) Get(id ID, kind Kind, dst any) error {
+	if id < MinMeaningfulID {
+		return ErrRecordNotFound
 	}
 
 	// dst must be a pointer
@@ -122,62 +145,24 @@ func (d *DB) GetAs(id ID, kind Kind, sub SubKind, dst Storeable) error {
 		return ErrDstMustBePointer
 	}
 
-	dstValue.Elem().Set(reflect.ValueOf(r))
-
-	return nil
-}
-
-func (d *DB) GetByKind(k Kind, sk SubKind) []Storeable {
 	d.mut.Lock()
 	defer d.mut.Unlock()
-
-	var objects []Storeable
 
 	for _, r := range d.Data {
-		if isKind(r, k, sk) {
-			objects = append(objects, r)
+		if r.GetID() == id && r.GetKind() == kind {
+			dstValue.Elem().Set(reflect.ValueOf(r))
+			return nil
 		}
 	}
 
-	return objects
+	return ErrRecordNotFound
 }
 
-// GetKind returns all the objects of the given kind in the given slice
-func (d *DB) GetByKindAs(kind Kind, sub SubKind, dst interface{}) error {
-	// Verify that dst is a pointer to a slice
-	dstValue := reflect.ValueOf(dst)
-	if dstValue.Kind() != reflect.Ptr || dstValue.Elem().Kind() != reflect.Slice {
-		return ErrDstMustBePointerSlice
-	}
-
-	// Get the slice value and the element type
-	sliceValue := dstValue.Elem()
-	elementType := sliceValue.Type().Elem()
-
-	// Create a new slice
-	newSlice := reflect.MakeSlice(sliceValue.Type(), 0, 0)
-
-	objects := d.GetByKind(kind, sub)
-	for _, r := range objects {
-		// Convert the object to the element type
-		if reflect.TypeOf(r).AssignableTo(elementType) {
-			newSlice = reflect.Append(newSlice, reflect.ValueOf(r))
-		} else {
-			return ErrCannotCastFromStoreable
-		}
-	}
-
-	// Asign the new slice to the destination
-	sliceValue.Set(newSlice)
-
-	return nil
-}
-
-func (d *DB) Remove(id ID, kind Kind, sub SubKind) error {
+func (d *DB) Remove(id ID, kind Kind) error {
 	d.mut.Lock()
 	defer d.mut.Unlock()
 
-	i := d.indexOf(id, kind, sub)
+	i := d.indexOf(id, kind)
 	if i == -1 {
 		return ErrRecordNotFound
 	}
@@ -199,24 +184,24 @@ func (d *DB) Reset() {
 	d.Data = make([]Storeable, 0)
 }
 
-func (d *DB) Count(kind Kind, sub SubKind) int {
-	var count int
-
+func (d *DB) Count() int {
 	d.mut.Lock()
 	defer d.mut.Unlock()
 
+	return len(d.Data)
+}
+
+func (d *DB) CountByKind(kind Kind) int {
+	d.mut.Lock()
+	defer d.mut.Unlock()
+
+	var count int
+
 	for _, r := range d.Data {
-		if isKind(r, kind, sub) {
+		if r.GetKind() == kind {
 			count++
 		}
 	}
 
 	return count
-}
-
-func (d *DB) CountAll() int {
-	d.mut.Lock()
-	defer d.mut.Unlock()
-
-	return len(d.Data)
 }

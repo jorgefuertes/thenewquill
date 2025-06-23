@@ -13,13 +13,29 @@ type Location struct {
 	Conns       []Connection
 }
 
-func New(id db.ID, title, desc string) Location {
+var _ db.Storeable = &Location{}
+
+func New(title, desc string) Location {
 	return Location{
-		ID:          id,
+		ID:          db.UndefinedLabel.ID,
 		Title:       title,
 		Description: desc,
 		Conns:       make([]Connection, 0),
 	}
+}
+
+func (l Location) SetID(id db.ID) db.Storeable {
+	l.ID = id
+
+	return l
+}
+
+func (l Location) GetID() db.ID {
+	return l.ID
+}
+
+func (l Location) GetKind() db.Kind {
+	return db.Locations
 }
 
 func (l *Location) connIndex(wordID db.ID) int {

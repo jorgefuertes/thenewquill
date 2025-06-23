@@ -6,7 +6,7 @@ import (
 
 type Character struct {
 	ID          db.ID
-	NameID      db.ID
+	NounID      db.ID
 	AdjectiveID db.ID
 	Description string
 	LocationID  db.ID
@@ -14,20 +14,12 @@ type Character struct {
 	Human       bool
 }
 
-var _ db.Storeable = Character{}
+var _ db.Storeable = &Character{}
 
-func (c Character) GetID() db.ID {
-	return c.ID
-}
-
-func (c Character) GetKind() (db.Kind, db.SubKind) {
-	return db.Chars, db.NoSubKind
-}
-
-func New(id db.ID, nameID db.ID, adjectiveID db.ID) Character {
+func New(nounID db.ID, adjectiveID db.ID) Character {
 	return Character{
-		ID:          id,
-		NameID:      nameID,
+		ID:          db.UndefinedLabel.ID,
+		NounID:      nounID,
 		AdjectiveID: adjectiveID,
 		Description: "",
 		LocationID:  db.UndefinedLabel.ID,
@@ -36,18 +28,16 @@ func New(id db.ID, nameID db.ID, adjectiveID db.ID) Character {
 	}
 }
 
-func (c Character) Validate() error {
-	if c.ID == db.UndefinedLabel.ID {
-		return ErrEmptyLabel
-	}
+func (c Character) SetID(id db.ID) db.Storeable {
+	c.ID = id
 
-	if c.ID < db.MinMeaningfulID {
-		return ErrWrongLabel
-	}
+	return c
+}
 
-	if c.Description == "" {
-		return ErrEmptyDescription
-	}
+func (c Character) GetID() db.ID {
+	return c.ID
+}
 
-	return nil
+func (c Character) GetKind() db.Kind {
+	return db.Characters
 }

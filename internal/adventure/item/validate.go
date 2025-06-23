@@ -7,17 +7,17 @@ import (
 	"github.com/jorgefuertes/thenewquill/internal/adventure/db"
 )
 
-func (i Item) Validate() error {
-	if i.NounID == db.UndefinedLabel.ID {
-		return ErrNounCannotBeNil
+func (i Item) Validate(allowNoID db.Allow) error {
+	if err := i.ID.Validate(db.DontAllowSpecial); err != nil && !allowNoID {
+		return fmt.Errorf("ID %q: %w", i.ID, err)
 	}
 
-	if i.NounID == db.UnderscoreLabel.ID {
-		return ErrNounCannotBeUnderscore
+	if err := i.NounID.Validate(db.DontAllowSpecial); err != nil {
+		return fmt.Errorf("noun ID %q: %w", i.NounID, err)
 	}
 
-	if i.AdjectiveID == db.UndefinedLabel.ID {
-		return ErrAdjectiveCannotBeNil
+	if err := i.AdjectiveID.Validate(db.AllowSpecial); err != nil {
+		return fmt.Errorf("adjective ID %q: %w", i.AdjectiveID, err)
 	}
 
 	if i.Weight > i.MaxWeight {
@@ -28,50 +28,41 @@ func (i Item) Validate() error {
 		return ErrWeightCannotBeNegative
 	}
 
-	if i.WornBy != db.UndefinedLabel.ID && !i.IsWearable {
-		return ErrItemIsNotWearableButIsWorn
-	}
-
-	if i.WornBy != db.UndefinedLabel.ID && i.LocationID != db.UndefinedLabel.ID {
-		return ErrItemCannotBeWornAndHaveLocation
-	}
-
 	return nil
 }
 
-func ValidateAll(d *db.DB) error {
-	items := make([]Item, 0)
-
-	if err := d.GetByKindAs(db.Items, db.NoSubKind, &items); err != nil {
-		return err
-	}
-
-	for _, obj := range items {
-		objLabel, err := d.GetLabel(obj.GetID())
+func (s *Service) ValidateAll() error {
+	for _, i := range s.All() {
+		label, err := s.db.GetLabel(i.ID)
 		if err != nil {
-			return errors.Join(err, fmt.Errorf("item ID: %d", obj.GetID()))
+			return errors.Join(err, fmt.Errorf("item ID: %d", i.ID))
 		}
 
-		if err := obj.Validate(); err != nil {
+		if err := i.Validate(db.DontAllowNoID); err != nil {
 			return errors.Join(
 				ErrItemValidationFailed,
 				err,
-				fmt.Errorf("label %d: %s", objLabel.ID, objLabel.Name),
+				fmt.Errorf("label %d: %s", label.ID, label.Name),
 			)
 		}
 
-		items2 := make([]Item, 0)
-		if err := d.GetByKindAs(db.Items, db.NoSubKind, &items2); err != nil {
-			return err
-		}
-
-		for _, obj2 := range items2 {
-			if obj.GetID() == obj2.GetID() {
+		for _, i2 := range s.All() {
+			if i.ID == i2.ID {
 				continue
 			}
 
-			if obj.NounID == obj2.NounID && obj.AdjectiveID == obj2.AdjectiveID {
-				return errors.Join(ErrDuplicatedNounAdj, errors.New(d.GetLabelName(obj.GetID())))
+			if i.NounID == i2.NounID && i.AdjectiveID == i2.AdjectiveID {
+				label2, err := s.db.GetLabel(i2.ID)
+				if err != nil {
+					return errors.Join(
+						err,
+						fmt.Errorf("items %q and %d, noun %d and adjective %d", label, i2.ID, i.NounID, i.AdjectiveID),
+					)
+				}
+				return errors.Join(
+					ErrDuplicatedNounAdj,
+					fmt.Errorf("items %q and %q: noun %d and adjective %d", label, label2, i.NounID, i.AdjectiveID),
+				)
 			}
 		}
 	}

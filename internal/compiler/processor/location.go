@@ -2,94 +2,84 @@ package processor
 
 import (
 	"github.com/jorgefuertes/thenewquill/internal/adventure"
-	"github.com/jorgefuertes/thenewquill/internal/adventure/words"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/location"
 	cerr "github.com/jorgefuertes/thenewquill/internal/compiler/compiler_error"
 	"github.com/jorgefuertes/thenewquill/internal/compiler/line"
-	"github.com/jorgefuertes/thenewquill/internal/compiler/rg"
-	"github.com/jorgefuertes/thenewquill/internal/compiler/section"
 	"github.com/jorgefuertes/thenewquill/internal/compiler/status"
 )
 
 func readLocation(l line.Line, st *status.Status, a *adventure.Adventure) error {
-	label, ok := l.AsLocationLabel()
-	if ok {
-		st.CurrentLabel = label
+	loc := location.New("", "")
 
-		_, err := a.Locations.New(label)
-		if err != nil {
-			return cerr.ErrCannotCreateLocation.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
-				WithFilename(st.CurrentFilename()).AddErr(err)
-		}
-
-		st.SetDef(label, section.Locs)
-
-		return nil
-	}
-
-	if !st.HasCurrentLabel() {
-		return cerr.ErrWrongLocationLabelDeclaration.WithSection(st.Section).WithStack(st.Stack).WithLine(l).
-			WithFilename(st.CurrentFilename())
-	}
-
-	currentLocation := a.Locations.Get(st.CurrentLabel)
-	if currentLocation == nil {
-		return cerr.ErrWrongLocationLabelDeclaration.WithSection(st.Section).WithStack(st.Stack).WithLine(l).
-			WithFilename(st.CurrentFilename())
-	}
-
-	o := l.OptimizedText()
-
-	// vars
-	if rg.Var.MatchString(o) {
-		m := rg.Var.FindStringSubmatch(o)
-
-		if !rg.IsValidLabel(m[1]) {
-			return cerr.ErrInvalidLabel.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
+	// continue reading location definition
+	if st.HasCurrentLabel() {
+		if !st.GetCurrentStoreable(&loc) {
+			return cerr.ErrNoCurrentEntity.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
 				WithFilename(st.CurrentFilename())
 		}
 
-		currentLocation.Vars.SetFromString(m[1], m[2])
+		desc, ok := l.AsLocationDescription()
+		if ok {
+			loc.Description = desc
+			st.CurrentStoreable = loc
 
-		return nil
-	}
+			return nil
+		}
 
-	desc, ok := l.AsLocationDescription()
-	if ok {
-		currentLocation.Description = desc
+		title, ok := l.AsLocationTitle()
+		if ok {
+			loc.Title = title
+			st.CurrentStoreable = loc
 
-		return nil
-	}
+			return nil
+		}
 
-	title, ok := l.AsLocationTitle()
-	if ok {
-		currentLocation.Title = title
-
-		return nil
-	}
-
-	exitMap, ok := l.AsLocationConns()
-	if ok {
-		for wordLabel, destLabel := range exitMap {
-			word := a.Words.FirstWithTypes(wordLabel, words.Verb, words.Noun)
-			if word == nil {
-				word = a.Words.Set(wordLabel, words.Unknown)
-				st.SetUndef(wordLabel, section.Words, l)
-			}
-
-			dest := a.Locations.Get(destLabel)
-			if dest == nil {
-				var err error
-				dest, err = a.Locations.New(destLabel)
+		exitMap, ok := l.AsLocationConns()
+		if ok {
+			for action, dest := range exitMap {
+				actionLabel, err := a.DB.AddLabel(action, false)
 				if err != nil {
-					return cerr.ErrCannotCreateLocation.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
+					return cerr.ErrInvalidLabel.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
 						WithFilename(st.CurrentFilename()).AddErr(err)
 				}
 
-				st.SetUndef(destLabel, section.Locs, l)
+				destLabel, err := a.DB.AddLabel(dest, false)
+				if err != nil {
+					return cerr.ErrInvalidLabel.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
+						WithFilename(st.CurrentFilename()).AddErr(err)
+				}
+
+				loc.SetConn(actionLabel.ID, destLabel.ID)
 			}
 
-			currentLocation.SetConn(word, dest)
+			st.CurrentStoreable = loc
+
+			return nil
 		}
+
+		// var
+		if err := tryReadEntityVar(l, st, a); err != nil {
+			return err
+		}
+	}
+
+	// new location
+	labelName, ok := l.AsLocationLabel()
+	if ok {
+		// save current storeable if any
+		if err := st.Save(a.DB); err != nil {
+			return cerr.ErrDBCreate.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
+				WithFilename(st.CurrentFilename()).AddErr(err)
+		}
+
+		label, err := a.DB.AddLabel(labelName, false)
+		if err != nil {
+			return cerr.ErrInvalidLabel.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
+				WithFilename(st.CurrentFilename()).AddErr(err)
+		}
+
+		st.CurrentLabel = label
+		st.CurrentStoreable = loc
 
 		return nil
 	}

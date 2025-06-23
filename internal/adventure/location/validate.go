@@ -7,9 +7,9 @@ import (
 	"github.com/jorgefuertes/thenewquill/internal/adventure/db"
 )
 
-func (l Location) Validate() error {
-	if l.ID == db.UndefinedLabel.ID {
-		return ErrUndefLabel
+func (l Location) Validate(allowNoID db.Allow) error {
+	if err := l.ID.Validate(db.DontAllowSpecial); err != nil && !allowNoID {
+		return err
 	}
 
 	if l.ID < db.MinMeaningfulID {
@@ -20,35 +20,40 @@ func (l Location) Validate() error {
 		return ErrUndefDesc
 	}
 
+	for _, conn := range l.Conns {
+		if conn.WordID == db.UndefinedLabel.ID {
+			return ErrConnUndefLabel
+		}
+	}
+
 	return nil
 }
 
-func ValidateAll(d *db.DB) error {
-	locations := make([]Location, 0)
-	if err := d.GetByKindAs(db.Locations, db.NoSubKind, &locations); err != nil {
-		return err
-	}
+func (s *Service) ValidateAll() error {
+	locations := s.db.Query(db.Locations)
+	defer locations.Close()
 
-	for _, loc := range locations {
-		if err := loc.Validate(); err != nil {
-			return errors.Join(err, fmt.Errorf("label: %s", d.GetLabelName(loc.ID)))
+	var loc Location
+	for locations.Next(&loc) {
+		if err := loc.Validate(db.DontAllowNoID); err != nil {
+			return errors.Join(err, fmt.Errorf("label: %s", s.db.GetLabelName(loc.ID)))
 		}
 
 		for i, conn := range loc.Conns {
-			if !d.Exists(conn.WordID, db.Words, db.NoSubKind) {
+			if !s.db.Exists(conn.WordID, db.Words) {
 				return errors.Join(
 					ErrWrongLabel,
-					fmt.Errorf("location: '%s', conn '%d', word '%d'", d.GetLabelName(loc.ID), i, conn.WordID),
+					fmt.Errorf("location: '%s', conn '%d', word '%d'", s.db.GetLabelName(loc.ID), i, conn.WordID),
 				)
 			}
 
-			if !d.Exists(conn.LocationID) {
+			if !s.db.Exists(conn.LocationID, db.Locations) {
 				return errors.Join(
 					ErrWrongLabel,
 					fmt.Errorf(
 						"location: '%s', conn '%s' to location '%d'",
-						d.GetLabelName(loc.ID),
-						d.GetLabelName(conn.WordID),
+						s.db.GetLabelName(loc.ID),
+						s.db.GetLabelName(conn.WordID),
 						conn.LocationID,
 					),
 				)

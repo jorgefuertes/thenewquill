@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/jorgefuertes/thenewquill/internal/adventure"
-	"github.com/jorgefuertes/thenewquill/internal/compiler/db"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/word"
 	"github.com/jorgefuertes/thenewquill/internal/log"
 	"github.com/jorgefuertes/thenewquill/internal/output/console"
 )
@@ -35,17 +35,8 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// parse db
-	d := db.New()
-	err = d.Load(bytes.NewReader(r))
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	// parse adventure
 	a := adventure.New()
-	err = a.Import(d)
-	if err != nil {
+	if err := a.DB.Import(bytes.NewReader(r)); err != nil {
 		log.Fatal(err)
 	}
 
@@ -58,10 +49,19 @@ func main() {
 	go o.Run()
 	defer o.Close()
 
-	h := a.Chars.GetHuman()
+	h, err := a.Characters.GetHuman()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	loc, err := a.Locations.Get(h.LocationID)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	o.Cls()
-	o.Printf("*** [%s] %s ***\n", h.Location.Label, h.Location.Title)
-	o.Print(h.Location.Description)
+	o.Printf("*** %s ***\n", loc.Title)
+	o.Print(loc.Description)
 	o.Println()
 	time.Sleep(time.Second * 1)
 
@@ -84,31 +84,41 @@ func main() {
 			continue
 		}
 
-		w := a.Words.First(sl[0])
-		if w == nil {
+		w, err := a.Words.First(sl[0])
+		if err != nil {
 			o.Print("No te comprendo.")
 			continue
 		}
 
-		if w.Is("salidas") {
+		if w.Is(word.Noun, "salidas") {
 			o.Print("Las salidas son: ")
-			for i, c := range h.Location.Conns {
-				o.Print(c.Word.Label)
-				if i < len(h.Location.Conns)-1 {
+			for i, c := range loc.Conns {
+				o.Print(a.DB.GetLabelName(c.WordID))
+				if i < len(loc.Conns)-1 {
 					o.Print(", ")
 				} else {
 					o.Println(".")
 				}
 			}
 
-			for _, c := range h.Location.Conns {
-				o.Printf("- %s->%s: %s\n", c.Word.Label, c.To.Label, c.To.Title)
+			for _, c := range loc.Conns {
+				conLoc, err := a.Locations.Get(c.LocationID)
+				if err != nil {
+					log.Fatal(err)
+				}
+
+				o.Printf("- %s->%s: %s\n", a.DB.GetLabelName(c.WordID), a.DB.GetLabelName(c.LocationID), conLoc.Title)
 			}
 		}
 
-		if h.Location.HasConn(w) {
-			loc := h.Location.GetConn(w)
-			o.Printf("*** %s ***\n", loc.Title)
+		if loc.HasConn(w.ID) {
+			id := loc.GetConn(w.ID)
+			conLoc, err := a.Locations.Get(id)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			o.Printf("*** %s ***\n", conLoc.Title)
 			continue
 		}
 	}

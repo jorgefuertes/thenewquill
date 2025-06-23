@@ -1,38 +1,31 @@
 package status
 
 import (
+	"reflect"
 	"slices"
 
+	"github.com/jorgefuertes/thenewquill/internal/adventure/db"
 	"github.com/jorgefuertes/thenewquill/internal/compiler/line"
-	"github.com/jorgefuertes/thenewquill/internal/compiler/section"
 )
 
 const stackSize = 5
 
-type Undef struct {
-	Section section.Section
-	Line    line.Line
-	File    string
-	Label   string
-}
-
 type Status struct {
-	Section      section.Section
-	Comment      line.Multi
-	MultiLine    line.Multi
-	Stack        []line.Line
-	CurrentLabel string
-	Undefs       []Undef
-	filenames    []string
+	Section          db.Kind
+	Comment          line.Multi
+	MultiLine        line.Multi
+	Stack            []line.Line
+	CurrentLabel     db.Label
+	CurrentStoreable db.Storeable
+	filenames        []string
 }
 
 func New() *Status {
 	return &Status{
-		Section:   section.None,
+		Section:   db.None,
 		Comment:   line.NewMulti(),
 		MultiLine: line.NewMulti(),
 		Stack:     []line.Line{},
-		Undefs:    []Undef{},
 	}
 }
 
@@ -55,7 +48,7 @@ func (s *Status) CurrentFilename() string {
 
 // HasCurrentLabel returns true if there is a current label
 func (s *Status) HasCurrentLabel() bool {
-	return s.CurrentLabel != ""
+	return s.CurrentLabel.ID.IsDefined()
 }
 
 func (s *Status) AppendStack(l line.Line) {
@@ -74,32 +67,37 @@ func (s *Status) UnsetComment() {
 	s.Comment.Clear()
 }
 
-func (s *Status) SetUndef(label string, section section.Section, l line.Line) {
-	s.Undefs = append(s.Undefs, Undef{Section: section, Line: l, File: s.CurrentFilename(), Label: label})
-}
-
-func (s *Status) SetDef(label string, section section.Section) {
-	for i, u := range s.Undefs {
-		if u.Label == label && u.Section == section {
-			s.Undefs = append(s.Undefs[:i], s.Undefs[i+1:]...)
-		}
-	}
-}
-
-func (s *Status) IsUndef(label string, section section.Section) bool {
-	for _, u := range s.Undefs {
-		if u.Label == label && u.Section == section {
-			return true
-		}
-	}
-
-	return false
-}
-
-func (s *Status) HasAnyUndef() bool {
-	return len(s.Undefs) > 0
-}
-
 func (s *Status) AppendLine(l line.Line) {
 	s.MultiLine.Append(l)
+}
+
+func (s *Status) Save(d *db.DB) error {
+	if !s.HasCurrentLabel() || s.CurrentStoreable == nil {
+		return nil
+	}
+
+	if _, err := d.Create(s.CurrentLabel.Name, s.CurrentStoreable); err != nil {
+		return err
+	}
+
+	s.CurrentLabel = db.UndefinedLabel
+	s.CurrentStoreable = nil
+
+	return nil
+}
+
+func (s *Status) GetCurrentStoreable(dst any) bool {
+	if s.CurrentStoreable == nil {
+		return false
+	}
+
+	// dst must be a pointer
+	dstValue := reflect.ValueOf(dst)
+	if dstValue.Kind() != reflect.Ptr {
+		return false
+	}
+
+	dstValue.Elem().Set(reflect.ValueOf(s.CurrentStoreable))
+
+	return true
 }

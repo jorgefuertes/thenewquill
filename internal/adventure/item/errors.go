@@ -3,10 +3,10 @@ package item
 import "errors"
 
 var (
+	ErrItemNotContained                       = errors.New("item is not inside any container")
+	ErrItemAlreadyContained                   = errors.New("item already contained elsewhere")
 	ErrContainerCantCarrySoMuch               = errors.New("container can't carry so much weight")
-	ErrContainerIsFull                        = errors.New("container is full")
 	ErrNotContainer                           = errors.New("item is not a container")
-	ErrEmptyLabel                             = errors.New("empty label")
 	ErrNounCannotBeNil                        = errors.New("noun cannot be nil")
 	ErrAdjectiveCannotBeNil                   = errors.New("adjective cannot be nil")
 	ErrNounCannotBeUnderscore                 = errors.New("noun cannot be underscore")
@@ -17,4 +17,6 @@ var (
 	ErrDuplicatedItemLabel                    = errors.New("duplicated item label")
 	ErrDuplicatedNounAdj                      = errors.New("duplicated noun and adjective")
 	ErrItemIsNotWearableButIsWorn             = errors.New("item is not wearable but is worn")
+	ErrCannotAssertIntoItem                   = errors.New("cannot assert into item")
+	ErrInvalidTo                              = errors.New("invalid to, should be a container, character or location")
 )

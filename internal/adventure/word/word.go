@@ -1,4 +1,4 @@
-package words
+package word
 
 import (
 	"slices"
@@ -10,27 +10,35 @@ import (
 
 type Word struct {
 	ID       db.ID
-	Type     db.SubKind
+	Type     WordType
 	Synonyms []string
 }
 
-func New(id db.ID, t db.SubKind, synonyms ...string) *Word {
+var _ db.Storeable = Word{}
+
+func New(t WordType, synonyms ...string) Word {
 	for i, s := range synonyms {
 		synonyms[i] = strings.ToLower(s)
 	}
 
-	return &Word{ID: id, Type: t, Synonyms: synonyms}
+	return Word{ID: db.UndefinedLabel.ID, Type: t, Synonyms: synonyms}
+}
+
+func (w Word) SetID(id db.ID) db.Storeable {
+	w.ID = id
+
+	return w
 }
 
 func (w Word) GetID() db.ID {
 	return w.ID
 }
 
-func (w Word) GetKind() (db.Kind, db.SubKind) {
-	return db.Words, w.Type
+func (w Word) GetKind() db.Kind {
+	return db.Words
 }
 
-func (w Word) Is(syn string) bool {
+func (w Word) HasSynonym(syn string) bool {
 	syn = strings.ToLower(syn)
 
 	// check for exact match
@@ -45,7 +53,7 @@ func (w Word) Is(syn string) bool {
 	return slices.Contains(w.Synonyms, syn)
 }
 
-func (w Word) IsSynonymAndType(syn string, t db.SubKind) bool {
+func (w Word) Is(t WordType, syn string) bool {
 	if w.Type != t {
 		return false
 	}

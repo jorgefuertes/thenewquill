@@ -2,45 +2,36 @@ package processor
 
 import (
 	"github.com/jorgefuertes/thenewquill/internal/adventure"
-	"github.com/jorgefuertes/thenewquill/internal/adventure/msg"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/message"
 	cerr "github.com/jorgefuertes/thenewquill/internal/compiler/compiler_error"
 	"github.com/jorgefuertes/thenewquill/internal/compiler/line"
 	"github.com/jorgefuertes/thenewquill/internal/compiler/status"
 )
 
 func readMessage(l line.Line, st *status.Status, a *adventure.Adventure) error {
-	m, ok := l.AsMsg()
-	if !ok {
-		return cerr.ErrWrongMessageDeclaration.WithSection(st.Section).WithStack(st.Stack).WithLine(l).
-			WithFilename(st.CurrentFilename())
-	}
+	m := message.New("")
 
-	if err := a.Messages.Set(m); err != nil {
-		return cerr.ErrWrongMessageDeclaration.WithStack(st.Stack).WithSection(st.Section).AddErr(err).WithLine(l).
-			WithFilename(st.CurrentFilename())
-	}
-
-	st.SetDef(m.Label, st.Section)
-
-	if m.IsPluralized() {
-		// recover it from the store
-		m = a.Messages.Get(m.Label)
-		if m == nil {
-			return cerr.ErrCannotRetrieveMessage.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
-				WithFilename(st.CurrentFilename())
+	labelName, text, plural, ok := l.AsMsg()
+	if ok {
+		// save current storeable if any
+		if err := st.Save(a.DB); err != nil {
+			return cerr.ErrDBCreate.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
+				WithFilename(st.CurrentFilename()).AddErr(err)
 		}
 
-		// define and undefine reminders for the plurals
-		for i, text := range m.Plurals {
-			pLabel := m.Label + "." + msg.PluralNames[i]
-			if text == "" && !st.IsUndef(pLabel, st.Section) {
-				st.SetUndef(pLabel, st.Section, l)
-
-				continue
-			}
-			st.SetDef(pLabel, st.Section)
+		label, err := a.DB.AddLabel(labelName, false)
+		if err != nil {
+			return cerr.ErrInvalidLabel.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
+				WithFilename(st.CurrentFilename()).AddErr(err)
 		}
+
+		st.CurrentLabel = label
+		m.SetPlural(plural, text)
+		st.CurrentStoreable = m
+
+		return nil
 	}
 
-	return nil
+	return cerr.ErrWrongMessageDeclaration.WithSection(st.Section).WithStack(st.Stack).WithLine(l).
+		WithFilename(st.CurrentFilename())
 }

@@ -5,26 +5,28 @@ import (
 	"strings"
 
 	"github.com/jorgefuertes/thenewquill/internal/adventure"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/db"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/item"
-	"github.com/jorgefuertes/thenewquill/internal/adventure/words"
 	cerr "github.com/jorgefuertes/thenewquill/internal/compiler/compiler_error"
 	"github.com/jorgefuertes/thenewquill/internal/compiler/line"
 	"github.com/jorgefuertes/thenewquill/internal/compiler/rg"
-	"github.com/jorgefuertes/thenewquill/internal/compiler/section"
 	"github.com/jorgefuertes/thenewquill/internal/compiler/status"
 )
 
 func readItem(l line.Line, st *status.Status, a *adventure.Adventure) error {
+	i := item.New(db.UndefinedLabel.ID, db.UndefinedLabel.ID)
+
 	if st.HasCurrentLabel() {
-		i := a.Items.Get(st.CurrentLabel)
-		if i == nil {
-			return cerr.ErrWrongItemDeclaration.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
+
+		if !st.GetCurrentStoreable(&i) {
+			return cerr.ErrNoCurrentEntity.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
 				WithFilename(st.CurrentFilename())
 		}
 
-		desc, ok := l.GetTextForFirstFoundLabel("description", "desc")
+		desc, ok := l.GetTextForFirstFoundLabelName("description", "desc")
 		if ok {
 			i.Description = desc
+			st.CurrentStoreable = i
 
 			return nil
 		}
@@ -32,148 +34,116 @@ func readItem(l line.Line, st *status.Status, a *adventure.Adventure) error {
 		o := l.OptimizedText()
 
 		if o == "is wearable" {
-			i.IsWearable = true
-
-			return nil
-		}
-
-		if o == "is worn" {
-			i.IsWearable = true
-			i.Wear()
+			i.Wearable = true
+			st.CurrentStoreable = i
 
 			return nil
 		}
 
 		if o == "is created" {
-			i.Create()
+			i.Created = true
+			st.CurrentStoreable = i
 
 			return nil
 		}
 
 		if o == "is container" {
-			i.IsContainer = true
+			i.Container = true
+			st.CurrentStoreable = i
 
 			return nil
 		}
 
-		if strings.HasPrefix(o, "is at ") {
-			locLabel := strings.TrimPrefix(o, "is at ")
-			if !rg.IsValidLabel(locLabel) {
-				return cerr.ErrInvalidLabel.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
-					WithFilename(st.CurrentFilename())
-			}
+		// is at, is in, is worn by
+		if rg.ItemAt.MatchString(o) {
+			parts := rg.ItemAt.FindStringSubmatch(o)
 
-			inLoc := a.Locations.Get(locLabel)
-			if inLoc == nil {
-				var err error
-				inLoc, err = a.Locations.New(locLabel)
-				if err != nil {
-					return cerr.ErrCannotCreateLocation.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
-						WithFilename(st.CurrentFilename()).AddErr(err)
-				}
-
-				st.SetUndef(locLabel, section.Locs, l)
-			}
-
-			i.Location = inLoc
-
-			return nil
-		}
-
-		if strings.HasPrefix(o, "is in ") {
-			containerLabel := strings.TrimPrefix(o, "is in ")
-			if !rg.IsValidLabel(containerLabel) {
-				return cerr.ErrInvalidLabel.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
-					WithFilename(st.CurrentFilename())
-			}
-
-			container := a.Items.Get(containerLabel)
-			if container == nil {
-				container := item.New(containerLabel, nil, nil)
-
-				if err := a.Items.Set(container); err != nil {
-					return cerr.ErrWrongItemDeclaration.WithStack(st.Stack).
-						WithSection(st.Section).
-						AddErr(err).
-						WithLine(l).
-						WithFilename(st.CurrentFilename())
-				}
-
-				st.SetUndef(containerLabel, section.Items, l)
-			}
-
-			i.Inside = container
-
-			return nil
-		}
-
-		if strings.HasPrefix(o, "has weight ") {
-			w, err := strconv.Atoi(strings.TrimPrefix(o, "has weight "))
+			atLabel, err := a.DB.AddLabel(parts[2], false)
 			if err != nil {
-				return cerr.ErrWrongItemDeclaration.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
-					WithFilename(st.CurrentFilename())
-			}
-
-			i.Weight = w
-
-			return nil
-		}
-
-		if strings.HasPrefix(o, "has max weight ") {
-			w, err := strconv.Atoi(strings.TrimPrefix(o, "has max weight "))
-			if err != nil {
-				return cerr.ErrWrongItemDeclaration.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
-					WithFilename(st.CurrentFilename())
-			}
-
-			i.MaxWeight = w
-
-			return nil
-		}
-
-		// vars
-		if rg.Var.MatchString(o) {
-			m := rg.Var.FindStringSubmatch(o)
-
-			if !rg.IsValidLabel(m[1]) {
 				return cerr.ErrInvalidLabel.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
-					WithFilename(st.CurrentFilename())
+					WithFilename(st.CurrentFilename()).AddErr(err)
 			}
 
-			i.Vars.SetFromString(m[1], m[2])
+			i.At = atLabel.ID
+			i.Worn = strings.Contains(parts[1], "worn")
+
+			st.CurrentStoreable = i
 
 			return nil
+		}
+
+		// has weight, weights
+		if rg.ItemWeight.MatchString(o) {
+			parts := rg.ItemWeight.FindStringSubmatch(o)
+
+			var err error
+			i.Weight, err = strconv.Atoi(parts[1])
+			if err != nil {
+				return cerr.ErrInvalidNumberDeclaration.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
+					WithFilename(st.CurrentFilename()).AddErr(err)
+			}
+
+			st.CurrentStoreable = i
+
+			return nil
+		}
+
+		// has max weight, max weight
+		if rg.ItemMaxWeight.MatchString(o) {
+			parts := rg.ItemMaxWeight.FindStringSubmatch(o)
+
+			var err error
+			i.MaxWeight, err = strconv.Atoi(parts[1])
+			if err != nil {
+				return cerr.ErrInvalidNumberDeclaration.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
+					WithFilename(st.CurrentFilename()).AddErr(err)
+			}
+
+			st.CurrentStoreable = i
+
+			return nil
+		}
+
+		// var
+		if err := tryReadEntityVar(l, st, a); err != nil {
+			return err
 		}
 	}
 
-	label, noun, adj, ok := l.AsLabelNounAdjDeclaration()
+	// new item
+	labelName, nounName, adjName, ok := l.AsLabelNounAdjDeclaration()
 	if ok {
-		if !rg.IsValidLabel(label) {
+		// save current storeable if any
+		if err := st.Save(a.DB); err != nil {
+			return cerr.ErrDBCreate.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
+				WithFilename(st.CurrentFilename()).AddErr(err)
+		}
+
+		label, err := a.DB.AddLabel(labelName, false)
+		if err != nil {
 			return cerr.ErrInvalidLabel.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
-				WithFilename(st.CurrentFilename())
+				WithFilename(st.CurrentFilename()).AddErr(err)
 		}
 
 		st.CurrentLabel = label
-		st.SetDef(label, section.Items)
 
-		nounWord := a.Words.Get(words.Noun, noun)
-		if nounWord == nil {
-			nounWord = a.Words.Set(noun, words.Noun)
-			st.SetUndef(noun, section.Words, l)
+		nounLabel, err := a.DB.AddLabel(nounName, false)
+		if err != nil {
+			return cerr.ErrInvalidLabel.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
+				WithFilename(st.CurrentFilename()).AddErr(err)
 		}
 
-		adjWord := a.Words.Get(words.Adjective, adj)
-		if adjWord == nil {
-			adjWord = a.Words.Set(adj, words.Adjective)
-			st.SetUndef(adj, section.Words, l)
+		i.NounID = nounLabel.ID
+
+		adjLabel, err := a.DB.AddLabel(adjName, false)
+		if err != nil {
+			return cerr.ErrInvalidLabel.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
+				WithFilename(st.CurrentFilename()).AddErr(err)
 		}
 
-		if err := a.Items.Set(item.New(label, nounWord, adjWord)); err != nil {
-			return cerr.ErrWrongItemDeclaration.WithStack(st.Stack).WithSection(st.Section).AddErr(err).WithLine(l).
-				WithFilename(st.CurrentFilename())
-		}
+		i.AdjectiveID = adjLabel.ID
 
-		st.SetDef(label, section.Items)
+		st.CurrentStoreable = i
 
 		return nil
 	}

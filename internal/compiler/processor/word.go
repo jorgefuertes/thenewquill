@@ -2,30 +2,43 @@ package processor
 
 import (
 	"github.com/jorgefuertes/thenewquill/internal/adventure"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/word"
 	cerr "github.com/jorgefuertes/thenewquill/internal/compiler/compiler_error"
 	"github.com/jorgefuertes/thenewquill/internal/compiler/line"
-	"github.com/jorgefuertes/thenewquill/internal/compiler/section"
 	"github.com/jorgefuertes/thenewquill/internal/compiler/status"
 )
 
 func readWord(l line.Line, st *status.Status, a *adventure.Adventure) error {
-	w, ok := l.AsWord()
+	kind, syns, ok := l.AsWord()
 	if !ok {
 		return cerr.ErrWrongWordDeclaration.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
 			WithFilename(st.CurrentFilename())
 	}
 
-	for _, syn := range w.Synonyms {
-		if a.Words.Exists(w.Type, syn) {
-			existent := a.Words.Get(w.Type, syn)
-			return cerr.ErrDuplicatedSynonym.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
-				WithFilename(st.CurrentFilename()).
-				AddMsgf("synonym '%s' present in %s '%s'", syn, w.Type.String(), existent.Label)
-		}
+	wordType := word.WordTypeFromString(kind)
+	if wordType == word.None {
+		return cerr.ErrWrongWordDeclaration.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
+			WithFilename(st.CurrentFilename())
 	}
 
-	_ = a.Words.Set(w.Label, w.Type, w.Synonyms...)
-	st.SetDef(w.Label, section.Words)
+	if len(syns) == 0 {
+		return cerr.ErrWrongWordDeclaration.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
+			WithFilename(st.CurrentFilename())
+	}
+
+	label, err := a.DB.AddLabel(syns[0], false)
+	if err != nil {
+		return cerr.ErrInvalidLabel.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
+			WithFilename(st.CurrentFilename()).AddErr(err)
+	}
+
+	w := word.New(wordType, syns...)
+	w.ID = label.ID
+
+	if err := a.Words.Create(w); err != nil {
+		return cerr.ErrDBCreate.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
+			WithFilename(st.CurrentFilename()).AddErr(err)
+	}
 
 	return nil
 }

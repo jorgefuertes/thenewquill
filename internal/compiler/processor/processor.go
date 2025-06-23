@@ -2,26 +2,26 @@ package processor
 
 import (
 	"github.com/jorgefuertes/thenewquill/internal/adventure"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/db"
 	"github.com/jorgefuertes/thenewquill/internal/compiler/line"
-	"github.com/jorgefuertes/thenewquill/internal/compiler/section"
 	"github.com/jorgefuertes/thenewquill/internal/compiler/status"
 )
 
 func ProcessLine(l line.Line, st *status.Status, a *adventure.Adventure) error {
 	switch st.Section {
-	case section.Config:
+	case db.Config:
 		return readConfig(l, st, a)
-	case section.Vars:
+	case db.Variables:
 		return readVar(l, st, a)
-	case section.Words:
+	case db.Words:
 		return readWord(l, st, a)
-	case section.Messages:
+	case db.Messages:
 		return readMessage(l, st, a)
-	case section.Items:
+	case db.Items:
 		return readItem(l, st, a)
-	case section.Locs:
+	case db.Locations:
 		return readLocation(l, st, a)
-	case section.Chars:
+	case db.Characters:
 		return readCharacter(l, st, a)
 	default:
 		return nil

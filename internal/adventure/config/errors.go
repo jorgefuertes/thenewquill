@@ -6,4 +6,5 @@ var (
 	ErrUnrecognizedLanguage    = errors.New("unrecognized language")
 	ErrUnrecognizedConfigField = errors.New("unrecognized config field")
 	ErrMissingConfigField      = errors.New("missing config field")
+	ErrValueIsEmpty            = errors.New("value is empty")
 )

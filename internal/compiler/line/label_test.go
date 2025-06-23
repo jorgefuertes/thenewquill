@@ -71,25 +71,25 @@ func TestGetTextForLabel(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			l := line.New(tt.lineText, 0)
-			result, ok := l.GetTextForLabel(tt.label)
+			result, ok := l.GetTextForLabelName(tt.label)
 			require.Equal(t, tt.shouldMatch, ok)
 			assert.Equal(t, tt.expected, result)
 		})
 	}
 }
 
-func TestGetTextForFirstFoundLabel(t *testing.T) {
+func TestGetTextForFirstFoundLabelName(t *testing.T) {
 	l := line.New(`desc: "this is a test"`, 0)
-	result, ok := l.GetTextForFirstFoundLabel("desc", "description")
+	result, ok := l.GetTextForFirstFoundLabelName("desc", "description")
 	require.True(t, ok)
 	assert.Equal(t, "this is a test", result)
 
-	result, ok = l.GetTextForFirstFoundLabel("title", "desc")
+	result, ok = l.GetTextForFirstFoundLabelName("title", "desc")
 	require.True(t, ok)
 	assert.Equal(t, "this is a test", result)
 
 	l = line.New(`title: "this is a test"`, 0)
-	result, ok = l.GetTextForFirstFoundLabel("foo", "bar", "title", "desc")
+	result, ok = l.GetTextForFirstFoundLabelName("foo", "bar", "title", "desc")
 	require.True(t, ok)
 	assert.Equal(t, "this is a test", result)
 }

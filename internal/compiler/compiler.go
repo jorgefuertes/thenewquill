@@ -8,14 +8,14 @@ import (
 	"path/filepath"
 
 	"github.com/jorgefuertes/thenewquill/internal/adventure"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/db"
 	cerr "github.com/jorgefuertes/thenewquill/internal/compiler/compiler_error"
 	"github.com/jorgefuertes/thenewquill/internal/compiler/line"
 	"github.com/jorgefuertes/thenewquill/internal/compiler/processor"
-	"github.com/jorgefuertes/thenewquill/internal/compiler/section"
 	"github.com/jorgefuertes/thenewquill/internal/compiler/status"
 )
 
-const VERSION = "1.0.0"
+const VERSION = "1.1.0"
 
 func Compile(filename string) (*adventure.Adventure, error) {
 	a := adventure.New()
@@ -28,21 +28,9 @@ func Compile(filename string) (*adventure.Adventure, error) {
 		return a, cErr
 	}
 
-	// check for unresolved labels
-	for _, udf := range st.Undefs {
-		fmt.Println(
-			cerr.ErrUnresolvedLabel.WithFilename(udf.File).
-				WithLine(udf.Line).
-				WithSection(udf.Section).
-				AddMsgf("%s `%s` remains undefined", udf.Section.String(), udf.Label).
-				Dump(),
-		)
-		err = cerr.ErrRemainingUnresolvedLabels
-	}
-	if err != nil {
-		return a, err
-	}
+	// TODO: check for unresolved references
 
+	// validate
 	return a, a.Validate()
 }
 
@@ -136,13 +124,20 @@ func compileFile(st *status.Status, filename string, a *adventure.Adventure) err
 		// section declaration
 		s, ok := l.AsSection()
 		if ok {
-			st.CurrentLabel = ""
+			// save any unclosed storeable
+			if err := st.Save(a.DB); err != nil {
+				return cerr.ErrDBCreate.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
+					WithFilename(st.CurrentFilename()).AddErr(err)
+			}
+
+			st.CurrentLabel = db.UndefinedLabel
+			st.CurrentStoreable = nil
 			st.Section = s
 
 			continue
 		}
 
-		if st.Section == section.None {
+		if st.Section == db.None {
 			return cerr.ErrOutOfSection.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
 				WithFilename(st.CurrentFilename())
 		}

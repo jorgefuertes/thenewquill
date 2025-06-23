@@ -32,9 +32,9 @@ func (l Line) Number() int {
 	return l.n
 }
 
-// GetTextForLabel returns the text for the given label and true if it was found
-func (l Line) GetTextForLabel(label string) (string, bool) {
-	re := regexp.MustCompile(`(?s)^\s*` + label + `:\s+["^(\\")]{1}(.+)["^(\\")]{1}`)
+// GetTextForLabelName returns the text for the given label and true if it was found
+func (l Line) GetTextForLabelName(labelName string) (string, bool) {
+	re := regexp.MustCompile(`(?s)^\s*` + labelName + `:\s+["^(\\")]{1}(.+)["^(\\")]{1}`)
 
 	if !re.MatchString(l.text) {
 		return "", false
@@ -49,9 +49,9 @@ func (l Line) GetTextForLabel(label string) (string, bool) {
 	return text, true
 }
 
-func (l Line) GetTextForFirstFoundLabel(labels ...string) (string, bool) {
-	for _, label := range labels {
-		text, ok := l.GetTextForLabel(label)
+func (l Line) GetTextForFirstFoundLabelName(labelNames ...string) (string, bool) {
+	for _, labelName := range labelNames {
+		text, ok := l.GetTextForLabelName(labelName)
 		if ok {
 			return text, ok
 		}
