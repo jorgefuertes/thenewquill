@@ -7,7 +7,7 @@ func (m Message) Validate(allowNoID db.Allow) error {
 		return err
 	}
 
-	if m.ID < db.MinMeaningfulID {
+	if m.ID < db.MinMeaningfulID && !allowNoID {
 		return db.ErrInvalidLabelID
 	}
 
@@ -25,8 +25,11 @@ func (m Message) Validate(allowNoID db.Allow) error {
 }
 
 func (s *Service) ValidateAll() error {
+	msgs := s.db.Query(db.Messages)
+	defer msgs.Close()
+
 	var m Message
-	for s.db.Query(db.Messages).Next(&m) {
+	for msgs.Next(&m) {
 		if err := m.Validate(db.DontAllowNoID); err != nil {
 			return err
 		}

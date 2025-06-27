@@ -1,27 +1,37 @@
 package status
 
 import (
+	"errors"
 	"reflect"
 	"slices"
 
 	"github.com/jorgefuertes/thenewquill/internal/adventure/db"
+	cerr "github.com/jorgefuertes/thenewquill/internal/compiler/compiler_error"
 	"github.com/jorgefuertes/thenewquill/internal/compiler/line"
 )
 
 const stackSize = 5
 
-type Status struct {
-	Section          db.Kind
-	Comment          line.Multi
-	MultiLine        line.Multi
-	Stack            []line.Line
-	CurrentLabel     db.Label
-	CurrentStoreable db.Storeable
-	filenames        []string
+type currentStoreable struct {
+	label     db.Label
+	storeable db.Storeable
+	line      line.Line
+	filename  string
 }
 
-func New() *Status {
+type Status struct {
+	db        *db.DB
+	Section   db.Kind
+	Comment   line.Multi
+	MultiLine line.Multi
+	Stack     []line.Line
+	current   *currentStoreable
+	filenames []string
+}
+
+func New(d *db.DB) *Status {
 	return &Status{
+		db:        d,
 		Section:   db.None,
 		Comment:   line.NewMulti(),
 		MultiLine: line.NewMulti(),
@@ -46,11 +56,6 @@ func (s *Status) CurrentFilename() string {
 	return s.filenames[len(s.filenames)-1]
 }
 
-// HasCurrentLabel returns true if there is a current label
-func (s *Status) HasCurrentLabel() bool {
-	return s.CurrentLabel.ID.IsDefined()
-}
-
 func (s *Status) AppendStack(l line.Line) {
 	if len(s.Stack) == stackSize {
 		s.Stack = slices.Delete(s.Stack, 0, 1)
@@ -71,23 +76,23 @@ func (s *Status) AppendLine(l line.Line) {
 	s.MultiLine.Append(l)
 }
 
-func (s *Status) Save(d *db.DB) error {
-	if !s.HasCurrentLabel() || s.CurrentStoreable == nil {
-		return nil
+func (s *Status) SaveCurrentStoreable() cerr.CompilerError {
+	if s.current == nil {
+		return cerr.OK
 	}
 
-	if _, err := d.Create(s.CurrentLabel.Name, s.CurrentStoreable); err != nil {
-		return err
+	if _, err := s.db.Create(s.current.label.Name, s.current.storeable); err != nil {
+		return cerr.ErrDBCreate.WithStack(s.Stack).WithSection(s.Section).WithLine(s.current.line).
+			WithFilename(s.current.filename).AddErr(err)
 	}
 
-	s.CurrentLabel = db.UndefinedLabel
-	s.CurrentStoreable = nil
+	s.ClearCurrent()
 
-	return nil
+	return cerr.OK
 }
 
 func (s *Status) GetCurrentStoreable(dst any) bool {
-	if s.CurrentStoreable == nil {
+	if s.current == nil {
 		return false
 	}
 
@@ -97,7 +102,43 @@ func (s *Status) GetCurrentStoreable(dst any) bool {
 		return false
 	}
 
-	dstValue.Elem().Set(reflect.ValueOf(s.CurrentStoreable))
+	dstValue.Elem().Set(reflect.ValueOf(s.current.storeable))
 
 	return true
+}
+
+func (s *Status) SetCurrentStoreable(storeable db.Storeable) error {
+	s.current.storeable = storeable
+
+	return nil
+}
+
+func (s *Status) SetCurrentLabel(label db.Label) error {
+	if s.current != nil {
+		return errors.New("unexpected: cannot set a new label, current storeable already set")
+	}
+
+	s.current = &currentStoreable{
+		label:    label,
+		line:     s.Stack[len(s.Stack)-1],
+		filename: s.CurrentFilename(),
+	}
+
+	return nil
+}
+
+func (s *Status) GetCurrentLabel() db.Label {
+	if s.current == nil {
+		return db.UndefinedLabel
+	}
+
+	return s.current.label
+}
+
+func (s *Status) ClearCurrent() {
+	s.current = nil
+}
+
+func (s *Status) HasCurrent() bool {
+	return s.current != nil
 }

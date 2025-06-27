@@ -13,10 +13,8 @@ func readMessage(l line.Line, st *status.Status, a *adventure.Adventure) error {
 
 	labelName, text, plural, ok := l.AsMsg()
 	if ok {
-		// save current storeable if any
-		if err := st.Save(a.DB); err != nil {
-			return cerr.ErrDBCreate.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
-				WithFilename(st.CurrentFilename()).AddErr(err)
+		if err := st.SaveCurrentStoreable(); !err.IsOK() {
+			return err
 		}
 
 		label, err := a.DB.AddLabel(labelName, false)
@@ -25,9 +23,15 @@ func readMessage(l line.Line, st *status.Status, a *adventure.Adventure) error {
 				WithFilename(st.CurrentFilename()).AddErr(err)
 		}
 
-		st.CurrentLabel = label
+		if err := st.SetCurrentLabel(label); err != nil {
+			return err
+		}
+
 		m.SetPlural(plural, text)
-		st.CurrentStoreable = m
+
+		if err := st.SetCurrentStoreable(m); err != nil {
+			return err
+		}
 
 		return nil
 	}

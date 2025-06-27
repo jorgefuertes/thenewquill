@@ -12,6 +12,8 @@ const (
 	MinMeaningfulID  ID    = 4
 	AllowSpecial     Allow = true
 	DontAllowSpecial Allow = false
+	AllowDot         Allow = true
+	DontAllowDot     Allow = false
 )
 
 type ID uint32
@@ -57,16 +59,12 @@ var (
 	WildcardLabel   = Label{ID: 3, Name: "*"}
 )
 
-func (d *DB) AddLabel(name string, allowDot bool) (Label, error) {
+func (d *DB) AddLabel(name string, allowDot Allow) (Label, error) {
 	if d.ExistsLabelName(name) {
 		return d.GetLabelByName(name)
 	}
 
-	if !IsValidLabelName(name) && !allowDot {
-		return Label{}, errors.Join(ErrInvalidLabelName, errors.New(name))
-	}
-
-	if allowDot && !IsVarValidLabelName(name) {
+	if !IsValidLabelName(name, allowDot) {
 		return Label{}, errors.Join(ErrInvalidLabelName, errors.New(name))
 	}
 
@@ -132,10 +130,10 @@ func (d *DB) ExistsLabelName(name string) bool {
 	return false
 }
 
-func IsValidLabelName(name string) bool {
-	return regexp.MustCompile(`^[\d\p{L}\-_]{1,25}$`).MatchString(name)
-}
+func IsValidLabelName(name string, allowDot Allow) bool {
+	if allowDot {
+		return regexp.MustCompile(`^[\d\p{L}\-_\.]{1,25}$`).MatchString(name)
+	}
 
-func IsVarValidLabelName(name string) bool {
-	return regexp.MustCompile(`^[\d\p{L}\-_\.]{1,25}$`).MatchString(name)
+	return regexp.MustCompile(`^[\d\p{L}\-_]{1,25}$`).MatchString(name)
 }

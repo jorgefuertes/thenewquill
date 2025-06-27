@@ -8,6 +8,10 @@ import (
 )
 
 func (w Word) Validate(allowNoID db.Allow) error {
+	if w.ID == db.UndefinedLabel.ID && allowNoID == db.AllowNoID {
+		return nil
+	}
+
 	if err := w.ID.Validate(db.DontAllowSpecial); err != nil && !allowNoID {
 		return fmt.Errorf("ID %q: %w", w.ID, err)
 	}
@@ -20,16 +24,22 @@ func (w Word) Validate(allowNoID db.Allow) error {
 }
 
 func (s *Service) ValidateAll() error {
+	words := s.db.Query(db.Words)
+	defer words.Close()
+
 	var w Word
-	for s.db.Query(db.Words).Next(&w) {
+	for words.Next(&w) {
 		if err := w.Validate(db.DontAllowNoID); err != nil {
 			return err
 		}
 	}
 
 	// check for duplicates
+	words2 := s.db.Query(db.Words)
+	defer words2.Close()
+
 	var w2 Word
-	for s.db.Query(db.Words).Next(&w2) {
+	for words2.Next(&w2) {
 		if w.GetID() == w2.GetID() {
 			continue
 		}

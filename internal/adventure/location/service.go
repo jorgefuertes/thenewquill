@@ -1,6 +1,8 @@
 package location
 
-import "github.com/jorgefuertes/thenewquill/internal/adventure/db"
+import (
+	"github.com/jorgefuertes/thenewquill/internal/adventure/db"
+)
 
 type Service struct {
 	db *db.DB

@@ -31,14 +31,15 @@ func Kinds() []Kind {
 
 func kindNamesAndAliases() map[Kind][]string {
 	return map[Kind][]string{
-		None:      {"none", "unknown"},
-		Config:    {"config", "cfg", "configuration"},
-		Variables: {"vars", "variables"},
-		Words:     {"words", "vocabulary", "voc"},
-		Messages:  {"messages", "msgs"},
-		Items:     {"items", "objects"},
-		Locations: {"locations", "rooms", "locs"},
-		Processes: {"process tables", "procs", "proc tables"},
+		None:       {"none", "unknown"},
+		Config:     {"config", "cfg", "configuration"},
+		Variables:  {"vars", "variables"},
+		Words:      {"words", "vocabulary", "voc"},
+		Messages:   {"messages", "msgs"},
+		Items:      {"items", "objects"},
+		Locations:  {"locations", "rooms", "locs"},
+		Characters: {"characters", "chars", "players"},
+		Processes:  {"process tables", "procs", "proc tables"},
 	}
 }
 
@@ -55,7 +56,7 @@ func (s Kind) Byte() byte {
 	return byte(s)
 }
 
-func FromByte(b byte) Kind {
+func KindFromByte(b byte) Kind {
 	if int(b) < 0 || int(b) >= len(kindNamesAndAliases()) {
 		return None
 	}
@@ -63,7 +64,7 @@ func FromByte(b byte) Kind {
 	return Kind(b)
 }
 
-func FromString(s string) Kind {
+func KindFromString(s string) Kind {
 	s = strings.ToLower(s)
 
 	for sec, names := range kindNamesAndAliases() {

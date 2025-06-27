@@ -23,8 +23,8 @@ llave2: llave plateada
 
 talismán: talismán _
     desc: "Un talismán."
-    is worn
     is wearable
+    is worn by jugador
 
 cinturón: cinturón _
     desc: "Un cinturón."

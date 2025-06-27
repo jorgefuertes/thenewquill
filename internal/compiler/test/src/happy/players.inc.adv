@@ -1,4 +1,4 @@
-SECTION CHARS
+SECTION CHARACTERS
 
 player: jugador _
 	desc: "Eres un pedazo de jugador"

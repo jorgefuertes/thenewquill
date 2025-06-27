@@ -57,6 +57,8 @@ func (m Message) GetKind() db.Kind {
 func (m *Message) SetPlural(pluralName Plural, text string) {
 	if pluralName == Zero {
 		m.Text = text
+
+		return
 	}
 
 	m.Plurals[pluralName] = text

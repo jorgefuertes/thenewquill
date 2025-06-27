@@ -27,7 +27,7 @@ func (s *Service) ValidateAll() error {
 			return err
 		}
 
-		label, err := s.db.GetLabelByName(v.ID.String())
+		label, err := s.db.GetLabel(v.ID)
 		if err != nil {
 			return err
 		}

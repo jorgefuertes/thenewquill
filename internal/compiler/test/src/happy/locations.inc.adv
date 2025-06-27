@@ -3,7 +3,7 @@ SECTION LOCATIONS
 celda:
 	title: "Celda"
 	desc: "De momento estás en una fría celda, junto a un fiambre bastante deteriorado. Tras los barrotes de tu puerta \
-	ves un lóbrego vestíbulo."
+		ves un lóbrego vestíbulo."
 	exits: salir vestíbulo
 
 celda2:
@@ -19,7 +19,7 @@ celda3:
 vestíbulo:
 	title: "Vestíulo de la prisión"
 	desc: """
-	El vestíbulo de la cárcel es poco acogedor. Sobre todo para el carcelero que yace muerto en el suelo. Además \
+	El vestíbulo de la cárcel es poco acogedor. Sobre todo para el carcelero que yace muerto en el suelo. Además
 	de tu celda, hay dos más, una a la derecha y otra a la izquierda.
 	Hacia el Sur se oyen ruidos.
 	"""
@@ -113,7 +113,7 @@ caravanas:
 	title: "Caravanas"
 	desc: "Todo el lugar vibra de actividad, pues hay varias caravanas a punto de partir. Un malencarado sujeto dirige \
 	toda la operación."
-	exits: subo carromato, norte afueras, este afueras, oeste afueras
+	exits: subir carromato, norte afueras, este afueras, oeste afueras
 
 carromato:
 	title: "Carromato"
@@ -131,24 +131,24 @@ santuario:
 taberna:
 	title: "Taberna"
 	desc: "Estás en la taberna de Monte Picayum, elegante hostal hispánicus. Un agradable fuego caldea la estancia."
-	exits: sur saguntum, bajo sótano
+	exits: sur saguntum, bajar sótano
 
 sótano:
 	title: "Sótano de la taberna"
 	desc: "El tenebroso, mohoso y soso sótano de la taberna está en un estado de abandono lamentable, muy propicio \
 	para refugio de todo tipo de alimañas."
-	exits: subo taberna
+	exits: subir taberna
 
 saguntum:
 	title: "Saguntum"
 	desc: "La fortaleza de Saguntum está rodeada por una amplia y rica vega."
-	exits: subo fortaleza, entrar fortaleza, este puerto, norte taberna
+	exits: subir fortaleza, entrar fortaleza, este puerto, norte taberna
 
 fortaleza:
 	title: "Fortaleza de Saguntum"
 	desc: "Te encuentras en el interior de la fortaleza. Aunque la población local mantiene el ánimo, se nota por \
 	doquier el cruel rastri de la guerra. Agradecidos, los saguntinos os vitorean."
-	exits: bajo saguntum, salir saguntum
+	exits: bajar saguntum, salir saguntum
 
 puerto:
 	title: "Puerto"
@@ -160,7 +160,7 @@ barcos:
 	title: "Ante un barco"
 	desc: "Estás ante uno de los muchos barcos que se aprestan a partir de éste ocupado puerto marino. El capitán del \
 	barco te observa."
-	exits: salir puerto, entrar barco, subo barco
+	exits: salir puerto, entrar barco, subir barco
 
 barco:
 	title: "Barco"

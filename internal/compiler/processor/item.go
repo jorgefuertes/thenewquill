@@ -16,8 +16,7 @@ import (
 func readItem(l line.Line, st *status.Status, a *adventure.Adventure) error {
 	i := item.New(db.UndefinedLabel.ID, db.UndefinedLabel.ID)
 
-	if st.HasCurrentLabel() {
-
+	if st.HasCurrent() {
 		if !st.GetCurrentStoreable(&i) {
 			return cerr.ErrNoCurrentEntity.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
 				WithFilename(st.CurrentFilename())
@@ -26,7 +25,10 @@ func readItem(l line.Line, st *status.Status, a *adventure.Adventure) error {
 		desc, ok := l.GetTextForFirstFoundLabelName("description", "desc")
 		if ok {
 			i.Description = desc
-			st.CurrentStoreable = i
+
+			if err := st.SetCurrentStoreable(i); err != nil {
+				return err
+			}
 
 			return nil
 		}
@@ -35,21 +37,30 @@ func readItem(l line.Line, st *status.Status, a *adventure.Adventure) error {
 
 		if o == "is wearable" {
 			i.Wearable = true
-			st.CurrentStoreable = i
+
+			if err := st.SetCurrentStoreable(i); err != nil {
+				return err
+			}
 
 			return nil
 		}
 
 		if o == "is created" {
 			i.Created = true
-			st.CurrentStoreable = i
+
+			if err := st.SetCurrentStoreable(i); err != nil {
+				return err
+			}
 
 			return nil
 		}
 
 		if o == "is container" {
 			i.Container = true
-			st.CurrentStoreable = i
+
+			if err := st.SetCurrentStoreable(i); err != nil {
+				return err
+			}
 
 			return nil
 		}
@@ -67,7 +78,9 @@ func readItem(l line.Line, st *status.Status, a *adventure.Adventure) error {
 			i.At = atLabel.ID
 			i.Worn = strings.Contains(parts[1], "worn")
 
-			st.CurrentStoreable = i
+			if err := st.SetCurrentStoreable(i); err != nil {
+				return err
+			}
 
 			return nil
 		}
@@ -83,7 +96,9 @@ func readItem(l line.Line, st *status.Status, a *adventure.Adventure) error {
 					WithFilename(st.CurrentFilename()).AddErr(err)
 			}
 
-			st.CurrentStoreable = i
+			if err := st.SetCurrentStoreable(i); err != nil {
+				return err
+			}
 
 			return nil
 		}
@@ -99,24 +114,29 @@ func readItem(l line.Line, st *status.Status, a *adventure.Adventure) error {
 					WithFilename(st.CurrentFilename()).AddErr(err)
 			}
 
-			st.CurrentStoreable = i
+			if err := st.SetCurrentStoreable(i); err != nil {
+				return err
+			}
 
 			return nil
 		}
 
 		// var
-		if err := tryReadEntityVar(l, st, a); err != nil {
+		isVar, err := tryReadEntityVar(l, st, a)
+		if err != nil {
 			return err
+		}
+
+		if isVar {
+			return nil
 		}
 	}
 
 	// new item
 	labelName, nounName, adjName, ok := l.AsLabelNounAdjDeclaration()
 	if ok {
-		// save current storeable if any
-		if err := st.Save(a.DB); err != nil {
-			return cerr.ErrDBCreate.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
-				WithFilename(st.CurrentFilename()).AddErr(err)
+		if err := st.SaveCurrentStoreable(); !err.IsOK() {
+			return err
 		}
 
 		label, err := a.DB.AddLabel(labelName, false)
@@ -125,7 +145,9 @@ func readItem(l line.Line, st *status.Status, a *adventure.Adventure) error {
 				WithFilename(st.CurrentFilename()).AddErr(err)
 		}
 
-		st.CurrentLabel = label
+		if err := st.SetCurrentLabel(label); err != nil {
+			return err
+		}
 
 		nounLabel, err := a.DB.AddLabel(nounName, false)
 		if err != nil {
@@ -143,7 +165,9 @@ func readItem(l line.Line, st *status.Status, a *adventure.Adventure) error {
 
 		i.AdjectiveID = adjLabel.ID
 
-		st.CurrentStoreable = i
+		if err := st.SetCurrentStoreable(i); err != nil {
+			return err
+		}
 
 		return nil
 	}

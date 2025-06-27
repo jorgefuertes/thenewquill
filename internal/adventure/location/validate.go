@@ -9,10 +9,12 @@ import (
 
 func (l Location) Validate(allowNoID db.Allow) error {
 	if err := l.ID.Validate(db.DontAllowSpecial); err != nil && !allowNoID {
-		return err
+		if err == db.ErrInvalidLabelID && !allowNoID {
+			return err
+		}
 	}
 
-	if l.ID < db.MinMeaningfulID {
+	if l.ID < db.MinMeaningfulID && !allowNoID {
 		return ErrWrongLabel
 	}
 
@@ -42,18 +44,31 @@ func (s *Service) ValidateAll() error {
 		for i, conn := range loc.Conns {
 			if !s.db.Exists(conn.WordID, db.Words) {
 				return errors.Join(
-					ErrWrongLabel,
-					fmt.Errorf("location: '%s', conn '%d', word '%d'", s.db.GetLabelName(loc.ID), i, conn.WordID),
+					ErrConnWordNotFound,
+					fmt.Errorf(
+						"conn %02d: %s(%d):%s(%d)->%s(%d)",
+						i,
+						s.db.GetLabelName(loc.ID),
+						loc.ID,
+						s.db.GetLabelName(conn.WordID),
+						conn.WordID,
+						s.db.GetLabelName(conn.LocationID),
+						conn.LocationID,
+					),
 				)
 			}
 
 			if !s.db.Exists(conn.LocationID, db.Locations) {
 				return errors.Join(
-					ErrWrongLabel,
+					ErrConnLocationNotFound,
 					fmt.Errorf(
-						"location: '%s', conn '%s' to location '%d'",
+						"conn %02d: %s(%d):%s(%d)->%s(%d)",
+						i,
 						s.db.GetLabelName(loc.ID),
+						loc.ID,
 						s.db.GetLabelName(conn.WordID),
+						conn.WordID,
+						s.db.GetLabelName(conn.LocationID),
 						conn.LocationID,
 					),
 				)

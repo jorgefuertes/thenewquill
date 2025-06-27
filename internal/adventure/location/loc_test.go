@@ -67,7 +67,7 @@ func TestLocations(t *testing.T) {
 			}
 
 			_, err := d.Create(locDef.label, l)
-			require.NoError(t, err)
+			require.NoError(t, err, "creating location %q", locDef.label)
 		}
 	}
 

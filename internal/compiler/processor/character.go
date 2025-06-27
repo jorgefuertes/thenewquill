@@ -1,6 +1,7 @@
 package processor
 
 import (
+	"errors"
 	"strings"
 
 	"github.com/jorgefuertes/thenewquill/internal/adventure"
@@ -14,16 +15,18 @@ import (
 func readCharacter(l line.Line, st *status.Status, a *adventure.Adventure) error {
 	c := character.New(db.UndefinedLabel.ID, db.UndefinedLabel.ID)
 
-	if st.HasCurrentLabel() {
+	if st.HasCurrent() {
 		if !st.GetCurrentStoreable(&c) {
-			return cerr.ErrNoCurrentEntity.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
-				WithFilename(st.CurrentFilename())
+			return errors.New("unexpected: cannot get current character")
 		}
 
 		desc, ok := l.GetTextForFirstFoundLabelName("description", "desc")
 		if ok {
 			c.Description = desc
-			st.CurrentStoreable = c
+
+			if err := st.SetCurrentStoreable(c); err != nil {
+				return err
+			}
 
 			return nil
 		}
@@ -32,7 +35,10 @@ func readCharacter(l line.Line, st *status.Status, a *adventure.Adventure) error
 
 		if o == "is created" {
 			c.Created = true
-			st.CurrentStoreable = c
+
+			if err := st.SetCurrentStoreable(c); err != nil {
+				return err
+			}
 
 			return nil
 		}
@@ -44,7 +50,10 @@ func readCharacter(l line.Line, st *status.Status, a *adventure.Adventure) error
 			}
 
 			c.Human = true
-			st.CurrentStoreable = c
+
+			if err := st.SetCurrentStoreable(c); err != nil {
+				return err
+			}
 
 			return nil
 		}
@@ -59,23 +68,29 @@ func readCharacter(l line.Line, st *status.Status, a *adventure.Adventure) error
 			}
 
 			c.LocationID = locLabel.ID
-			st.CurrentStoreable = c
+
+			if err := st.SetCurrentStoreable(c); err != nil {
+				return err
+			}
 
 			return nil
 		}
 
 		// var
-		if err := tryReadEntityVar(l, st, a); err != nil {
+		isVar, err := tryReadEntityVar(l, st, a)
+		if err != nil {
 			return err
+		}
+
+		if isVar {
+			return nil
 		}
 	}
 
 	labelName, nounName, adjName, ok := l.AsLabelNounAdjDeclaration()
 	if ok {
-		// save current storeable if any
-		if err := st.Save(a.DB); err != nil {
-			return cerr.ErrDBCreate.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
-				WithFilename(st.CurrentFilename()).AddErr(err)
+		if err := st.SaveCurrentStoreable(); !err.IsOK() {
+			return err
 		}
 
 		label, err := a.DB.AddLabel(labelName, false)
@@ -84,7 +99,9 @@ func readCharacter(l line.Line, st *status.Status, a *adventure.Adventure) error
 				WithFilename(st.CurrentFilename()).AddErr(err)
 		}
 
-		st.CurrentLabel = label
+		if err := st.SetCurrentLabel(label); err != nil {
+			return err
+		}
 
 		nounLabel, err := a.DB.GetLabelByName(nounName)
 		if err != nil {
@@ -104,7 +121,10 @@ func readCharacter(l line.Line, st *status.Status, a *adventure.Adventure) error
 			}
 		}
 
-		st.CurrentStoreable = character.New(nounLabel.ID, adjLabel.ID)
+		c := character.New(nounLabel.ID, adjLabel.ID)
+		if err := st.SetCurrentStoreable(c); err != nil {
+			return err
+		}
 
 		return nil
 	}

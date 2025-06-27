@@ -3,6 +3,7 @@ package compiler_test
 import (
 	"testing"
 
+	"github.com/jorgefuertes/thenewquill/internal/adventure/db"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/word"
 	"github.com/jorgefuertes/thenewquill/internal/compiler"
 
@@ -16,7 +17,7 @@ func TestCompilerHappyPath(t *testing.T) {
 
 	t.Run("vars", func(t *testing.T) {
 		// vars
-		assert.Equal(t, 7, a.Variables.Count())
+		assert.Equal(t, 15, a.Variables.Count())
 
 		testCases := []struct {
 			key      string
@@ -29,14 +30,37 @@ func TestCompilerHappyPath(t *testing.T) {
 			{"aFloat", 1.5},
 			{"name", `The New Quill Adventure Writing System`},
 			{"hello", `Hello, _.\nWelcome to _.\n`},
+			{"gradas.people", 500},
+			{"subasta.running", true},
+			{"via.open", true},
+			{"ant-on.on", false},
+			{"player.health", 100},
+			{"enano.patience", 255},
+			{"enano.death", false},
+			{"elfo.hidden", true},
 		}
 
 		for _, tc := range testCases {
 			t.Run(tc.key, func(t *testing.T) {
 				actual, err := a.Variables.FindByLabel(tc.key)
 				require.NoError(t, err)
-				assert.EqualValues(t, tc.expected, actual)
+				assert.EqualValues(t, tc.expected, actual.Value)
 			})
+		}
+
+		vars := a.Variables.All()
+		for _, v := range vars {
+			exists := false
+
+			for _, tc := range testCases {
+				if a.DB.GetLabelName(v.ID) == tc.key {
+					exists = true
+				}
+			}
+
+			if !exists {
+				t.Errorf("extra variable '%s = %v'", a.DB.GetLabelName(v.ID), v.Value)
+			}
 		}
 	})
 
@@ -47,74 +71,69 @@ func TestCompilerHappyPath(t *testing.T) {
 		})
 
 		testCases := []struct {
-			kind  word.WordType
-			label string
-			syns  []string
+			kind word.WordType
+			syns []string
 		}{
-			{word.Verb, "_", []string{}},
-			{word.Noun, "_", []string{}},
-			{word.Pronoun, "_", []string{}},
-			{word.Adjective, "_", []string{}},
-			{word.Adverb, "_", []string{}},
-			{word.Conjunction, "_", []string{}},
-			{word.Preposition, "_", []string{}},
-			{word.Verb, "entrar", []string{"entro", "entra"}},
-			{word.Verb, "subir", []string{"sube", "subo"}},
-			{word.Verb, "bajar", []string{"bajo", "baja"}},
-			{word.Verb, "salir", []string{"salgo", "sal"}},
-			{word.Verb, "coger", []string{"coge", "llevar", "recoger", "recoge", "pillar"}},
-			{word.Verb, "dejar", []string{"dejo", "soltar", "suelta", "suelto"}},
-			{word.Verb, "quitar", []string{"quito", "quita"}},
-			{word.Verb, "poner", []string{"pongo", "pone"}},
-			{word.Verb, "abrir", []string{"abro", "abre"}},
-			{word.Verb, "cerrar", []string{"cierro", "cierra"}},
-			{word.Verb, "fin", []string{"terminar", "acabar", "sistema"}},
-			{word.Verb, "quill", []string{"github.com/jorgefuertes/thenewquill", "tnq"}},
-			{word.Verb, "ad", []string{}},
-			{word.Verb, "decir", []string{"di", "hablar", "habla"}},
-			{word.Verb, "ir", []string{"voy", "vamos", "ve"}},
-			{word.Verb, "ex", []string{"exam", "examinar", "examina", "mirar", "mira", "miro"}},
-			{word.Verb, "save", []string{"grabar", "graba", "grabo", "salvar", "salva", "salvo"}},
-			{word.Verb, "ram", []string{"ramsave"}},
-			{word.Noun, "jugador", []string{}},
-			{word.Noun, "enano", []string{}},
-			{word.Noun, "elfo", []string{}},
-			{word.Noun, "norte", []string{"n", "adelante"}},
-			{word.Noun, "sur", []string{"s", "atrás"}},
-			{word.Noun, "este", []string{"e"}},
-			{word.Noun, "oeste", []string{"o", "w"}},
-			{word.Noun, "abrigo", []string{"chaqueta"}},
-			{word.Noun, "guantes", []string{}},
-			{word.Noun, "cofre", []string{"arcón"}},
-			{word.Noun, "monedas", []string{"dinero"}},
-			{word.Noun, "denario", []string{}},
-			{word.Noun, "carta", []string{"papel"}},
-			{word.Noun, "antorcha", []string{"tea", "linterna"}},
-			{word.Noun, "llave", []string{}},
-			{word.Noun, "cinturón", []string{}},
-			{word.Noun, "petaca", []string{"botella"}},
-			{word.Noun, "talismán", []string{"amuleto"}},
-			{word.Noun, "ropa", []string{"vestido"}},
-			{word.Noun, "bolsa", []string{"saco", "petate"}},
-			{word.Adjective, "encendida", []string{}},
-			{word.Adjective, "apagada", []string{}},
-			{word.Adjective, "dorada", []string{}},
-			{word.Adjective, "plateada", []string{}},
-			{word.Pronoun, "el", []string{"la", "los", "las"}},
-			{word.Preposition, "dentro", []string{"adentro"}},
-			{word.Conjunction, "enton", []string{"luego", "tras", "y"}},
+			{word.Verb, []string{"entrar", "entro", "entra"}},
+			{word.Verb, []string{"subir", "sube", "subo"}},
+			{word.Verb, []string{"bajar", "bajo", "baja"}},
+			{word.Verb, []string{"salir", "salgo", "sal"}},
+			{word.Verb, []string{"coger", "coge", "llevar", "recoger", "recoge", "pillar"}},
+			{word.Verb, []string{"dejar", "dejo", "soltar", "suelta", "suelto"}},
+			{word.Verb, []string{"quitar", "quito", "quita"}},
+			{word.Verb, []string{"poner", "pongo", "pone"}},
+			{word.Verb, []string{"abrir", "abro", "abre"}},
+			{word.Verb, []string{"cerrar", "cierro", "cierra"}},
+			{word.Verb, []string{"fin", "terminar", "acabar", "sistema"}},
+			{word.Verb, []string{"quill", "thenewquill", "tnq"}},
+			{word.Verb, []string{"ad"}},
+			{word.Verb, []string{"decir", "di", "hablar", "habla"}},
+			{word.Verb, []string{"ir", "voy", "vamos", "ve"}},
+			{word.Verb, []string{"ex", "exam", "examinar", "examina", "mirar", "mira", "miro"}},
+			{word.Verb, []string{"save", "grabar", "graba", "grabo", "salvar", "salva", "salvo"}},
+			{word.Verb, []string{"ram", "ramsave"}},
+			{word.Noun, []string{"jugador"}},
+			{word.Noun, []string{"enano"}},
+			{word.Noun, []string{"elfo"}},
+			{word.Noun, []string{"norte", "n", "adelante"}},
+			{word.Noun, []string{"sur", "s", "atrás"}},
+			{word.Noun, []string{"este", "e"}},
+			{word.Noun, []string{"oeste", "o", "w"}},
+			{word.Noun, []string{"abrigo", "chaqueta"}},
+			{word.Noun, []string{"guantes"}},
+			{word.Noun, []string{"cofre", "arcón"}},
+			{word.Noun, []string{"monedas", "dinero"}},
+			{word.Noun, []string{"denario"}},
+			{word.Noun, []string{"carta", "papel"}},
+			{word.Noun, []string{"antorcha", "tea", "linterna"}},
+			{word.Noun, []string{"llave"}},
+			{word.Noun, []string{"cinturón"}},
+			{word.Noun, []string{"petaca", "botella"}},
+			{word.Noun, []string{"talismán", "amuleto"}},
+			{word.Noun, []string{"ropa", "vestido"}},
+			{word.Noun, []string{"bolsa", "saco", "petate"}},
+			{word.Adjective, []string{"encendida"}},
+			{word.Adjective, []string{"apagada"}},
+			{word.Adjective, []string{"dorada"}},
+			{word.Adjective, []string{"plateada"}},
+			{word.Pronoun, []string{"el", "la", "los", "las"}},
+			{word.Preposition, []string{"dentro", "adentro"}},
+			{word.Conjunction, []string{"enton", "luego", "tras", "y"}},
 		}
 
 		for _, tc := range testCases {
-			t.Run(tc.label, func(t *testing.T) {
-				w, err := a.Words.FindByLabel(tc.label)
-				require.NoError(t, err)
+			require.GreaterOrEqual(t, len(tc.syns), 1)
+			labelName := tc.syns[0]
+
+			t.Run(labelName, func(t *testing.T) {
+				w, err := a.Words.FindByLabel(labelName)
+				require.NoError(t, err, "error finding word by label %q", labelName)
 				require.NotNil(t, w)
 				assert.Equal(t, tc.kind, w.Type)
-				assert.Equal(t, tc.syns, w.Synonyms, "synonyms for %s doesn't match", tc.label)
+				assert.Equal(t, tc.syns, w.Synonyms, "synonyms for %s doesn't match", labelName)
 				for _, syn := range tc.syns {
 					wFromSyn, err := a.Words.First(syn)
-					require.NoError(t, err)
+					require.NoError(t, err, "cannot find word %q from synonym %q", labelName, syn)
 					assert.Equal(t, w, wFromSyn)
 					assert.True(t, w.Is(w.Type, syn))
 				}
@@ -204,20 +223,22 @@ func TestCompilerHappyPath(t *testing.T) {
 		for _, tc := range testCases {
 			t.Run(tc.label, func(t *testing.T) {
 				c, err := a.Characters.FindByLabel(tc.label)
-				require.NoError(t, err)
+				require.NoError(t, err, "cannot find character %q", tc.label)
 				require.NotNil(t, c)
 
 				assert.Equal(t, tc.desc, c.Description)
 
 				noun, err := a.Words.FindByLabel(tc.noun)
-				require.NoError(t, err)
+				require.NoError(t, err, "cannot find noun %q", tc.noun)
 				assert.Equal(t, c.NounID, noun.ID)
 				assert.Equal(t, word.Noun, noun.Type)
 
-				adj, err := a.Words.FindByLabel(tc.adj)
-				require.NoError(t, err)
-				assert.Equal(t, c.AdjectiveID, adj.ID)
-				assert.Equal(t, word.Adjective, adj.Type)
+				if tc.adj != db.UnderscoreLabel.Name {
+					adj, err := a.Words.FindByLabel(tc.adj)
+					require.NoError(t, err, "cannot find adjective %q", tc.adj)
+					assert.Equal(t, c.AdjectiveID, adj.ID)
+					assert.Equal(t, word.Adjective, adj.Type)
+				}
 
 				loc, err := a.Locations.FindByLabel(tc.locationLabel)
 				require.NoError(t, err)
@@ -229,7 +250,7 @@ func TestCompilerHappyPath(t *testing.T) {
 				for k, v := range tc.vars {
 					actual, err := a.Variables.FindByLabel(tc.label, k)
 					require.NoError(t, err)
-					assert.Equal(t, v, actual.Value)
+					assert.EqualValues(t, v, actual.Value)
 				}
 			})
 		}

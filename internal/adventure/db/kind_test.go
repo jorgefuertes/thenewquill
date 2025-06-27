@@ -72,7 +72,7 @@ func TestFromByte(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equal(t, tt.expected, db.FromByte(tt.input))
+			assert.Equal(t, tt.expected, db.KindFromByte(tt.input))
 		})
 	}
 }
@@ -96,7 +96,7 @@ func TestFromString(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equal(t, tt.expected, db.FromString(tt.input))
+			assert.Equal(t, tt.expected, db.KindFromString(tt.input))
 		})
 	}
 }

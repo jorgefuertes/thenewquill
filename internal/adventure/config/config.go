@@ -13,7 +13,7 @@ var allowedFields = []allowed{
 	{"description", true},
 	{"version", true},
 	{"date", true},
-	{"lang", true},
+	{"language", true},
 }
 
 func AllowedFieldNames() []string {

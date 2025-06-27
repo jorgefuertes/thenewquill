@@ -25,7 +25,7 @@ func (l Line) AsSection() (db.Kind, bool) {
 		return db.None, false
 	}
 
-	return db.FromString(rg.Section.FindStringSubmatch(l.OptimizedText())[1]), true
+	return db.KindFromString(rg.Section.FindStringSubmatch(l.OptimizedText())[1]), true
 }
 
 // AsVar returns the variable name and value and true if it was found
@@ -73,7 +73,7 @@ func (l Line) AsWord() (string, []string, bool) {
 		return "", nil, false
 	}
 
-	labelName := parts[1]
+	labelName := parts[0]
 
 	syns := strings.Split(parts[1], ",")
 	for i, syn := range syns {

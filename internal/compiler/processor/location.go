@@ -1,6 +1,8 @@
 package processor
 
 import (
+	"errors"
+
 	"github.com/jorgefuertes/thenewquill/internal/adventure"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/location"
 	cerr "github.com/jorgefuertes/thenewquill/internal/compiler/compiler_error"
@@ -12,16 +14,18 @@ func readLocation(l line.Line, st *status.Status, a *adventure.Adventure) error 
 	loc := location.New("", "")
 
 	// continue reading location definition
-	if st.HasCurrentLabel() {
+	if st.HasCurrent() {
 		if !st.GetCurrentStoreable(&loc) {
-			return cerr.ErrNoCurrentEntity.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
-				WithFilename(st.CurrentFilename())
+			return errors.New("unexpected: cannot get current location")
 		}
 
 		desc, ok := l.AsLocationDescription()
 		if ok {
 			loc.Description = desc
-			st.CurrentStoreable = loc
+
+			if err := st.SetCurrentStoreable(loc); err != nil {
+				return err
+			}
 
 			return nil
 		}
@@ -29,7 +33,10 @@ func readLocation(l line.Line, st *status.Status, a *adventure.Adventure) error 
 		title, ok := l.AsLocationTitle()
 		if ok {
 			loc.Title = title
-			st.CurrentStoreable = loc
+
+			if err := st.SetCurrentStoreable(loc); err != nil {
+				return err
+			}
 
 			return nil
 		}
@@ -52,24 +59,29 @@ func readLocation(l line.Line, st *status.Status, a *adventure.Adventure) error 
 				loc.SetConn(actionLabel.ID, destLabel.ID)
 			}
 
-			st.CurrentStoreable = loc
+			if err := st.SetCurrentStoreable(loc); err != nil {
+				return err
+			}
 
 			return nil
 		}
 
 		// var
-		if err := tryReadEntityVar(l, st, a); err != nil {
+		isVar, err := tryReadEntityVar(l, st, a)
+		if err != nil {
 			return err
+		}
+
+		if isVar {
+			return nil
 		}
 	}
 
 	// new location
 	labelName, ok := l.AsLocationLabel()
 	if ok {
-		// save current storeable if any
-		if err := st.Save(a.DB); err != nil {
-			return cerr.ErrDBCreate.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
-				WithFilename(st.CurrentFilename()).AddErr(err)
+		if err := st.SaveCurrentStoreable(); !err.IsOK() {
+			return err
 		}
 
 		label, err := a.DB.AddLabel(labelName, false)
@@ -78,12 +90,17 @@ func readLocation(l line.Line, st *status.Status, a *adventure.Adventure) error 
 				WithFilename(st.CurrentFilename()).AddErr(err)
 		}
 
-		st.CurrentLabel = label
-		st.CurrentStoreable = loc
+		if err := st.SetCurrentLabel(label); err != nil {
+			return err
+		}
+
+		if err := st.SetCurrentStoreable(loc); err != nil {
+			return err
+		}
 
 		return nil
 	}
 
-	return cerr.ErrWrongExitsDeclaration.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
+	return cerr.ErrWrongLocationDeclaration.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
 		WithFilename(st.CurrentFilename())
 }

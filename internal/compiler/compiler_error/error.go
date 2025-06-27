@@ -101,3 +101,7 @@ func (e CompilerError) Is(err error) bool {
 
 	return false
 }
+
+func (e CompilerError) IsOK() bool {
+	return e.Is(OK)
+}

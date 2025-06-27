@@ -14,15 +14,15 @@ func TestService(t *testing.T) {
 
 	setCases := []struct {
 		name           string
-		allowDot       bool
+		allowDot       db.Allow
 		val            any
 		wantLabelError bool
 		wantSetError   bool
 	}{
-		{"flashlight.battery", true, true, false, false},
-		{"flashlight.on", false, true, true, false},
-		{"number", false, 333, false, false},
-		{"array", false, []int{1, 2, 3}, false, false},
+		{"flashlight.battery", db.AllowDot, true, false, false},
+		{"flashlight.on", db.DontAllowDot, true, true, false},
+		{"number", db.DontAllowDot, 333, false, false},
+		{"array", db.DontAllowDot, []int{1, 2, 3}, false, false},
 	}
 
 	updateCases := []struct {

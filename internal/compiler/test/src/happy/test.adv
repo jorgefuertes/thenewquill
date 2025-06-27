@@ -17,12 +17,12 @@
 
 SECTION CONFIG
 
-title:   "Una aventura sin sentido para pruebas"
-author:  "queru"
-desc:    "Este fuente debería compilar sin errores"
-lang:    "es"
-version: "1.0.0"
-date:    "16-03-2025"
+title:       "Una aventura sin sentido para pruebas"
+author:      "queru"
+description: "Este fuente debería compilar sin errores"
+language:    "es"
+version:     "1.0.0"
+date:        "16-03-2025"
 
 SECTION VARS
 
@@ -38,4 +38,4 @@ INCLUDE "messages.inc.adv"
 INCLUDE "words.inc.adv" // include another file
 INCLUDE "locations.inc.adv"
 INCLUDE "items.inc.adv"
-INCLUDE "chars.inc.adv"
+INCLUDE "players.inc.adv"

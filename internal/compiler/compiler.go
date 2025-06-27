@@ -19,7 +19,7 @@ const VERSION = "1.1.0"
 
 func Compile(filename string) (*adventure.Adventure, error) {
 	a := adventure.New()
-	st := status.New()
+	st := status.New(a.DB)
 
 	err := compileFile(st, filename, a)
 	cErr, ok := err.(cerr.CompilerError)
@@ -27,8 +27,6 @@ func Compile(filename string) (*adventure.Adventure, error) {
 		fmt.Println(cErr.Dump())
 		return a, cErr
 	}
-
-	// TODO: check for unresolved references
 
 	// validate
 	return a, a.Validate()
@@ -124,14 +122,11 @@ func compileFile(st *status.Status, filename string, a *adventure.Adventure) err
 		// section declaration
 		s, ok := l.AsSection()
 		if ok {
-			// save any unclosed storeable
-			if err := st.Save(a.DB); err != nil {
-				return cerr.ErrDBCreate.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
-					WithFilename(st.CurrentFilename()).AddErr(err)
+			if s == db.None {
+				return cerr.ErrUnknownSection.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
+					WithFilename(st.CurrentFilename())
 			}
 
-			st.CurrentLabel = db.UndefinedLabel
-			st.CurrentStoreable = nil
 			st.Section = s
 
 			continue
@@ -148,6 +143,11 @@ func compileFile(st *status.Status, filename string, a *adventure.Adventure) err
 		} else {
 			continue
 		}
+	}
+
+	// save any unclosed storeable
+	if err := st.SaveCurrentStoreable(); !err.IsOK() {
+		return err
 	}
 
 	// check if there is an unclosed comment
