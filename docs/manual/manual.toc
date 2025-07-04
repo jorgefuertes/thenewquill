@@ -1,0 +1,6 @@
+\babel@toc {spanish}{}\relax 
+\contentsline {chapter}{\numberline {1}Bienvenida}{2}{chapter.1}%
+\contentsline {section}{\numberline {1.1}Introducción}{2}{section.1.1}%
+\contentsline {chapter}{\numberline {2}El compilador}{3}{chapter.2}%
+\contentsline {section}{\numberline {2.1}Línea de comandos}{3}{section.2.1}%
+\contentsline {section}{\numberline {2.2}Identificadores y etiquetas}{3}{section.2.2}%
