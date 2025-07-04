@@ -40,3 +40,13 @@ lint:
 clean: test-clean
 	@rm -Rf dist
 	@rm -Rf tmp
+	@pushd docs/manual > /dev/null && \
+		rm -f *.aux *.log *.out *.toc *.lol *.lot *.lof *.bbl *.blg *.idx *.ilg *.ind \
+			*.nlo *.nls *.nlg *.spl *.synctex.gz *.fdb_latexmk *.fls *.listing *.pdf; \
+		popd > /dev/null
+
+doc:
+	@pushd docs/manual > /dev/null && \
+		pdflatex -shell-escape -interaction=nonstopmode \
+			-file-line-error manual.tex; \
+		popd > /dev/null
