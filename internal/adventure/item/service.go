@@ -26,7 +26,7 @@ func (s *Service) Update(i Item) error {
 
 func (s *Service) Get(id db.ID) (Item, error) {
 	i := Item{}
-	err := s.db.Get(id, db.Items, &i)
+	err := s.db.Get(id, &i)
 
 	return i, err
 }
@@ -34,7 +34,7 @@ func (s *Service) Get(id db.ID) (Item, error) {
 func (s *Service) All() []Item {
 	items := make([]Item, 0)
 
-	q := s.db.Query(db.Items)
+	q := s.db.Query(db.FilterByKind(db.Items))
 	var item Item
 	for q.Next(&item) {
 		items = append(items, item)

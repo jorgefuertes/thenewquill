@@ -28,7 +28,7 @@ func (s *Service) Update(w Word) error {
 
 func (s *Service) Get(id db.ID) (Word, error) {
 	i := Word{}
-	err := s.db.Get(id, db.Words, &i)
+	err := s.db.Get(id, &i)
 
 	return i, err
 }
@@ -36,7 +36,7 @@ func (s *Service) Get(id db.ID) (Word, error) {
 func (s *Service) All() []Word {
 	words := make([]Word, 0)
 
-	q := s.db.Query(db.Words)
+	q := s.db.Query(db.FilterByKind(db.Words))
 	var word Word
 	for q.Next(&word) {
 		words = append(words, word)

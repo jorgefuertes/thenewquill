@@ -90,7 +90,7 @@ func readItem(l line.Line, st *status.Status, a *adventure.Adventure) error {
 			parts := rg.ItemWeight.FindStringSubmatch(o)
 
 			var err error
-			i.Weight, err = strconv.Atoi(parts[1])
+			i.Weight, err = strconv.Atoi(parts[2])
 			if err != nil {
 				return cerr.ErrInvalidNumberDeclaration.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
 					WithFilename(st.CurrentFilename()).AddErr(err)

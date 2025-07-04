@@ -1,7 +1,10 @@
 package item
 
 import (
+	"fmt"
+
 	"github.com/jorgefuertes/thenewquill/internal/adventure/db"
+	"github.com/jorgefuertes/thenewquill/internal/util"
 )
 
 type Item struct {
@@ -19,6 +22,23 @@ type Item struct {
 }
 
 var _ db.Storeable = Item{}
+
+func (i Item) Export() string {
+	return fmt.Sprintf("%d|%d|%d|%d|%s|%d|%d|%d|%d|%d|%d|%d\n",
+		i.GetKind().Byte(),
+		i.ID,
+		i.NounID,
+		i.AdjectiveID,
+		util.EscapeExportString(i.Description),
+		i.Weight,
+		i.MaxWeight,
+		util.BoolToInt(i.Container),
+		util.BoolToInt(i.Wearable),
+		util.BoolToInt(i.Created),
+		i.At,
+		util.BoolToInt(i.Worn),
+	)
+}
 
 func New(nounID db.ID, adjectiveID db.ID) Item {
 	return Item{

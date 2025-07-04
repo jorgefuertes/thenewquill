@@ -1,6 +1,7 @@
-SECTION CHARS
+SECTION CHARACTERS
 
 player: jugador _
+	desc: "Eres un aventurero"
 	is at frontera
 	is created
 	is human

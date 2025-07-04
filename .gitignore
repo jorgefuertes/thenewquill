@@ -4,3 +4,9 @@
 /work
 /tmp
 /dist
+
+# LaTeX
+*.aux
+*.log
+*.out
+*.toc

@@ -16,7 +16,7 @@ author:      "Jorge Fuertes AKA Queru"
 description: "Basada en la Aventura Original desarrollada en DAAD por el equipo de Aventuras AD."
 version:     "1.0"
 date:        "28-02-2025"
-languaje:    "ES"
+language:    "ES"
 
 INCLUDE "vars.inc.adv"
 INCLUDE "words.inc.adv"

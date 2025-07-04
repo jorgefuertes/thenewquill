@@ -32,7 +32,7 @@ func (l Location) Validate(allowNoID db.Allow) error {
 }
 
 func (s *Service) ValidateAll() error {
-	locations := s.db.Query(db.Locations)
+	locations := s.db.Query(db.FilterByKind(db.Locations))
 	defer locations.Close()
 
 	var loc Location
@@ -42,7 +42,7 @@ func (s *Service) ValidateAll() error {
 		}
 
 		for i, conn := range loc.Conns {
-			if !s.db.Exists(conn.WordID, db.Words) {
+			if !s.db.Exists(conn.WordID) {
 				return errors.Join(
 					ErrConnWordNotFound,
 					fmt.Errorf(
@@ -58,7 +58,7 @@ func (s *Service) ValidateAll() error {
 				)
 			}
 
-			if !s.db.Exists(conn.LocationID, db.Locations) {
+			if !s.db.Exists(conn.LocationID) {
 				return errors.Join(
 					ErrConnLocationNotFound,
 					fmt.Errorf(

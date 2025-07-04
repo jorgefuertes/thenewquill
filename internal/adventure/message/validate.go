@@ -25,7 +25,7 @@ func (m Message) Validate(allowNoID db.Allow) error {
 }
 
 func (s *Service) ValidateAll() error {
-	msgs := s.db.Query(db.Messages)
+	msgs := s.db.Query(db.FilterByKind(db.Messages))
 	defer msgs.Close()
 
 	var m Message

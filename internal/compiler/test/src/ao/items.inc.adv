@@ -2,7 +2,7 @@ SECTION ITEMS
 
 light: linterna _ // I2/I0
 	desc: "Una linterna"
-	has weight 10
+	weight 10
 	on = false
 	batt = false
 

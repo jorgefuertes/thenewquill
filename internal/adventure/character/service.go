@@ -26,13 +26,13 @@ func (s *Service) Update(c Character) error {
 
 func (s *Service) Get(id db.ID) (Character, error) {
 	c := Character{}
-	err := s.db.Get(id, db.Characters, &c)
+	err := s.db.Get(id, &c)
 
 	return c, err
 }
 
 func (s *Service) GetHuman() (Character, error) {
-	chars := s.db.Query(db.Characters, db.Filter("Human", true))
+	chars := s.db.Query(db.FilterByKind(db.Characters), db.Filter("Human", true))
 	defer chars.Close()
 
 	var c Character

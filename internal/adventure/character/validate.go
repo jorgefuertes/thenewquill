@@ -33,7 +33,7 @@ func (c Character) Validate(allowNoID db.Allow) error {
 func (s *Service) ValidateAll() error {
 	humans := 0
 
-	chars := s.db.Query(db.Characters)
+	chars := s.db.Query(db.FilterByKind(db.Characters))
 	defer chars.Close()
 
 	c := Character{}

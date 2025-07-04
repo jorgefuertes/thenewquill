@@ -1,6 +1,11 @@
 package config
 
-import "github.com/jorgefuertes/thenewquill/internal/adventure/db"
+import (
+	"fmt"
+
+	"github.com/jorgefuertes/thenewquill/internal/adventure/db"
+	"github.com/jorgefuertes/thenewquill/internal/util"
+)
 
 type allowed struct {
 	labelName string
@@ -32,6 +37,10 @@ type Value struct {
 }
 
 var _ db.Storeable = Value{}
+
+func (v Value) Export() string {
+	return fmt.Sprintf("%d|%d|%s\n", v.GetKind().Byte(), v.ID, util.ValueToString(v.V))
+}
 
 func (v Value) GetID() db.ID {
 	return v.ID

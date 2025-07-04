@@ -42,14 +42,14 @@ func (s *Service) Update(v Value) error {
 
 func (s *Service) Get(id db.ID) (Value, error) {
 	v := Value{}
-	err := s.db.Get(id, db.Config, &v)
+	err := s.db.Get(id, &v)
 
 	return v, err
 }
 
 func (s *Service) GetField(name string) string {
 	v := Value{}
-	if err := s.db.GetByLabel(name, db.Config, &v); err != nil {
+	if err := s.db.GetByLabel(name, &v); err != nil {
 		return ""
 	}
 
@@ -59,7 +59,7 @@ func (s *Service) GetField(name string) string {
 func (s *Service) All() []Value {
 	values := make([]Value, 0)
 
-	q := s.db.Query(db.Config)
+	q := s.db.Query(db.FilterByKind(db.Config))
 	var value Value
 	for q.Next(&value) {
 		values = append(values, value)

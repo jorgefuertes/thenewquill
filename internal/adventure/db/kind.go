@@ -17,6 +17,7 @@ const (
 	Locations  Kind = 6
 	Processes  Kind = 7
 	Characters Kind = 8
+	Labels     Kind = 255
 )
 
 func Kinds() []Kind {
@@ -40,6 +41,7 @@ func kindNamesAndAliases() map[Kind][]string {
 		Locations:  {"locations", "rooms", "locs"},
 		Characters: {"characters", "chars", "players"},
 		Processes:  {"process tables", "procs", "proc tables"},
+		Labels:     {"labels", "labels"},
 	}
 }
 

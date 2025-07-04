@@ -1,6 +1,8 @@
 package db
 
-import "reflect"
+import (
+	"reflect"
+)
 
 type cursor struct {
 	i    int
@@ -52,33 +54,11 @@ func (c *cursor) First(dst any) bool {
 	return true
 }
 
-type filter struct {
-	field string
-	value any
-}
-
-func Filter(field string, value any) filter {
-	return filter{field, value}
-}
-
-func (d *DB) Query(k Kind, filters ...filter) *cursor {
+func (d *DB) Query(filters ...filter) *cursor {
 	c := &cursor{i: 0, regs: make([]Storeable, 0)}
 
 	for _, r := range d.Data {
-		if r.GetKind() != k {
-			continue
-		}
-
-		match := true
-		for _, f := range filters {
-			field := reflect.ValueOf(r).FieldByName(f.field)
-
-			if !field.IsValid() || field.Interface() != f.value {
-				match = false
-			}
-		}
-
-		if match {
+		if matches(r, filters...) {
 			c.regs = append(c.regs, r)
 		}
 	}

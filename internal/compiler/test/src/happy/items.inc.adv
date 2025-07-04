@@ -25,6 +25,7 @@ talismán: talismán _
     desc: "Un talismán."
     is wearable
     is worn by jugador
+    weight 1
 
 cinturón: cinturón _
     desc: "Un cinturón."
@@ -32,11 +33,13 @@ cinturón: cinturón _
 
 denario: denario _
     desc: "Una moneda de denario."
+    has weight 1
 
 ropa: ropa _
     desc: "Unas ropas de romano."
     is wearable
     is in bolsa
+    weighs 10
 
 bolsa: bolsa _
     desc: "Una bolsa."

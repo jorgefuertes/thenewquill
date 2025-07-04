@@ -6,7 +6,7 @@ import (
 )
 
 var (
-	ErrDuplicatedRecord          = errors.New("duplicated record")
+	ErrDuplicatedRecord          = errors.New("duplicated record or label")
 	ErrRecordNotFound            = errors.New("record not found")
 	ErrDstMustBePointer          = errors.New("destination must be a pointer")
 	ErrDstMustBePointerSlice     = errors.New("destination must be a pointer to a slice")

@@ -16,7 +16,7 @@ func NewService(d *db.DB) *Service {
 
 func (s *Service) Set(id db.ID, value any) error {
 	v := Variable{ID: id, Value: value}
-	if s.db.Exists(id, db.Variables) {
+	if s.db.Exists(id) {
 		return s.db.Update(v)
 	}
 
@@ -25,7 +25,7 @@ func (s *Service) Set(id db.ID, value any) error {
 
 func (s *Service) Get(id db.ID) (Variable, error) {
 	var v Variable
-	err := s.db.Get(id, db.Variables, &v)
+	err := s.db.Get(id, &v)
 
 	return v, err
 }
@@ -33,7 +33,7 @@ func (s *Service) Get(id db.ID) (Variable, error) {
 func (s *Service) All() []Variable {
 	vars := make([]Variable, 0)
 
-	q := s.db.Query(db.Variables)
+	q := s.db.Query(db.FilterByKind(db.Variables))
 	var varr Variable
 	for q.Next(&varr) {
 		vars = append(vars, varr)

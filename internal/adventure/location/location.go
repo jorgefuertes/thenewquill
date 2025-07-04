@@ -1,7 +1,10 @@
 package location
 
 import (
+	"fmt"
+
 	"github.com/jorgefuertes/thenewquill/internal/adventure/db"
+	"github.com/jorgefuertes/thenewquill/internal/util"
 )
 
 const Undefined = `undefined`
@@ -14,6 +17,30 @@ type Location struct {
 }
 
 var _ db.Storeable = &Location{}
+
+func (l Location) Export() string {
+	out := fmt.Sprintf("%d|%d|%s|%s",
+		l.GetKind().Byte(),
+		l.ID,
+		util.EscapeExportString(l.Title),
+		util.EscapeExportString(l.Description),
+	)
+
+	if len(l.Conns) == 0 {
+		return out + "\n"
+	}
+
+	out += "|"
+
+	for i := 0; i < len(l.Conns); i++ {
+		out += fmt.Sprintf("%d:%d", l.Conns[i].WordID, l.Conns[i].LocationID)
+		if i != len(l.Conns)-1 {
+			out += ","
+		}
+	}
+
+	return out + "\n"
+}
 
 func New(title, desc string) Location {
 	return Location{

@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	Limit                  = math.MaxInt32
+	Limit                  = math.MaxUint32
 	MinMeaningfulID  ID    = 4
 	AllowSpecial     Allow = true
 	DontAllowSpecial Allow = false

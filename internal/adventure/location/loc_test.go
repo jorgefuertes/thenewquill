@@ -50,7 +50,7 @@ func TestLocations(t *testing.T) {
 			l := location.New(locDef.title, locDef.desc)
 			for k, v := range locDef.conns {
 				var w word.Word
-				err := d.GetByLabel(k, db.Words, &w)
+				err := d.GetByLabel(k, &w)
 				require.NoError(t, err)
 
 				destLabel, err := d.GetLabelByName(v)
@@ -82,7 +82,7 @@ func TestLocations(t *testing.T) {
 	t.Run("create locations", func(t *testing.T) {
 		d := newDatabase()
 		require.NotZero(t, d.Count())
-		require.NotZero(t, d.Query(db.Words).Count())
-		require.NotZero(t, d.Query(db.Locations).Count())
+		require.NotZero(t, d.Query(db.FilterByKind(db.Words)).Count())
+		require.NotZero(t, d.Query(db.FilterByKind(db.Locations)).Count())
 	})
 }

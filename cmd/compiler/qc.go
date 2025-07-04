@@ -71,7 +71,7 @@ func compileAction(c *cli.Context) error {
 		}
 	}()
 
-	if err := a.DB.Export(f); err != nil {
+	if err := a.Export(f); err != nil {
 		return err
 	}
 

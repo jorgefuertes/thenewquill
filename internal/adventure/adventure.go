@@ -1,10 +1,6 @@
 package adventure
 
 import (
-	"fmt"
-	"io"
-	"strings"
-
 	"github.com/jorgefuertes/thenewquill/internal/adventure/character"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/config"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/db"
@@ -62,56 +58,6 @@ func (a *Adventure) Validate() error {
 		if err := v(); err != nil {
 			return err
 		}
-	}
-
-	return nil
-}
-
-func (a *Adventure) Export(w io.Writer) error {
-	if err := a.Validate(); err != nil {
-		return err
-	}
-
-	headers := []string{
-		"The New Quill Adventure",
-		fmt.Sprintf("Compiler version: %d", VERSION),
-		"Adventure.:" + a.Config.GetField("title"),
-		"By........:" + a.Config.GetField("author"),
-		"Version...:" + a.Config.GetField("version"),
-		"Date......:" + a.Config.GetField("date"),
-	}
-
-	var maxLen int
-	for _, h := range headers {
-		if len(h) > maxLen {
-			maxLen = len(h)
-		}
-	}
-
-	if _, err := fmt.Fprintf(w, "+%s+\n", strings.Repeat("-", maxLen)); err != nil {
-		return err
-	}
-
-	for _, h := range headers {
-		if _, err := fmt.Fprintf(w, "| %s%s |\n", h, strings.Repeat(" ", maxLen-len(h))); err != nil {
-			return err
-		}
-	}
-
-	if _, err := fmt.Fprintf(w, "\n+%s+\n", strings.Repeat("-", maxLen)); err != nil {
-		return err
-	}
-
-	if _, err := w.Write([]byte("\nBEGIN DATABASE\n")); err != nil {
-		return err
-	}
-
-	if err := a.DB.Export(w); err != nil {
-		return err
-	}
-
-	if _, err := w.Write([]byte("\nEND DATABASE\n")); err != nil {
-		return err
 	}
 
 	return nil

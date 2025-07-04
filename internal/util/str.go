@@ -2,6 +2,7 @@ package util
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 )
 
@@ -63,6 +64,27 @@ func ValueToString(v any) string {
 	return fmt.Sprintf("s:%v", v)
 }
 
+func StringToValue(s string) any {
+	switch s[0] {
+	case 's':
+		return s[2:]
+	case 'i':
+		i, _ := strconv.Atoi(s[2:])
+		return i
+	case 'f':
+		f, _ := strconv.ParseFloat(s[2:], 64)
+		return f
+	case 'b':
+		if s[2:] == "T" {
+			return true
+		} else {
+			return false
+		}
+	}
+
+	panic("invalid string")
+}
+
 func SplitString(text string, chunkSize int) []string {
 	var chunks []string
 	for i := 0; i < len(text); i += chunkSize {
@@ -74,4 +96,22 @@ func SplitString(text string, chunkSize int) []string {
 	}
 
 	return chunks
+}
+
+func EscapeExportString(s string) string {
+	s = strings.ReplaceAll(s, "\n", "\\n")
+	s = strings.ReplaceAll(s, "\r", "\\r")
+	s = strings.ReplaceAll(s, "\t", "\\t")
+	s = strings.ReplaceAll(s, "|", "\\|")
+
+	return s
+}
+
+func UnescapeExportString(s string) string {
+	s = strings.ReplaceAll(s, "\\n", "\n")
+	s = strings.ReplaceAll(s, "\\r", "\r")
+	s = strings.ReplaceAll(s, "\\t", "\t")
+	s = strings.ReplaceAll(s, "\\|", "|")
+
+	return s
 }

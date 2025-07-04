@@ -58,3 +58,11 @@ func WordTypeFromString(s string) WordType {
 		return None
 	}
 }
+
+func (w WordType) Byte() byte {
+	return byte(w)
+}
+
+func WordTypeFromByte(b byte) WordType {
+	return WordType(b)
+}

@@ -26,7 +26,7 @@ func (s *Service) Update(l Location) error {
 
 func (s *Service) Get(id db.ID) (Location, error) {
 	i := Location{}
-	err := s.db.Get(id, db.Locations, &i)
+	err := s.db.Get(id, &i)
 
 	return i, err
 }
@@ -34,7 +34,7 @@ func (s *Service) Get(id db.ID) (Location, error) {
 func (s *Service) All() []Location {
 	locations := make([]Location, 0)
 
-	q := s.db.Query(db.Locations)
+	q := s.db.Query(db.FilterByKind(db.Locations))
 	var location Location
 	for q.Next(&location) {
 		locations = append(locations, location)

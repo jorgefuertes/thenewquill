@@ -19,6 +19,7 @@ type Storeable interface {
 	SetID(id ID) Storeable
 	GetKind() Kind
 	Validate(allowNoID Allow) error
+	Export() string
 }
 
 type DB struct {
@@ -44,13 +45,9 @@ func (d *DB) Len() int {
 	return len(d.Data)
 }
 
-func (d *DB) indexOf(id ID, k Kind) int {
+func (d *DB) indexOf(filters ...filter) int {
 	for i, r := range d.Data {
-		if r.GetKind() != k {
-			continue
-		}
-
-		if r.GetID() == id {
+		if matches(r, filters...) {
 			return i
 		}
 	}
@@ -58,11 +55,11 @@ func (d *DB) indexOf(id ID, k Kind) int {
 	return NotFound
 }
 
-func (d *DB) Exists(id ID, k Kind) bool {
+func (d *DB) Exists(filters ...filter) bool {
 	d.mut.Lock()
 	defer d.mut.Unlock()
 
-	return d.indexOf(id, k) != -1
+	return d.indexOf(filters...) != NotFound
 }
 
 func (d *DB) Create(labelName string, s Storeable) (ID, error) {
@@ -89,7 +86,7 @@ func (d *DB) Append(s Storeable) error {
 		return ErrKindCannotBeNone
 	}
 
-	if d.Exists(s.GetID(), s.GetKind()) {
+	if d.Exists(FilterByID(s.GetID()), FilterByKind(s.GetKind())) {
 		return ErrDuplicatedRecord
 	}
 
@@ -110,14 +107,14 @@ func (d *DB) Append(s Storeable) error {
 }
 
 func (d *DB) Update(s Storeable) error {
-	if !d.Exists(s.GetID(), s.GetKind()) {
+	if !d.Exists(FilterByID(s.GetID()), FilterByKind(s.GetKind())) {
 		return ErrRecordNotFound
 	}
 
 	d.mut.Lock()
 	defer d.mut.Unlock()
 
-	idx := d.indexOf(s.GetID(), s.GetKind())
+	idx := d.indexOf(FilterByID(s.GetID()), FilterByKind(s.GetKind()))
 
 	d.Data = append(d.Data[:idx], d.Data[idx+1:]...)
 	d.Data = append(d.Data, s)
@@ -125,16 +122,16 @@ func (d *DB) Update(s Storeable) error {
 	return nil
 }
 
-func (d *DB) GetByLabel(labelName string, kind Kind, dst any) error {
+func (d *DB) GetByLabel(labelName string, dst any) error {
 	label, err := d.GetLabelByName(labelName)
 	if err != nil {
 		return err
 	}
 
-	return d.Get(label.ID, kind, dst)
+	return d.Get(label.ID, dst)
 }
 
-func (d *DB) Get(id ID, kind Kind, dst any) error {
+func (d *DB) Get(id ID, dst any) error {
 	if id < MinMeaningfulID {
 		return ErrRecordNotFound
 	}
@@ -149,7 +146,7 @@ func (d *DB) Get(id ID, kind Kind, dst any) error {
 	defer d.mut.Unlock()
 
 	for _, r := range d.Data {
-		if r.GetID() == id && r.GetKind() == kind {
+		if r.GetID() == id {
 			dstValue.Elem().Set(reflect.ValueOf(r))
 			return nil
 		}
@@ -162,7 +159,7 @@ func (d *DB) Remove(id ID, kind Kind) error {
 	d.mut.Lock()
 	defer d.mut.Unlock()
 
-	i := d.indexOf(id, kind)
+	i := d.indexOf(FilterByID(id), FilterByKind(kind))
 	if i == -1 {
 		return ErrRecordNotFound
 	}

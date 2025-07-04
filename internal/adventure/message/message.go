@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/jorgefuertes/thenewquill/internal/adventure/db"
+	"github.com/jorgefuertes/thenewquill/internal/util"
 )
 
 type Message struct {
@@ -14,6 +15,16 @@ type Message struct {
 }
 
 var _ db.Storeable = Message{}
+
+func (m Message) Export() string {
+	out := fmt.Sprintf("%d|%d|%s|%s|%s\n", m.GetKind().Byte(), m.ID,
+		util.EscapeExportString(m.Text),
+		util.EscapeExportString(m.Plurals[0]),
+		util.EscapeExportString(m.Plurals[1]),
+	)
+
+	return out
+}
 
 type Plural int
 
