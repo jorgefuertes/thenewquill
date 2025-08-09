@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/jorgefuertes/thenewquill/internal/adventure/db"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/variable"
 	"github.com/stretchr/testify/assert"
 )
@@ -17,7 +18,7 @@ func TestVariable(t *testing.T) {
 
 	t.Run("int", func(t *testing.T) {
 		v := variable.New(2)
-		assert.Equal(t, db.Variables, v.GetKind())
+		assert.Equal(t, kind.Variable, kind.KindOf(v))
 		assert.Equal(t, 2, v.Value)
 		assert.Equal(t, 2, v.Int())
 		assert.Equal(t, 2.0, v.Float())

@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/jorgefuertes/thenewquill/internal/adventure/db"
-	"github.com/jorgefuertes/thenewquill/internal/util"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 )
 
 type allowed struct {
@@ -39,15 +39,15 @@ type Value struct {
 var _ db.Storeable = Value{}
 
 func (v Value) Export() string {
-	return fmt.Sprintf("%d|%d|%s\n", v.GetKind().Byte(), v.ID, util.ValueToString(v.V))
+	return fmt.Sprintf("%d|%d|%s\n", v.GetKind().Byte(), v.ID, v.V)
 }
 
 func (v Value) GetID() db.ID {
 	return v.ID
 }
 
-func (v Value) GetKind() db.Kind {
-	return db.Config
+func (v Value) GetKind() kind.Kind {
+	return kind.Config
 }
 
 func (v Value) SetID(id db.ID) db.Storeable {

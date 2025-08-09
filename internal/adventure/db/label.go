@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	Limit                  = math.MaxUint32
+	Limit                  = math.MaxUint16
 	MinMeaningfulID  ID    = 4
 	AllowSpecial     Allow = true
 	DontAllowSpecial Allow = false
@@ -16,14 +16,14 @@ const (
 	DontAllowDot     Allow = false
 )
 
-type ID uint32
+type ID uint16
 
 func (id ID) String() string {
 	return fmt.Sprintf("%d", id)
 }
 
-func (id ID) UInt32() uint32 {
-	return uint32(id)
+func (id ID) UInt16() uint16 {
+	return uint16(id)
 }
 
 func (id ID) IsDefined() bool {
@@ -50,6 +50,18 @@ func (id ID) Validate(allowSpecial Allow) error {
 type Label struct {
 	ID   ID
 	Name string
+}
+
+var _ Storeable = &Label{}
+
+func (l Label) GetID() ID {
+	return l.ID
+}
+
+func (l Label) SetID(id ID) Storeable {
+	l.ID = id
+
+	return l
 }
 
 var (
@@ -136,4 +148,16 @@ func IsValidLabelName(name string, allowDot Allow) bool {
 	}
 
 	return regexp.MustCompile(`^[\d\p{L}\-_]{1,25}$`).MatchString(name)
+}
+
+func (l Label) Validate(allowSpecial Allow) error {
+	if !IsValidLabelName(l.Name, allowSpecial) {
+		return errors.Join(ErrInvalidLabelName, errors.New(l.Name))
+	}
+
+	if l.ID == UndefinedLabel.ID {
+		return ErrUndefinedLabel
+	}
+
+	return nil
 }

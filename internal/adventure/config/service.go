@@ -2,6 +2,7 @@ package config
 
 import (
 	"github.com/jorgefuertes/thenewquill/internal/adventure/db"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 )
 
 type Service struct {
@@ -59,7 +60,7 @@ func (s *Service) GetField(name string) string {
 func (s *Service) All() []Value {
 	values := make([]Value, 0)
 
-	q := s.db.Query(db.FilterByKind(db.Config))
+	q := s.db.Query(db.FilterByKind(kind.Config))
 	var value Value
 	for q.Next(&value) {
 		values = append(values, value)
@@ -69,5 +70,5 @@ func (s *Service) All() []Value {
 }
 
 func (s *Service) Count() int {
-	return s.db.CountByKind(db.Config)
+	return s.db.CountByKind(kind.Config)
 }

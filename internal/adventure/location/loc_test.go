@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/jorgefuertes/thenewquill/internal/adventure/db"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/location"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/word"
 
@@ -82,7 +83,7 @@ func TestLocations(t *testing.T) {
 	t.Run("create locations", func(t *testing.T) {
 		d := newDatabase()
 		require.NotZero(t, d.Count())
-		require.NotZero(t, d.Query(db.FilterByKind(db.Words)).Count())
-		require.NotZero(t, d.Query(db.FilterByKind(db.Locations)).Count())
+		require.NotZero(t, d.Query(db.FilterByKind(kind.Word)).Count())
+		require.NotZero(t, d.Query(db.FilterByKind(kind.Location)).Count())
 	})
 }

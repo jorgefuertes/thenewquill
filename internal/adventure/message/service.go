@@ -2,6 +2,7 @@ package message
 
 import (
 	"github.com/jorgefuertes/thenewquill/internal/adventure/db"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 )
 
 type Service struct {
@@ -34,7 +35,7 @@ func (s *Service) Get(id db.ID) (Message, error) {
 func (s *Service) All() []Message {
 	words := make([]Message, 0)
 
-	q := s.db.Query(db.FilterByKind(db.Messages))
+	q := s.db.Query(db.FilterByKind(kind.Message))
 	var word Message
 	for q.Next(&word) {
 		words = append(words, word)
@@ -53,5 +54,5 @@ func (s *Service) FindByLabel(labelName string) (Message, error) {
 }
 
 func (s *Service) Count() int {
-	return s.db.CountByKind(db.Messages)
+	return s.db.CountByKind(kind.Message)
 }

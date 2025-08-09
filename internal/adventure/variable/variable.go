@@ -6,7 +6,6 @@ import (
 	"strconv"
 
 	"github.com/jorgefuertes/thenewquill/internal/adventure/db"
-	"github.com/jorgefuertes/thenewquill/internal/util"
 )
 
 type Variable struct {
@@ -15,10 +14,6 @@ type Variable struct {
 }
 
 var _ db.Storeable = Variable{}
-
-func (v Variable) Export() string {
-	return fmt.Sprintf("%d|%d|%s\n", v.GetKind().Byte(), v.ID, util.ValueToString(v.Value))
-}
 
 func New(val any) Variable {
 	return Variable{ID: db.UndefinedLabel.ID, Value: val}
@@ -32,10 +27,6 @@ func (v Variable) SetID(id db.ID) db.Storeable {
 
 func (v Variable) GetID() db.ID {
 	return v.ID
-}
-
-func (v Variable) GetKind() db.Kind {
-	return db.Variables
 }
 
 func (v Variable) Int() int {

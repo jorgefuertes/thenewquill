@@ -2,6 +2,7 @@ package location
 
 import (
 	"github.com/jorgefuertes/thenewquill/internal/adventure/db"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 )
 
 type Service struct {
@@ -34,7 +35,7 @@ func (s *Service) Get(id db.ID) (Location, error) {
 func (s *Service) All() []Location {
 	locations := make([]Location, 0)
 
-	q := s.db.Query(db.FilterByKind(db.Locations))
+	q := s.db.Query(db.FilterByKind(kind.Location))
 	var location Location
 	for q.Next(&location) {
 		locations = append(locations, location)
@@ -53,5 +54,5 @@ func (s *Service) FindByLabel(labelName string) (Location, error) {
 }
 
 func (s *Service) Count() int {
-	return s.db.CountByKind(db.Locations)
+	return s.db.CountByKind(kind.Location)
 }

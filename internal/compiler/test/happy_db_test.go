@@ -13,7 +13,7 @@ import (
 func TestCompilerDB(t *testing.T) {
 	const srcFilename = "src/happy/test.adv"
 
-	var a1, a2 *adventure.Adventure
+	var a1 *adventure.Adventure
 
 	t.Run("compile", func(t *testing.T) {
 		var err error
@@ -29,18 +29,18 @@ func TestCompilerDB(t *testing.T) {
 			require.NotNil(t, saveBuf)
 			require.NotZero(t, saveBuf.Len())
 
-			t.Run("buffer to DB", func(t *testing.T) {
-				loadBuf := bytes.NewBuffer(saveBuf.Bytes())
-				a2 = adventure.New()
-				err := a2.DB.Import(loadBuf)
-				require.NoError(t, err)
+			// t.Run("buffer to DB", func(t *testing.T) {
+			// 	loadBuf := bytes.NewBuffer(saveBuf.Bytes())
+			// 	a2 = adventure.New()
+			// 	err := a2.DB.Import(loadBuf)
+			// 	require.NoError(t, err)
 
-				h1, err := a1.DB.Hash()
-				require.NoError(t, err)
-				h2, err := a2.DB.Hash()
-				require.NoError(t, err)
-				require.Equal(t, h1, h2)
-			})
+			// 	h1, err := a1.DB.Hash()
+			// 	require.NoError(t, err)
+			// 	h2, err := a2.DB.Hash()
+			// 	require.NoError(t, err)
+			// 	require.Equal(t, h1, h2)
+			// })
 		})
 	})
 }

@@ -6,6 +6,7 @@ import (
 	"slices"
 
 	"github.com/jorgefuertes/thenewquill/internal/adventure/db"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 	cerr "github.com/jorgefuertes/thenewquill/internal/compiler/compiler_error"
 	"github.com/jorgefuertes/thenewquill/internal/compiler/line"
 )
@@ -21,7 +22,7 @@ type currentStoreable struct {
 
 type Status struct {
 	db        *db.DB
-	Section   db.Kind
+	Section   kind.Kind
 	Comment   line.Multi
 	MultiLine line.Multi
 	Stack     []line.Line
@@ -32,7 +33,7 @@ type Status struct {
 func New(d *db.DB) *Status {
 	return &Status{
 		db:        d,
-		Section:   db.None,
+		Section:   kind.None,
 		Comment:   line.NewMulti(),
 		MultiLine: line.NewMulti(),
 		Stack:     []line.Line{},

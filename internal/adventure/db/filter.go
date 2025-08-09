@@ -3,6 +3,8 @@ package db
 import (
 	"reflect"
 	"strings"
+
+	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 )
 
 type filter struct {
@@ -14,8 +16,8 @@ func Filter(field string, value any) filter {
 	return filter{field, value}
 }
 
-func FilterByKind(kind Kind) filter {
-	return filter{"kind", kind}
+func FilterByKind(k kind.Kind) filter {
+	return filter{"kind", k}
 }
 
 func FilterByID(id ID) filter {
@@ -34,7 +36,7 @@ func matches(s Storeable, filters ...filter) bool {
 				return false
 			}
 		case "kind":
-			if s.GetKind() != f.value.(Kind) {
+			if kind.KindOf(s) != f.value.(kind.Kind) {
 				return false
 			}
 		default:

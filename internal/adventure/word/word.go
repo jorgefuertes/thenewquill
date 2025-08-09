@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/jorgefuertes/thenewquill/internal/adventure/db"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 	"github.com/jorgefuertes/thenewquill/internal/util"
 )
 
@@ -19,7 +20,7 @@ var _ db.Storeable = Word{}
 
 func (w Word) Export() string {
 	out := fmt.Sprintf("%d|%d|%d|",
-		w.GetKind().Byte(),
+		kind.KindOf(w).Byte(),
 		w.ID,
 		w.Type.Byte(),
 	)
@@ -50,10 +51,6 @@ func (w Word) SetID(id db.ID) db.Storeable {
 
 func (w Word) GetID() db.ID {
 	return w.ID
-}
-
-func (w Word) GetKind() db.Kind {
-	return db.Words
 }
 
 func (w Word) HasSynonym(syn string) bool {

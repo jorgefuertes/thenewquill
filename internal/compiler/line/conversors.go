@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/jorgefuertes/thenewquill/internal/adventure/config"
-	"github.com/jorgefuertes/thenewquill/internal/adventure/db"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/message"
 	"github.com/jorgefuertes/thenewquill/internal/compiler/rg"
 )
@@ -20,12 +20,12 @@ func (l Line) AsInclude() (string, bool) {
 }
 
 // AsSection returns the section and true if it was found
-func (l Line) AsSection() (db.Kind, bool) {
+func (l Line) AsSection() (kind.Kind, bool) {
 	if !rg.Section.MatchString(l.OptimizedText()) {
-		return db.None, false
+		return kind.None, false
 	}
 
-	return db.KindFromString(rg.Section.FindStringSubmatch(l.OptimizedText())[1]), true
+	return kind.KindFromString(rg.Section.FindStringSubmatch(l.OptimizedText())[1]), true
 }
 
 // AsVar returns the variable name and value and true if it was found

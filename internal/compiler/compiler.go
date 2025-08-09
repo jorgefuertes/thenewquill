@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 
 	"github.com/jorgefuertes/thenewquill/internal/adventure"
-	"github.com/jorgefuertes/thenewquill/internal/adventure/db"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 	cerr "github.com/jorgefuertes/thenewquill/internal/compiler/compiler_error"
 	"github.com/jorgefuertes/thenewquill/internal/compiler/line"
 	"github.com/jorgefuertes/thenewquill/internal/compiler/processor"
@@ -122,7 +122,7 @@ func compileFile(st *status.Status, filename string, a *adventure.Adventure) err
 		// section declaration
 		s, ok := l.AsSection()
 		if ok {
-			if s == db.None {
+			if s == kind.None {
 				return cerr.ErrUnknownSection.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
 					WithFilename(st.CurrentFilename())
 			}
@@ -132,7 +132,7 @@ func compileFile(st *status.Status, filename string, a *adventure.Adventure) err
 			continue
 		}
 
-		if st.Section == db.None {
+		if st.Section == kind.None {
 			return cerr.ErrOutOfSection.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
 				WithFilename(st.CurrentFilename())
 		}

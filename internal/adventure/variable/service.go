@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/jorgefuertes/thenewquill/internal/adventure/db"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 )
 
 type Service struct {
@@ -16,7 +17,7 @@ func NewService(d *db.DB) *Service {
 
 func (s *Service) Set(id db.ID, value any) error {
 	v := Variable{ID: id, Value: value}
-	if s.db.Exists(id) {
+	if s.db.Exists(db.FilterByID(id)) {
 		return s.db.Update(v)
 	}
 
@@ -33,7 +34,7 @@ func (s *Service) Get(id db.ID) (Variable, error) {
 func (s *Service) All() []Variable {
 	vars := make([]Variable, 0)
 
-	q := s.db.Query(db.FilterByKind(db.Variables))
+	q := s.db.Query(db.FilterByKind(kind.Variable))
 	var varr Variable
 	for q.Next(&varr) {
 		vars = append(vars, varr)
@@ -52,5 +53,5 @@ func (s *Service) FindByLabel(paths ...string) (Variable, error) {
 }
 
 func (s *Service) Count() int {
-	return s.db.CountByKind(db.Variables)
+	return s.db.CountByKind(kind.Variable)
 }

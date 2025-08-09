@@ -1,6 +1,6 @@
 package util
 
-func BoolToInt(b bool) int {
+func BoolToByte(b bool) byte {
 	if b {
 		return 1
 	}
@@ -8,6 +8,6 @@ func BoolToInt(b bool) int {
 	return 0
 }
 
-func IntToBool(i int) bool {
+func ByteToBool(i int) bool {
 	return i == 1
 }

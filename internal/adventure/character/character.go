@@ -37,7 +37,3 @@ func (c Character) SetID(id db.ID) db.Storeable {
 func (c Character) GetID() db.ID {
 	return c.ID
 }
-
-func (c Character) GetKind() db.Kind {
-	return db.Characters
-}

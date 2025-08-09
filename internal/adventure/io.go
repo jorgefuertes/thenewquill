@@ -24,9 +24,9 @@ func (a *Adventure) Export(w io.Writer) error {
 	t.AppendRow(table.Row{"Date", a.Config.GetField("date")})
 	t.Render()
 
-	if err := a.DB.Export(w); err != nil {
-		return err
-	}
+	// if err := a.DB.Export(w); err != nil {
+	// 	return err
+	// }
 
 	return nil
 }

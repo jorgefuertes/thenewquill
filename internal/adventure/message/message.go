@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/jorgefuertes/thenewquill/internal/adventure/db"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 	"github.com/jorgefuertes/thenewquill/internal/util"
 )
 
@@ -61,8 +62,8 @@ func (m Message) GetID() db.ID {
 	return m.ID
 }
 
-func (m Message) GetKind() db.Kind {
-	return db.Messages
+func (m Message) GetKind() kind.Kind {
+	return kind.Message
 }
 
 func (m *Message) SetPlural(pluralName Plural, text string) {

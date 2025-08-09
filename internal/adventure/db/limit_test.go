@@ -15,7 +15,7 @@ func TestLabelLimit(t *testing.T) {
 		_, err := database.AddLabel("test-0", false)
 		require.NoError(t, err)
 
-		database.nextID = math.MaxUint32
+		database.nextID = math.MaxUint16
 
 		_, err = database.AddLabel("label-too-many", false)
 		assert.ErrorIs(t, err, ErrLimitReached)

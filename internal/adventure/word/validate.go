@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/jorgefuertes/thenewquill/internal/adventure/db"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 )
 
 func (w Word) Validate(allowNoID db.Allow) error {
@@ -24,7 +25,7 @@ func (w Word) Validate(allowNoID db.Allow) error {
 }
 
 func (s *Service) ValidateAll() error {
-	words := s.db.Query(db.FilterByKind(db.Words))
+	words := s.db.Query(db.FilterByKind(kind.Word))
 	defer words.Close()
 
 	var w Word
@@ -35,7 +36,7 @@ func (s *Service) ValidateAll() error {
 	}
 
 	// check for duplicates
-	words2 := s.db.Query(db.FilterByKind(db.Words))
+	words2 := s.db.Query(db.FilterByKind(kind.Word))
 	defer words2.Close()
 
 	var w2 Word

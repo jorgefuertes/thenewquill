@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/jorgefuertes/thenewquill/internal/adventure/db"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/message"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -109,7 +110,7 @@ func TestStoreable(t *testing.T) {
 	s := m.SetID(db.ID(10))
 	assert.Equal(t, db.ID(10), s.GetID())
 
-	assert.Equal(t, db.Messages, m.GetKind())
+	assert.Equal(t, kind.Message, m.GetKind())
 
 	m = message.New("No one")
 	m.SetPlural(message.One, "Only one")

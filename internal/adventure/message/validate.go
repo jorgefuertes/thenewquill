@@ -1,6 +1,9 @@
 package message
 
-import "github.com/jorgefuertes/thenewquill/internal/adventure/db"
+import (
+	"github.com/jorgefuertes/thenewquill/internal/adventure/db"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
+)
 
 func (m Message) Validate(allowNoID db.Allow) error {
 	if err := m.ID.Validate(db.DontAllowSpecial); err != nil && !allowNoID {
@@ -25,7 +28,7 @@ func (m Message) Validate(allowNoID db.Allow) error {
 }
 
 func (s *Service) ValidateAll() error {
-	msgs := s.db.Query(db.FilterByKind(db.Messages))
+	msgs := s.db.Query(db.FilterByKind(kind.Message))
 	defer msgs.Close()
 
 	var m Message

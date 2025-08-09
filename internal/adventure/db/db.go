@@ -3,6 +3,8 @@ package db
 import (
 	"reflect"
 	"sync"
+
+	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 )
 
 const NotFound int = -1
@@ -17,9 +19,7 @@ const (
 type Storeable interface {
 	GetID() ID
 	SetID(id ID) Storeable
-	GetKind() Kind
 	Validate(allowNoID Allow) error
-	Export() string
 }
 
 type DB struct {
@@ -71,7 +71,7 @@ func (d *DB) Create(labelName string, s Storeable) (ID, error) {
 		return UndefinedLabel.ID, err
 	}
 
-	label, err := d.AddLabel(labelName, s.GetKind() == Variables)
+	label, err := d.AddLabel(labelName, kind.KindOf(s) == kind.Variable)
 	if err != nil {
 		return UndefinedLabel.ID, err
 	}
@@ -82,11 +82,11 @@ func (d *DB) Create(labelName string, s Storeable) (ID, error) {
 }
 
 func (d *DB) Append(s Storeable) error {
-	if s.GetKind() == None {
+	if kind.KindOf(s) == kind.None {
 		return ErrKindCannotBeNone
 	}
 
-	if d.Exists(FilterByID(s.GetID()), FilterByKind(s.GetKind())) {
+	if d.Exists(FilterByID(s.GetID()), FilterByKind(kind.KindOf(s))) {
 		return ErrDuplicatedRecord
 	}
 
@@ -107,14 +107,14 @@ func (d *DB) Append(s Storeable) error {
 }
 
 func (d *DB) Update(s Storeable) error {
-	if !d.Exists(FilterByID(s.GetID()), FilterByKind(s.GetKind())) {
+	if !d.Exists(FilterByID(s.GetID()), FilterByKind(kind.KindOf(s))) {
 		return ErrRecordNotFound
 	}
 
 	d.mut.Lock()
 	defer d.mut.Unlock()
 
-	idx := d.indexOf(FilterByID(s.GetID()), FilterByKind(s.GetKind()))
+	idx := d.indexOf(FilterByID(s.GetID()), FilterByKind(kind.KindOf(s)))
 
 	d.Data = append(d.Data[:idx], d.Data[idx+1:]...)
 	d.Data = append(d.Data, s)
@@ -155,7 +155,7 @@ func (d *DB) Get(id ID, dst any) error {
 	return ErrRecordNotFound
 }
 
-func (d *DB) Remove(id ID, kind Kind) error {
+func (d *DB) Remove(id ID, kind kind.Kind) error {
 	d.mut.Lock()
 	defer d.mut.Unlock()
 
@@ -188,14 +188,14 @@ func (d *DB) Count() int {
 	return len(d.Data)
 }
 
-func (d *DB) CountByKind(kind Kind) int {
+func (d *DB) CountByKind(k kind.Kind) int {
 	d.mut.Lock()
 	defer d.mut.Unlock()
 
 	var count int
 
 	for _, r := range d.Data {
-		if r.GetKind() == kind {
+		if kind.KindOf(r) == k {
 			count++
 		}
 	}

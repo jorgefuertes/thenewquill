@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/jorgefuertes/thenewquill/internal/adventure/db"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 )
 
 func (l Location) Validate(allowNoID db.Allow) error {
@@ -32,7 +33,7 @@ func (l Location) Validate(allowNoID db.Allow) error {
 }
 
 func (s *Service) ValidateAll() error {
-	locations := s.db.Query(db.FilterByKind(db.Locations))
+	locations := s.db.Query(db.FilterByKind(kind.Location))
 	defer locations.Close()
 
 	var loc Location
@@ -42,7 +43,7 @@ func (s *Service) ValidateAll() error {
 		}
 
 		for i, conn := range loc.Conns {
-			if !s.db.Exists(conn.WordID) {
+			if !s.db.Exists(db.FilterByID(conn.WordID)) {
 				return errors.Join(
 					ErrConnWordNotFound,
 					fmt.Errorf(
@@ -58,7 +59,7 @@ func (s *Service) ValidateAll() error {
 				)
 			}
 
-			if !s.db.Exists(conn.LocationID) {
+			if !s.db.Exists(db.FilterByID(conn.WordID)) {
 				return errors.Join(
 					ErrConnLocationNotFound,
 					fmt.Errorf(

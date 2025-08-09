@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/jorgefuertes/thenewquill/internal/adventure/db"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 )
 
 func (c Character) Validate(allowNoID db.Allow) error {
@@ -33,7 +34,7 @@ func (c Character) Validate(allowNoID db.Allow) error {
 func (s *Service) ValidateAll() error {
 	humans := 0
 
-	chars := s.db.Query(db.FilterByKind(db.Characters))
+	chars := s.db.Query(db.FilterByKind(kind.Character))
 	defer chars.Close()
 
 	c := Character{}

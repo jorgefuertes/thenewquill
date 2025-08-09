@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/jorgefuertes/thenewquill/internal/adventure/db"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/word"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -30,6 +31,6 @@ func TestWord(t *testing.T) {
 	s := w.SetID(db.ID(10))
 	assert.Equal(t, db.ID(10), s.GetID())
 
-	assert.Equal(t, db.Words, w.GetKind())
+	assert.Equal(t, kind.Word, kind.KindOf(w))
 	assert.Equal(t, word.Adjective, w.Type)
 }

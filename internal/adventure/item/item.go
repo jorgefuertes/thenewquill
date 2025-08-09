@@ -1,10 +1,8 @@
 package item
 
 import (
-	"fmt"
-
 	"github.com/jorgefuertes/thenewquill/internal/adventure/db"
-	"github.com/jorgefuertes/thenewquill/internal/util"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 )
 
 type Item struct {
@@ -22,23 +20,6 @@ type Item struct {
 }
 
 var _ db.Storeable = Item{}
-
-func (i Item) Export() string {
-	return fmt.Sprintf("%d|%d|%d|%d|%s|%d|%d|%d|%d|%d|%d|%d\n",
-		i.GetKind().Byte(),
-		i.ID,
-		i.NounID,
-		i.AdjectiveID,
-		util.EscapeExportString(i.Description),
-		i.Weight,
-		i.MaxWeight,
-		util.BoolToInt(i.Container),
-		util.BoolToInt(i.Wearable),
-		util.BoolToInt(i.Created),
-		i.At,
-		util.BoolToInt(i.Worn),
-	)
-}
 
 func New(nounID db.ID, adjectiveID db.ID) Item {
 	return Item{
@@ -60,6 +41,6 @@ func (i Item) GetID() db.ID {
 	return i.ID
 }
 
-func (i Item) GetKind() db.Kind {
-	return db.Items
+func (i Item) GetKind() kind.Kind {
+	return kind.Item
 }

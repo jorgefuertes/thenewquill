@@ -1,6 +1,7 @@
-package db
+package kind
 
 import (
+	"reflect"
 	"slices"
 	"strings"
 )
@@ -8,16 +9,16 @@ import (
 type Kind byte
 
 const (
-	None       Kind = 0
-	Config     Kind = 1
-	Variables  Kind = 2
-	Words      Kind = 3
-	Messages   Kind = 4
-	Items      Kind = 5
-	Locations  Kind = 6
-	Processes  Kind = 7
-	Characters Kind = 8
-	Labels     Kind = 255
+	None      Kind = 0
+	Label     Kind = 1
+	Config    Kind = 2
+	Variable  Kind = 3
+	Word      Kind = 4
+	Message   Kind = 5
+	Item      Kind = 6
+	Location  Kind = 7
+	Process   Kind = 8
+	Character Kind = 9
 )
 
 func Kinds() []Kind {
@@ -32,16 +33,16 @@ func Kinds() []Kind {
 
 func kindNamesAndAliases() map[Kind][]string {
 	return map[Kind][]string{
-		None:       {"none", "unknown"},
-		Config:     {"config", "cfg", "configuration"},
-		Variables:  {"vars", "variables"},
-		Words:      {"words", "vocabulary", "voc"},
-		Messages:   {"messages", "msgs"},
-		Items:      {"items", "objects"},
-		Locations:  {"locations", "rooms", "locs"},
-		Characters: {"characters", "chars", "players"},
-		Processes:  {"process tables", "procs", "proc tables"},
-		Labels:     {"labels", "labels"},
+		None:      {"none", "unknown"},
+		Config:    {"config", "cfg", "configuration"},
+		Variable:  {"var", "variable"},
+		Word:      {"word", "vocabulary", "voc"},
+		Message:   {"message", "msg"},
+		Item:      {"item", "object"},
+		Location:  {"location", "room", "loc"},
+		Character: {"character", "char", "player"},
+		Process:   {"process table", "proc", "proc table"},
+		Label:     {"label"},
 	}
 }
 
@@ -76,4 +77,13 @@ func KindFromString(s string) Kind {
 	}
 
 	return None
+}
+
+func KindOf(s any) Kind {
+	t := reflect.TypeOf(s)
+	if t.Kind() == reflect.Ptr {
+		t = t.Elem()
+	}
+
+	return KindFromString(t.Name())
 }

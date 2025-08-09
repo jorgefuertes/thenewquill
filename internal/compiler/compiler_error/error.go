@@ -3,12 +3,12 @@ package compiler
 import (
 	"fmt"
 
-	"github.com/jorgefuertes/thenewquill/internal/adventure/db"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 	"github.com/jorgefuertes/thenewquill/internal/compiler/line"
 )
 
 type CompilerError struct {
-	section  db.Kind
+	section  kind.Kind
 	filename string
 	stack    []line.Line
 	l        line.Line
@@ -47,10 +47,10 @@ func (e CompilerError) Error() string {
 }
 
 func newCompilerError(msg string) CompilerError {
-	return CompilerError{msgs: []string{msg}, section: db.None}
+	return CompilerError{msgs: []string{msg}, section: kind.None}
 }
 
-func (e CompilerError) WithSection(k db.Kind) CompilerError {
+func (e CompilerError) WithSection(k kind.Kind) CompilerError {
 	e.section = k
 
 	return e

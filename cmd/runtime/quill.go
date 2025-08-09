@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"os"
 	"path/filepath"
 	"strings"
@@ -30,15 +29,15 @@ func main() {
 	}
 
 	// reader from file
-	r, err := os.ReadFile(dbFilename)
-	if err != nil {
-		log.Fatal(err)
-	}
+	// r, err := os.ReadFile(dbFilename)
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
 
 	a := adventure.New()
-	if err := a.DB.Import(bytes.NewReader(r)); err != nil {
-		log.Fatal(err)
-	}
+	// if err := a.DB.Import(bytes.NewReader(r)); err != nil {
+	// 	log.Fatal(err)
+	// }
 
 	// run adventure
 	o, err := console.New()

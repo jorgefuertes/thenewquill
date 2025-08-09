@@ -20,10 +20,7 @@ run-ao: compile-ao runtime
 	@./dist/quill tmp/ao.db
 
 test:
-	@go test ./...
-
-test-v:
-	go test -v ./...
+	@gotestsum -- -v -test.v ./...
 
 test-clean:
 	@go clean -testcache

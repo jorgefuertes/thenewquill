@@ -4,6 +4,7 @@ import (
 	"slices"
 
 	"github.com/jorgefuertes/thenewquill/internal/adventure/db"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 )
 
 type Service struct {
@@ -36,7 +37,7 @@ func (s *Service) Get(id db.ID) (Word, error) {
 func (s *Service) All() []Word {
 	words := make([]Word, 0)
 
-	q := s.db.Query(db.FilterByKind(db.Words))
+	q := s.db.Query(db.FilterByKind(kind.Word))
 	var word Word
 	for q.Next(&word) {
 		words = append(words, word)
@@ -65,5 +66,5 @@ func (s *Service) First(syn string) (Word, error) {
 }
 
 func (s *Service) Count() int {
-	return s.db.CountByKind(db.Words)
+	return s.db.CountByKind(kind.Word)
 }

@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/jorgefuertes/thenewquill/internal/adventure/db"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 	"github.com/jorgefuertes/thenewquill/internal/util"
 )
 
@@ -20,7 +21,7 @@ var _ db.Storeable = &Location{}
 
 func (l Location) Export() string {
 	out := fmt.Sprintf("%d|%d|%s|%s",
-		l.GetKind().Byte(),
+		kind.KindOf(l).Byte(),
 		l.ID,
 		util.EscapeExportString(l.Title),
 		util.EscapeExportString(l.Description),
@@ -59,10 +60,6 @@ func (l Location) SetID(id db.ID) db.Storeable {
 
 func (l Location) GetID() db.ID {
 	return l.ID
-}
-
-func (l Location) GetKind() db.Kind {
-	return db.Locations
 }
 
 func (l *Location) connIndex(wordID db.ID) int {

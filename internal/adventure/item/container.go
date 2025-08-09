@@ -2,6 +2,7 @@ package item
 
 import (
 	"github.com/jorgefuertes/thenewquill/internal/adventure/db"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 )
 
 func (s *Service) Weight(i Item) int {
@@ -11,7 +12,7 @@ func (s *Service) Weight(i Item) int {
 
 	w := i.Weight
 
-	items := s.db.Query(db.FilterByKind(db.Items), db.Filter("At", i.ID), db.Filter("Container", true))
+	items := s.db.Query(db.FilterByKind(kind.Item), db.Filter("At", i.ID), db.Filter("Container", true))
 
 	var item Item
 	for items.Next(&item) {
@@ -26,8 +27,8 @@ func (s *Service) Move(i *Item, to db.Storeable) error {
 		return ErrItemAlreadyContained
 	}
 
-	switch to.GetKind() {
-	case db.Items:
+	switch kind.KindOf(to) {
+	case kind.Item:
 		container, ok := to.(Item)
 		if !ok {
 			return ErrCannotAssertIntoItem
@@ -38,7 +39,7 @@ func (s *Service) Move(i *Item, to db.Storeable) error {
 		}
 
 		i.At = to.GetID()
-	case db.Locations, db.Characters:
+	case kind.Location, kind.Character:
 		i.At = to.GetID()
 	default:
 		return ErrInvalidTo
@@ -66,7 +67,7 @@ func (s *Service) Contents(id db.ID) []Item {
 	items := make([]Item, 0)
 
 	var item Item
-	q := s.db.Query(db.FilterByKind(db.Items), db.Filter("At", id))
+	q := s.db.Query(db.FilterByKind(kind.Item), db.Filter("At", id))
 	for q.Next(&item) {
 		items = append(items, item)
 	}
