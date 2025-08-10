@@ -142,11 +142,14 @@ func (d *DB) Get(id ID, dst any) error {
 		return ErrDstMustBePointer
 	}
 
+	// kind
+	dstKind := kind.KindOf(dst)
+
 	d.mut.Lock()
 	defer d.mut.Unlock()
 
 	for _, r := range d.Data {
-		if r.GetID() == id {
+		if r.GetID() == id && kind.KindOf(r) == dstKind {
 			dstValue.Elem().Set(reflect.ValueOf(r))
 			return nil
 		}

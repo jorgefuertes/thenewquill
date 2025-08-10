@@ -4,20 +4,20 @@ import (
 	"testing"
 
 	"github.com/jorgefuertes/thenewquill/internal/adventure/character"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/config"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/item"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/location"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/message"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/variable"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/word"
-	"honnef.co/go/tools/config"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestKinds(t *testing.T) {
 	assert.NotEmpty(t, kind.Kinds())
-	assert.Contains(t, kind.Kinds(), kind.Config)
+	assert.Contains(t, kind.Kinds(), kind.Param)
 	assert.Contains(t, kind.Kinds(), kind.Variable)
 	assert.Contains(t, kind.Kinds(), kind.Word)
 }
@@ -29,14 +29,14 @@ func TestKindString(t *testing.T) {
 		expected string
 	}{
 		{"None", kind.None, "none"},
-		{"Config", kind.Config, "config"},
-		{"Variables", kind.Variable, "vars"},
-		{"Words", kind.Word, "words"},
-		{"Messages", kind.Message, "messages"},
-		{"Items", kind.Item, "items"},
-		{"Locations", kind.Location, "locations"},
-		{"Processes", kind.Process, "process tables"},
-		{"Labels", kind.Label, "labels"},
+		{"Config", kind.Param, "config"},
+		{"Variable", kind.Variable, "var"},
+		{"Word", kind.Word, "word"},
+		{"Message", kind.Message, "message"},
+		{"Item", kind.Item, "item"},
+		{"Location", kind.Location, "location"},
+		{"Process", kind.Process, "process table"},
+		{"Label", kind.Label, "label"},
 		{"Invalid", kind.Kind(254), "none"},
 	}
 
@@ -54,8 +54,8 @@ func TestKindByte(t *testing.T) {
 		expected byte
 	}{
 		{"None", kind.None, 0},
-		{"Config", kind.Config, 1},
-		{"Variables", kind.Variable, 2},
+		{"Config", kind.Param, 2},
+		{"Variable", kind.Variable, 3},
 	}
 
 	for _, tt := range tests {
@@ -72,8 +72,9 @@ func TestFromByte(t *testing.T) {
 		expected kind.Kind
 	}{
 		{"Zero", 0, kind.None},
-		{"Config", 1, kind.Config},
-		{"Variables", 2, kind.Variable},
+		{"Label", 1, kind.Label},
+		{"Config", 2, kind.Param},
+		{"Variables", 3, kind.Variable},
 		{"Invalid High", 255, kind.None},
 	}
 
@@ -93,12 +94,12 @@ func TestFromString(t *testing.T) {
 		{"Empty string", "", kind.None},
 		{"None", "none", kind.None},
 		{"Unknown", "unknown", kind.None},
-		{"Config", "config", kind.Config},
-		{"Config alias", "cfg", kind.Config},
-		{"Variables", "vars", kind.Variable},
-		{"Words", "vocabulary", kind.Word},
+		{"Config", "config", kind.Param},
+		{"Config alias", "cfg", kind.Param},
+		{"Variable", "var", kind.Variable},
+		{"Word", "vocabulary", kind.Word},
 		{"Invalid", "invalid", kind.None},
-		{"Case insensitive", "CONFIG", kind.Config},
+		{"Case insensitive", "CONFIG", kind.Param},
 	}
 
 	for _, tt := range tests {
@@ -120,7 +121,8 @@ func TestKindOf(t *testing.T) {
 		{"Location", location.Location{}, kind.Location},
 		{"Word", word.Word{}, kind.Word},
 		{"Message", message.Message{}, kind.Message},
-		{"Config", config.Config{}, kind.Config},
+		{"Config", config.Param{}, kind.Param},
+		{"Config pointer", &config.Param{}, kind.Param},
 		{"Variable", variable.Variable{}, kind.Variable},
 		{"None", nil, kind.None},
 	}

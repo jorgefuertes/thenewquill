@@ -31,26 +31,26 @@ func AllowedFieldNames() []string {
 	return fields
 }
 
-type Value struct {
+type Param struct {
 	ID db.ID
 	V  string
 }
 
-var _ db.Storeable = Value{}
+var _ db.Storeable = Param{}
 
-func (v Value) Export() string {
+func (v Param) Export() string {
 	return fmt.Sprintf("%d|%d|%s\n", v.GetKind().Byte(), v.ID, v.V)
 }
 
-func (v Value) GetID() db.ID {
+func (v Param) GetID() db.ID {
 	return v.ID
 }
 
-func (v Value) GetKind() kind.Kind {
-	return kind.Config
+func (v Param) GetKind() kind.Kind {
+	return kind.Param
 }
 
-func (v Value) SetID(id db.ID) db.Storeable {
+func (v Param) SetID(id db.ID) db.Storeable {
 	v.ID = id
 
 	return v

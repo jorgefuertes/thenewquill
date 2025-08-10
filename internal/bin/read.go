@@ -124,8 +124,8 @@ func (b *BinDB) ReadStoreable() (db.Storeable, error) {
 	switch k {
 	case kind.Label:
 		s = &db.Label{ID: id}
-	case kind.Config:
-		s = &config.Value{ID: id}
+	case kind.Param:
+		s = &config.Param{ID: id}
 	case kind.Variable:
 		s = &variable.Variable{ID: id}
 	case kind.Word:

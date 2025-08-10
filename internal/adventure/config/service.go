@@ -18,18 +18,12 @@ func (s *Service) Set(field string, v string) error {
 		return ErrUnrecognizedConfigField
 	}
 
-	if !s.db.ExistsLabelName(field) {
-		if _, err := s.db.AddLabel(field, false); err != nil {
-			return err
-		}
-	}
-
-	label, err := s.db.GetLabelByName(field)
+	l, err := s.db.AddLabel(field, false)
 	if err != nil {
 		return err
 	}
 
-	c := Value{ID: label.ID, V: v}
+	c := Param{ID: l.ID, V: v}
 	if err := s.db.Append(c); err != nil {
 		return err
 	}
@@ -37,19 +31,19 @@ func (s *Service) Set(field string, v string) error {
 	return nil
 }
 
-func (s *Service) Update(v Value) error {
+func (s *Service) Update(v Param) error {
 	return s.db.Update(v)
 }
 
-func (s *Service) Get(id db.ID) (Value, error) {
-	v := Value{}
+func (s *Service) Get(id db.ID) (Param, error) {
+	v := Param{}
 	err := s.db.Get(id, &v)
 
 	return v, err
 }
 
 func (s *Service) GetField(name string) string {
-	v := Value{}
+	v := Param{}
 	if err := s.db.GetByLabel(name, &v); err != nil {
 		return ""
 	}
@@ -57,11 +51,11 @@ func (s *Service) GetField(name string) string {
 	return v.V
 }
 
-func (s *Service) All() []Value {
-	values := make([]Value, 0)
+func (s *Service) All() []Param {
+	values := make([]Param, 0)
 
-	q := s.db.Query(db.FilterByKind(kind.Config))
-	var value Value
+	q := s.db.Query(db.FilterByKind(kind.Param))
+	var value Param
 	for q.Next(&value) {
 		values = append(values, value)
 	}
@@ -70,5 +64,5 @@ func (s *Service) All() []Value {
 }
 
 func (s *Service) Count() int {
-	return s.db.CountByKind(kind.Config)
+	return s.db.CountByKind(kind.Param)
 }

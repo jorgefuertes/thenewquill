@@ -54,6 +54,10 @@ func (s *Status) PopFilename() {
 }
 
 func (s *Status) CurrentFilename() string {
+	if len(s.filenames) == 0 {
+		return ""
+	}
+
 	return s.filenames[len(s.filenames)-1]
 }
 

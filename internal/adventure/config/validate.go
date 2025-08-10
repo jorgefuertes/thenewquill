@@ -9,7 +9,7 @@ import (
 
 var allowedLanguages = []string{"en", "es"}
 
-func (v Value) Validate(allowNoID db.Allow) error {
+func (v Param) Validate(allowNoID db.Allow) error {
 	if err := v.ID.Validate(db.DontAllowSpecial); err != nil && !allowNoID {
 		return err
 	}

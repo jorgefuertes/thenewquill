@@ -21,11 +21,19 @@ func Compile(filename string) (*adventure.Adventure, error) {
 	a := adventure.New()
 	st := status.New(a.DB)
 
-	err := compileFile(st, filename, a)
-	cErr, ok := err.(cerr.CompilerError)
-	if ok {
+	if err := compileFile(st, filename, a); err != nil {
+		cErr, ok := err.(cerr.CompilerError)
+		if !ok {
+			cErr = cerr.ErrGenericCompilerError.AddErr(err).
+				WithStack(st.Stack).
+				WithSection(st.Section).
+				WithFilename(st.CurrentFilename())
+		}
+
 		fmt.Println(cErr.Dump())
+
 		return a, cErr
+
 	}
 
 	// validate
@@ -45,7 +53,6 @@ func compileFile(st *status.Status, filename string, a *adventure.Adventure) err
 	}()
 
 	st.PushFilename(filename)
-	defer st.PopFilename()
 
 	n := 0
 	scanner := bufio.NewScanner(file)
@@ -163,6 +170,8 @@ func compileFile(st *status.Status, filename string, a *adventure.Adventure) err
 		return cerr.ErrUnclosedMultiline.WithSection(st.Section).WithStack(st.Stack).WithLine(l).
 			WithFilename(st.CurrentFilename())
 	}
+
+	st.PopFilename()
 
 	return nil
 }

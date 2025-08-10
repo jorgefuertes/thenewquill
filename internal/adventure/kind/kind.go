@@ -11,7 +11,7 @@ type Kind byte
 const (
 	None      Kind = 0
 	Label     Kind = 1
-	Config    Kind = 2
+	Param     Kind = 2
 	Variable  Kind = 3
 	Word      Kind = 4
 	Message   Kind = 5
@@ -34,15 +34,15 @@ func Kinds() []Kind {
 func kindNamesAndAliases() map[Kind][]string {
 	return map[Kind][]string{
 		None:      {"none", "unknown"},
-		Config:    {"config", "cfg", "configuration"},
-		Variable:  {"var", "variable"},
-		Word:      {"word", "vocabulary", "voc"},
-		Message:   {"message", "msg"},
-		Item:      {"item", "object"},
-		Location:  {"location", "room", "loc"},
-		Character: {"character", "char", "player"},
-		Process:   {"process table", "proc", "proc table"},
-		Label:     {"label"},
+		Param:     {"config", "cfg", "configuration", "param", "params"},
+		Variable:  {"var", "variable", "vars", "variables"},
+		Word:      {"word", "vocabulary", "voc", "words"},
+		Message:   {"message", "msg", "messages"},
+		Item:      {"item", "object", "items", "objects"},
+		Location:  {"location", "room", "loc", "locations", "rooms"},
+		Character: {"character", "char", "player", "players", "characters", "chars"},
+		Process:   {"process table", "proc", "proc table", "process tables", "proc tables", "procs"},
+		Label:     {"label", "labels"},
 	}
 }
 
@@ -80,7 +80,12 @@ func KindFromString(s string) Kind {
 }
 
 func KindOf(s any) Kind {
+	if s == nil {
+		return None
+	}
+
 	t := reflect.TypeOf(s)
+
 	if t.Kind() == reflect.Ptr {
 		t = t.Elem()
 	}

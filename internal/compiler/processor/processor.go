@@ -9,7 +9,7 @@ import (
 
 func ProcessLine(l line.Line, st *status.Status, a *adventure.Adventure) error {
 	switch st.Section {
-	case kind.Config:
+	case kind.Param:
 		return readConfig(l, st, a)
 	case kind.Variable:
 		return readVar(l, st, a)
