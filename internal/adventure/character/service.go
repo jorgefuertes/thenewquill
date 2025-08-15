@@ -33,7 +33,7 @@ func (s *Service) Get(id db.ID) (Character, error) {
 }
 
 func (s *Service) GetHuman() (Character, error) {
-	chars := s.db.Query(db.FilterByKind(kind.Character), db.Filter("Human", true))
+	chars := s.db.Query(db.FilterByKind(kind.Character), db.Filter("Human", db.Equal, true))
 	defer chars.Close()
 
 	var c Character

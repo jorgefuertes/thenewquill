@@ -12,7 +12,11 @@ func (s *Service) Weight(i Item) int {
 
 	w := i.Weight
 
-	items := s.db.Query(db.FilterByKind(kind.Item), db.Filter("At", i.ID), db.Filter("Container", true))
+	items := s.db.Query(
+		db.FilterByKind(kind.Item),
+		db.Filter("At", db.Equal, i.ID),
+		db.Filter("Container", db.Equal, true),
+	)
 
 	var item Item
 	for items.Next(&item) {
@@ -67,7 +71,7 @@ func (s *Service) Contents(id db.ID) []Item {
 	items := make([]Item, 0)
 
 	var item Item
-	q := s.db.Query(db.FilterByKind(kind.Item), db.Filter("At", id))
+	q := s.db.Query(db.FilterByKind(kind.Item), db.Filter("At", db.Equal, id))
 	for q.Next(&item) {
 		items = append(items, item)
 	}

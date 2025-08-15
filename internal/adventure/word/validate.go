@@ -1,7 +1,6 @@
 package word
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/jorgefuertes/thenewquill/internal/adventure/db"
@@ -33,23 +32,8 @@ func (s *Service) ValidateAll() error {
 		if err := w.Validate(db.DontAllowNoID); err != nil {
 			return err
 		}
-	}
 
-	// check for duplicates
-	words2 := s.db.Query(db.FilterByKind(kind.Word))
-	defer words2.Close()
-
-	var w2 Word
-	for words2.Next(&w2) {
-		if w.GetID() == w2.GetID() {
-			continue
-		}
-
-		for _, syn := range w.Synonyms {
-			if w2.Is(w2.Type, syn) {
-				return errors.Join(ErrDuplicatedWord, errors.New(s.db.GetLabelName(w.GetID())))
-			}
-		}
+		// check for duplicates
 	}
 
 	return nil
