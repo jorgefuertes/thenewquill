@@ -25,7 +25,7 @@ func main() {
 	}
 
 	if dbFilename == "" {
-		log.Fatal(errNoDatabase)
+		log.Fatal("Runtime Error: %s", errNoDatabase)
 	}
 
 	// reader from file
@@ -42,7 +42,7 @@ func main() {
 	// run adventure
 	o, err := console.New()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("Runtime Error: %s", err)
 	}
 
 	go o.Run()
@@ -50,12 +50,12 @@ func main() {
 
 	h, err := a.Characters.GetHuman()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("Runtime Error: %s", err)
 	}
 
 	loc, err := a.Locations.Get(h.LocationID)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("Runtime Error: %s", err)
 	}
 
 	o.Cls()
@@ -103,7 +103,7 @@ func main() {
 			for _, c := range loc.Conns {
 				conLoc, err := a.Locations.Get(c.LocationID)
 				if err != nil {
-					log.Fatal(err)
+					log.Fatal("Runtime Error: %s", err)
 				}
 
 				o.Printf("- %s->%s: %s\n", a.DB.GetLabelName(c.WordID), a.DB.GetLabelName(c.LocationID), conLoc.Title)
@@ -114,7 +114,7 @@ func main() {
 			id := loc.GetConn(w.ID)
 			conLoc, err := a.Locations.Get(id)
 			if err != nil {
-				log.Fatal(err)
+				log.Fatal("Runtime Error: %s", err)
 			}
 
 			o.Printf("*** %s ***\n", conLoc.Title)

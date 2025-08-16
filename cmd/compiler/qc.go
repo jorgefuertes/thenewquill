@@ -46,7 +46,7 @@ func main() {
 
 	err := app.Run(os.Args)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("Unexpected runtime error: %s", err)
 	}
 }
 
@@ -67,7 +67,7 @@ func compileAction(c *cli.Context) error {
 	}
 	defer func() {
 		if err := f.Close(); err != nil {
-			log.Fatal(err)
+			log.Fatal("Unexpected error clossing file: %s", err)
 		}
 	}()
 

@@ -43,6 +43,14 @@ func matches(s Storeable, filters ...filter) bool {
 	}
 
 	for _, f := range filters {
+		if f.field == "kind" {
+			if f.condition == Equal && f.value.(kind.Kind) == kind.KindOf(s) {
+				return true
+			} else {
+				return f.value.(kind.Kind) != kind.KindOf(s)
+			}
+		}
+
 		field, ok := getFieldByName(s, f.field)
 		if !ok {
 			return false

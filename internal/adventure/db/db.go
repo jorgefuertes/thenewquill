@@ -5,6 +5,7 @@ import (
 	"sync"
 
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
+	"github.com/jorgefuertes/thenewquill/internal/log"
 )
 
 const NotFound int = -1
@@ -87,6 +88,19 @@ func (d *DB) Append(s Storeable) error {
 	}
 
 	if d.Exists(FilterByID(s.GetID()), FilterByKind(kind.KindOf(s))) {
+		l, err := d.GetLabel(s.GetID())
+		if err != nil {
+			l = Label{ID: s.GetID(), Name: err.Error()}
+		}
+
+		k := kind.KindOf(s)
+
+		log.Error("duplicated record, label %q and kind %s", l.Name, k)
+
+		old := s
+		_ = d.Get(s.GetID(), &old)
+		log.Error("OLD record: %v", old)
+
 		return ErrDuplicatedRecord
 	}
 

@@ -56,11 +56,11 @@ func Warning(format string, args ...any) {
 	Send(WarningLevel, format, args...)
 }
 
-func Error(err error) {
-	Send(ErrorLevel, "%s", err)
+func Error(format string, args ...any) {
+	Send(ErrorLevel, format, args...)
 }
 
-func Fatal(err error) {
-	Error(err)
+func Fatal(format string, args ...any) {
+	Send(ErrorLevel, format, args...)
 	os.Exit(1)
 }

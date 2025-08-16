@@ -95,7 +95,7 @@ func (c *console) Run() {
 			c.screen.Sync()
 		case *tcell.EventError:
 			c.Close()
-			log.Error(ev)
+			log.Error("event error: %s", ev.Error())
 
 			return
 		case nil:
