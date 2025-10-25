@@ -2,6 +2,7 @@ package log
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"strings"
 )
@@ -13,9 +14,13 @@ const (
 	InfoLevel
 	WarningLevel
 	ErrorLevel
+	NoLevel
 )
 
-var DefaultLevel = DebugLevel
+var (
+	defaultLevel = DebugLevel
+	output       io.Writer
+)
 
 func (l LogLevel) String() string {
 	switch l {
@@ -31,36 +36,72 @@ func (l LogLevel) String() string {
 }
 
 func SetLevel(l LogLevel) {
-	DefaultLevel = l
+	defaultLevel = l
 }
 
-func Send(level LogLevel, format string, args ...any) {
-	if DefaultLevel > level {
+func SetOutput(w io.Writer) {
+	if w == nil {
+		output = os.Stdout
+
 		return
 	}
 
-	for _, line := range strings.Split(fmt.Sprintf(format, args...), "\n") {
-		fmt.Printf("[%5s] %s\n", level.String(), line)
+	output = w
+}
+
+func send(level LogLevel, format string, args ...any) {
+	if output == nil {
+		output = os.Stdout
+	}
+
+	if defaultLevel > level {
+		return
+	}
+
+	for _, line := range getLines(format, args...) {
+		if level == NoLevel {
+			fmt.Fprintln(output, line)
+
+			continue
+		}
+
+		fmt.Fprintf(output, "[%5s] %s\n", level.String(), line)
 	}
 }
 
+func getLines(format string, args ...any) []string {
+	if len(args) == 0 {
+		return strings.Split(format, "\n")
+	}
+
+	return strings.Split(fmt.Sprintf(format, args...), "\n")
+}
+
 func Debug(format string, args ...any) {
-	Send(DebugLevel, format, args...)
+	send(DebugLevel, format, args...)
 }
 
 func Info(format string, args ...any) {
-	Send(InfoLevel, format, args...)
+	send(InfoLevel, format, args...)
 }
 
 func Warning(format string, args ...any) {
-	Send(WarningLevel, format, args...)
+	send(WarningLevel, format, args...)
 }
 
 func Error(format string, args ...any) {
-	Send(ErrorLevel, format, args...)
+	send(ErrorLevel, format, args...)
 }
 
 func Fatal(format string, args ...any) {
-	Send(ErrorLevel, format, args...)
+	send(ErrorLevel, format, args...)
 	os.Exit(1)
+}
+
+func WithoutLevel(format string, args ...any) {
+	send(NoLevel, format, args...)
+}
+
+func WithoutFormat(level LogLevel, line string) {
+	send(level, "%s", line)
 }

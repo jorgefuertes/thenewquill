@@ -24,8 +24,8 @@ type Storeable interface {
 }
 
 type DB struct {
-	mut    *sync.Mutex
 	nextID ID
+	mut    *sync.Mutex
 	Labels []Label
 	Data   []Storeable
 }
@@ -90,16 +90,15 @@ func (d *DB) Append(s Storeable) error {
 	if d.Exists(FilterByID(s.GetID()), FilterByKind(kind.KindOf(s))) {
 		l, err := d.GetLabel(s.GetID())
 		if err != nil {
-			l = Label{ID: s.GetID(), Name: err.Error()}
+			l = Label{Name: err.Error()}
 		}
 
 		k := kind.KindOf(s)
-
-		log.Error("duplicated record, label %q and kind %s", l.Name, k)
+		log.Error("❗ duplicated record, %s %q", k, l.Name)
 
 		old := s
 		_ = d.Get(s.GetID(), &old)
-		log.Error("OLD record: %v", old)
+		log.Error("❗ previous record kind %q: %v", kind.KindOf(old), old)
 
 		return ErrDuplicatedRecord
 	}

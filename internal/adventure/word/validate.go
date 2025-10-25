@@ -33,7 +33,21 @@ func (s *Service) ValidateAll() error {
 			return err
 		}
 
-		// check for duplicates
+		words2 := s.db.Query(db.FilterByKind(kind.Word))
+		defer words2.Close()
+
+		var w2 Word
+		for words2.Next(&w2) {
+			if w.ID == w2.ID {
+				continue
+			}
+
+			for _, syn := range w.Synonyms {
+				if w2.HasSynonym(syn) {
+					return fmt.Errorf("duplicated synonym %q", syn)
+				}
+			}
+		}
 	}
 
 	return nil

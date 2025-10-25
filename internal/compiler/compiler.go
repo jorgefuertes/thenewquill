@@ -2,8 +2,6 @@ package compiler
 
 import (
 	"bufio"
-	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 
@@ -13,6 +11,7 @@ import (
 	"github.com/jorgefuertes/thenewquill/internal/compiler/line"
 	"github.com/jorgefuertes/thenewquill/internal/compiler/processor"
 	"github.com/jorgefuertes/thenewquill/internal/compiler/status"
+	"github.com/jorgefuertes/thenewquill/internal/log"
 )
 
 const VERSION = "1.1.0"
@@ -30,7 +29,7 @@ func Compile(filename string) (*adventure.Adventure, error) {
 				WithFilename(st.CurrentFilename())
 		}
 
-		fmt.Println(cErr.Dump())
+		log.WithoutFormat(log.NoLevel, cErr.Dump())
 
 		return a, cErr
 
@@ -48,7 +47,7 @@ func compileFile(st *status.Status, filename string, a *adventure.Adventure) err
 
 	defer func() {
 		if err := file.Close(); err != nil {
-			log.Fatal(err)
+			log.WithoutFormat(log.ErrorLevel, err.Error())
 		}
 	}()
 

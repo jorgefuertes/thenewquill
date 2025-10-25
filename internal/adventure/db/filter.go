@@ -45,32 +45,34 @@ func matches(s Storeable, filters ...filter) bool {
 	for _, f := range filters {
 		if f.field == "kind" {
 			if f.condition == Equal && f.value.(kind.Kind) == kind.KindOf(s) {
-				return true
+				continue
 			} else {
-				return f.value.(kind.Kind) != kind.KindOf(s)
+				if f.value.(kind.Kind) == kind.KindOf(s) {
+					return false
+				}
 			}
 		}
 
-		field, ok := getFieldByName(s, f.field)
+		v, ok := getFieldValueByName(s, f.field)
 		if !ok {
 			return false
 		}
 
 		switch f.condition {
 		case Equal:
-			if !compareAsString(field, f.value) {
+			if !compareAsString(v, f.value) {
 				return false
 			}
 		case NotEqual:
-			if compareAsString(field, f.value) {
+			if compareAsString(v, f.value) {
 				return false
 			}
 		case Contains:
-			if !fieldContains(field, f.value) {
+			if !fieldContains(v, f.value) {
 				return false
 			}
 		case NotContains:
-			if fieldContains(field, f.value) {
+			if fieldContains(v, f.value) {
 				return false
 			}
 		}
@@ -96,7 +98,7 @@ func fieldContains(field reflect.Value, value any) bool {
 	return false
 }
 
-func getFieldByName(s Storeable, fieldName string) (reflect.Value, bool) {
+func getFieldValueByName(s Storeable, fieldName string) (reflect.Value, bool) {
 	val := reflect.ValueOf(s)
 	if val.Kind() == reflect.Ptr {
 		val = val.Elem()

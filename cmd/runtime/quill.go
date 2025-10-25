@@ -83,7 +83,7 @@ func main() {
 			continue
 		}
 
-		w, err := a.Words.First(sl[0])
+		w, err := a.Words.FirstOfAny(sl[0])
 		if err != nil {
 			o.Print("No te comprendo.")
 			continue

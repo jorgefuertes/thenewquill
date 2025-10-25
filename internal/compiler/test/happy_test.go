@@ -132,7 +132,7 @@ func TestCompilerHappyPath(t *testing.T) {
 				assert.Equal(t, tc.kind, w.Type)
 				assert.Equal(t, tc.syns, w.Synonyms, "synonyms for %s doesn't match", labelName)
 				for _, syn := range tc.syns {
-					wFromSyn, err := a.Words.First(syn)
+					wFromSyn, err := a.Words.FirstOfAny(syn)
 					require.NoError(t, err, "cannot find word %q from synonym %q", labelName, syn)
 					assert.Equal(t, w, wFromSyn)
 					assert.True(t, w.Is(w.Type, syn))

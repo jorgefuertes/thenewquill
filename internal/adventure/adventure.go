@@ -1,6 +1,8 @@
 package adventure
 
 import (
+	"errors"
+
 	"github.com/jorgefuertes/thenewquill/internal/adventure/character"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/config"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/db"
@@ -46,19 +48,21 @@ func (a *Adventure) Reset() {
 func (a *Adventure) Validate() error {
 	validators := []func() error{
 		a.Config.ValidateAll,
-		a.Characters.ValidateAll,
-		a.Items.ValidateAll,
-		a.Messages.ValidateAll,
 		a.Words.ValidateAll,
-		a.Locations.ValidateAll,
+		a.Messages.ValidateAll,
 		a.Variables.ValidateAll,
+		a.Items.ValidateAll,
+		a.Characters.ValidateAll,
+		a.Locations.ValidateAll,
 	}
 
+	var err error
+
 	for _, v := range validators {
-		if err := v(); err != nil {
-			return err
+		if er := v(); er != nil {
+			err = errors.Join(err, er)
 		}
 	}
 
-	return nil
+	return err
 }

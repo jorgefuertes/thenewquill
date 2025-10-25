@@ -1,8 +1,6 @@
 package word
 
 import (
-	"slices"
-
 	"github.com/jorgefuertes/thenewquill/internal/adventure/db"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 )
@@ -55,9 +53,19 @@ func (s *Service) FindByLabel(labelName string) (Word, error) {
 	return s.Get(label.ID)
 }
 
-func (s *Service) First(syn string) (Word, error) {
+func (s *Service) First(t WordType, syn string) (Word, error) {
 	for _, w := range s.All() {
-		if slices.Contains(w.Synonyms, syn) {
+		if w.Is(t, syn) {
+			return w, nil
+		}
+	}
+
+	return Word{}, db.ErrNotFound
+}
+
+func (s *Service) FirstOfAny(syn string) (Word, error) {
+	for _, w := range s.All() {
+		if w.HasSynonym(syn) {
 			return w, nil
 		}
 	}
