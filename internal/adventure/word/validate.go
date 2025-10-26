@@ -1,6 +1,7 @@
 package word
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/jorgefuertes/thenewquill/internal/adventure/db"
@@ -33,7 +34,7 @@ func (s *Service) ValidateAll() error {
 			return err
 		}
 
-		words2 := s.db.Query(db.FilterByKind(kind.Word))
+		words2 := s.db.Query(db.FilterByKind(kind.Word), db.Filter("type", db.Equal, w.Type))
 		defer words2.Close()
 
 		var w2 Word
@@ -44,7 +45,17 @@ func (s *Service) ValidateAll() error {
 
 			for _, syn := range w.Synonyms {
 				if w2.HasSynonym(syn) {
-					return fmt.Errorf("duplicated synonym %q", syn)
+					return errors.Join(
+						ErrDuplicatedWord,
+						fmt.Errorf(
+							"duplicated synonym %q between %s %q and %s %q",
+							syn,
+							w.Type,
+							w.Synonyms[0],
+							w2.Type,
+							w2.Synonyms[0],
+						),
+					)
 				}
 			}
 		}
