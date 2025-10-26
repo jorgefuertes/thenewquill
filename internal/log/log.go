@@ -5,6 +5,8 @@ import (
 	"io"
 	"os"
 	"strings"
+
+	"github.com/fatih/color"
 )
 
 type LogLevel int
@@ -29,10 +31,36 @@ func (l LogLevel) String() string {
 	case WarningLevel:
 		return "WARN"
 	case ErrorLevel:
-		return "ERR"
+		return "ERROR"
 	default:
 		return "DEBUG"
 	}
+}
+
+func isTerminal() bool {
+	return output != nil && output == os.Stdout
+}
+
+func (l LogLevel) Color() string {
+	if !isTerminal() {
+		return fmt.Sprintf("[%5s]", l.String())
+	}
+
+	var c color.Attribute
+	switch l {
+	case DebugLevel:
+		c = color.FgHiBlue
+	case InfoLevel:
+		c = color.FgHiCyan
+	case WarningLevel:
+		c = color.FgHiYellow
+	case ErrorLevel:
+		c = color.FgHiRed
+	default:
+		c = color.FgWhite
+	}
+
+	return color.New(c).Sprintf("[%5s]", l)
 }
 
 func SetLevel(l LogLevel) {
@@ -60,12 +88,18 @@ func send(level LogLevel, format string, args ...any) {
 
 	for _, line := range getLines(format, args...) {
 		if level == NoLevel {
-			fmt.Fprintln(output, line)
+			if _, err := fmt.Fprintln(output, line); err != nil {
+				fmt.Println(line)
+				fmt.Printf("[ERROR] I can't write to the output: %s\n", err)
+			}
 
 			continue
 		}
 
-		fmt.Fprintf(output, "[%5s] %s\n", level.String(), line)
+		if _, err := fmt.Fprintf(output, "%s %s\n", level.Color(), line); err != nil {
+			fmt.Printf("[%5s] %s\n", level.String(), line)
+			fmt.Printf("[ERROR] I can't write to the output: %s", err)
+		}
 	}
 }
 

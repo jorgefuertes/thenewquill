@@ -7,7 +7,7 @@ import (
 
 	"github.com/jorgefuertes/thenewquill/internal/adventure/db"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
-	"github.com/jorgefuertes/thenewquill/internal/util"
+	"github.com/jorgefuertes/thenewquill/internal/log"
 )
 
 var endian = binary.BigEndian
@@ -19,7 +19,9 @@ const (
 )
 
 func (b *BinDB) write(v byte) {
-	b.buf.WriteByte(v)
+	if err := b.buf.WriteByte(v); err != nil {
+		log.Fatal("Unexpected error writing to buffer: %s", err)
+	}
 }
 
 func (b *BinDB) writeUint16(v uint16) {
@@ -87,7 +89,7 @@ func (b *BinDB) WriteStoreable(s db.Storeable) error {
 		case reflect.String:
 			b.writeString(value.String())
 		case reflect.Bool:
-			b.write(util.BoolToByte(value.Bool()))
+			b.writeBool(value.Bool())
 		default:
 			return fmt.Errorf("export: unsupported type %q", field.Type.Kind())
 		}

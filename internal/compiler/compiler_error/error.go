@@ -29,7 +29,7 @@ func (e CompilerError) Dump() string {
 	}
 
 	output += fmt.Sprintf(
-		"[ERROR] 🔻 FILE \"%s\" ❗ SECTION \"%s\"\n[%05d] %s",
+		"[COMPILER ERROR] 🔻 FILE \"%s\" ❗ SECTION \"%s\"\n[%05d] %s",
 		e.filename,
 		e.section.String(),
 		e.l.Number(),

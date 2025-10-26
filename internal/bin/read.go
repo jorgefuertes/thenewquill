@@ -16,8 +16,7 @@ import (
 )
 
 var (
-	EOR = errors.New("end of register")
-	EOF = errors.New("end of file")
+	ErrEOF = errors.New("end of file")
 
 	ErrNextKindIsNone    = errors.New("kind is none")
 	ErrNextKindIsUnknown = errors.New("unsupported kind")
@@ -25,7 +24,7 @@ var (
 
 func (b *BinDB) readKind() (kind.Kind, error) {
 	if b.buf.Len() == 0 {
-		return 0, EOF
+		return 0, ErrEOF
 	}
 
 	bKind, err := b.read()
@@ -51,7 +50,9 @@ func (b *BinDB) read() (byte, error) {
 
 func (b *BinDB) readUint16() (uint16, error) {
 	values := make([]byte, 2)
-	b.buf.Read(values)
+	if _, err := b.buf.Read(values); err != nil {
+		return 0, err
+	}
 
 	return endian.Uint16(values), nil
 }

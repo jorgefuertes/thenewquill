@@ -36,10 +36,12 @@ func (b *BinDB) Save(path string) error {
 		return err
 	}
 
-	defer f.Close()
-
 	gzw := gzip.NewWriter(f)
-	defer gzw.Close()
+
+	defer func() {
+		_ = gzw.Close()
+		_ = f.Close()
+	}()
 
 	_, err = b.buf.WriteTo(gzw)
 	if err != nil {
@@ -54,17 +56,19 @@ func (b *BinDB) Load(path string) error {
 	if err != nil {
 		return err
 	}
-	defer f.Close()
 
 	gzr, err := gzip.NewReader(f)
 	if err != nil {
 		return err
 	}
-	defer gzr.Close()
+
+	defer func() {
+		_ = gzr.Close()
+		_ = f.Close()
+	}()
 
 	b.buf.Reset()
-	_, err = io.Copy(&b.buf, gzr)
-	if err != nil {
+	if _, err := io.Copy(&b.buf, gzr); err != nil {
 		return err
 	}
 
