@@ -11,7 +11,7 @@ import (
 	"github.com/jorgefuertes/thenewquill/internal/compiler/line"
 	"github.com/jorgefuertes/thenewquill/internal/compiler/processor"
 	"github.com/jorgefuertes/thenewquill/internal/compiler/status"
-	"github.com/jorgefuertes/thenewquill/internal/log"
+	"github.com/jorgefuertes/thenewquill/pkg/log"
 )
 
 const VERSION = "1.1.0"

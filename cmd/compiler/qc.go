@@ -12,7 +12,7 @@ import (
 	"time"
 
 	"github.com/jorgefuertes/thenewquill/internal/compiler"
-	"github.com/jorgefuertes/thenewquill/internal/log"
+	"github.com/jorgefuertes/thenewquill/pkg/log"
 
 	"github.com/jedib0t/go-pretty/v6/table"
 	"github.com/urfave/cli/v2"

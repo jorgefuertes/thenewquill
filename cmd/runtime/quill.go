@@ -8,8 +8,8 @@ import (
 
 	"github.com/jorgefuertes/thenewquill/internal/adventure"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/word"
-	"github.com/jorgefuertes/thenewquill/internal/log"
 	"github.com/jorgefuertes/thenewquill/internal/output/console"
+	"github.com/jorgefuertes/thenewquill/pkg/log"
 )
 
 func main() {

@@ -6,7 +6,7 @@ import (
 
 	"github.com/jorgefuertes/thenewquill/internal/adventure/character"
 	"github.com/jorgefuertes/thenewquill/internal/compiler"
-	log "github.com/jorgefuertes/thenewquill/internal/log"
+	log "github.com/jorgefuertes/thenewquill/pkg/log"
 
 	cerr "github.com/jorgefuertes/thenewquill/internal/compiler/compiler_error"
 

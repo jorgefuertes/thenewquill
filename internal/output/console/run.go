@@ -3,7 +3,7 @@ package console
 import (
 	"unicode"
 
-	"github.com/jorgefuertes/thenewquill/internal/log"
+	"github.com/jorgefuertes/thenewquill/pkg/log"
 
 	"github.com/gdamore/tcell/v2"
 )

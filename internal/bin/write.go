@@ -7,7 +7,7 @@ import (
 
 	"github.com/jorgefuertes/thenewquill/internal/adventure/db"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
-	"github.com/jorgefuertes/thenewquill/internal/log"
+	"github.com/jorgefuertes/thenewquill/pkg/log"
 )
 
 var endian = binary.BigEndian
