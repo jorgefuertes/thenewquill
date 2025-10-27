@@ -73,8 +73,8 @@ func (c *console) Run() {
 							c.input.current = append(c.input.current, 0)
 							copy(c.input.current[c.input.pos+1:], c.input.current[c.input.pos:])
 							c.input.current[c.input.pos] = ev.Rune()
+							c.drawInput()
 							c.input.pos++
-							c.screen.SetContent(c.at.Col, c.at.Row, ev.Rune(), nil, c.style)
 						}
 
 						c.moveCursor(1)
