@@ -9,7 +9,6 @@ import (
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 	cerr "github.com/jorgefuertes/thenewquill/internal/compiler/compiler_error"
 	"github.com/jorgefuertes/thenewquill/internal/compiler/line"
-	"github.com/jorgefuertes/thenewquill/pkg/log"
 )
 
 const stackSize = 5
@@ -87,24 +86,11 @@ func (s *Status) SaveCurrentStoreable() cerr.CompilerError {
 		return cerr.OK
 	}
 
-	log.Debug(
-		"💾 saving current storeable %q kind %q",
-		s.current.label.Name,
-		kind.KindOf(s.current.storeable),
-	)
-
-	id, err := s.db.Create(s.current.label.Name, s.current.storeable)
+	_, err := s.db.Create(s.current.label.Name, s.current.storeable)
 	if err != nil {
 		return cerr.ErrDBCreate.WithStack(s.Stack).WithSection(s.Section).WithLine(s.current.line).
 			WithFilename(s.current.filename).AddErr(err)
 	}
-
-	log.Debug(
-		"💾 saved as ID %d: %q kind %q",
-		id,
-		s.current.label.Name,
-		kind.KindOf(s.current.storeable),
-	)
 
 	s.ClearCurrent()
 

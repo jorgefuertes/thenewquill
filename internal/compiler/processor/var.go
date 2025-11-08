@@ -2,6 +2,7 @@ package processor
 
 import (
 	"github.com/jorgefuertes/thenewquill/internal/adventure"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/variable"
 	cerr "github.com/jorgefuertes/thenewquill/internal/compiler/compiler_error"
 	"github.com/jorgefuertes/thenewquill/internal/compiler/line"
 	"github.com/jorgefuertes/thenewquill/internal/compiler/status"
@@ -16,7 +17,7 @@ func tryReadEntityVar(l line.Line, st *status.Status, a *adventure.Adventure) (b
 				WithFilename(st.CurrentFilename()).AddErr(err)
 		}
 
-		if err := a.Variables.Set(vLabel.ID, value); err != nil {
+		if err := a.Variables.Set(variable.New(vLabel.ID, value)); err != nil {
 			return true, cerr.ErrWrongVariableDeclaration.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
 				WithFilename(st.CurrentFilename()).AddErr(err)
 		}
@@ -40,7 +41,7 @@ func readVar(l line.Line, st *status.Status, a *adventure.Adventure) error {
 			WithFilename(st.CurrentFilename()).AddErr(err)
 	}
 
-	if err := a.Variables.Set(vLabel.ID, value); err != nil {
+	if err := a.Variables.Set(variable.New(vLabel.ID, value)); err != nil {
 		return cerr.ErrWrongVariableDeclaration.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
 			WithFilename(st.CurrentFilename()).AddErr(err)
 	}

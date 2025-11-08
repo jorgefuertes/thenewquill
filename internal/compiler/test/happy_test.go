@@ -1,6 +1,8 @@
 package compiler_test
 
 import (
+	"fmt"
+	"reflect"
 	"testing"
 
 	"github.com/jorgefuertes/thenewquill/internal/adventure/db"
@@ -44,7 +46,17 @@ func TestCompilerHappyPath(t *testing.T) {
 			t.Run(tc.key, func(t *testing.T) {
 				actual, err := a.Variables.FindByLabel(tc.key)
 				require.NoError(t, err)
-				assert.EqualValues(t, tc.expected, actual.Value)
+
+				switch reflect.TypeOf(tc.expected).Kind() {
+				case reflect.Int:
+					assert.Equal(t, tc.expected, actual.Int())
+				case reflect.Float32, reflect.Float64:
+					assert.Equal(t, tc.expected, actual.Float())
+				case reflect.Bool:
+					assert.Equal(t, tc.expected, actual.Bool())
+				default:
+					assert.EqualValues(t, tc.expected, actual.String())
+				}
 			})
 		}
 
@@ -250,7 +262,19 @@ func TestCompilerHappyPath(t *testing.T) {
 				for k, v := range tc.vars {
 					actual, err := a.Variables.FindByLabel(tc.label, k)
 					require.NoError(t, err)
-					assert.EqualValues(t, v, actual.Value)
+
+					switch val := v.(type) {
+					case int:
+						assert.Equal(t, val, actual.Int())
+					case float32, float64:
+						assert.Equal(t, val, actual.Float())
+					case bool:
+						assert.Equal(t, val, actual.Bool())
+					case string:
+						assert.Equal(t, val, actual.String())
+					default:
+						assert.Equal(t, fmt.Sprint(v), actual.String())
+					}
 				}
 			})
 		}

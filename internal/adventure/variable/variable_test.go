@@ -11,100 +11,112 @@ import (
 
 func TestVariable(t *testing.T) {
 	t.Run("SetID", func(t *testing.T) {
-		v := variable.New(2)
-		s := v.SetID(db.ID(5))
-		assert.Equal(t, db.ID(5), s.GetID())
+		v := variable.New(db.ID(5), 2)
+		assert.Equal(t, db.ID(5), v.GetID())
+		s := v.SetID(6)
+		assert.Equal(t, db.ID(6), s.GetID())
 	})
 
 	t.Run("int", func(t *testing.T) {
-		v := variable.New(2)
+		v := variable.New(0, 2)
 		assert.Equal(t, kind.Variable, kind.KindOf(v))
-		assert.Equal(t, 2, v.Value)
 		assert.Equal(t, 2, v.Int())
-		assert.Equal(t, 2.0, v.Float())
+		assert.Equal(t, "2", v.String())
 
-		v.Value = byte(6)
+		v.Set(byte(6))
 		assert.Equal(t, 6, v.Int())
 
-		v.Value = "8"
+		v.Set("8")
 		assert.Equal(t, 8, v.Int())
 
-		v.Value = 9.1
-		assert.Equal(t, 9, v.Int())
+		v.Set(9.1)
+		assert.Equal(t, 9.1, v.Float())
 
-		v.Value = []byte("non-convertible")
+		v.Set([]byte("non-convertible"))
 		assert.Equal(t, 0, v.Int())
 
-		v.Value = true
+		v.Set(true)
 		assert.Equal(t, 1, v.Int())
+		assert.True(t, v.Bool())
+		assert.True(t, v.IsTrue())
+		assert.False(t, v.IsFalse())
 
-		v.Value = false
+		v.Set(false)
 		assert.Equal(t, 0, v.Int())
+		assert.False(t, v.Bool())
+		assert.True(t, v.IsFalse())
+		assert.False(t, v.IsTrue())
 	})
 
 	t.Run("Float", func(t *testing.T) {
-		v := variable.New(2.5)
+		v := variable.New(1, 2.5)
 		assert.Equal(t, 2.5, v.Float())
 
-		v.Value = true
+		v.Set(true)
 		assert.Equal(t, 1.0, v.Float())
 
-		v.Value = false
+		v.Set(false)
 		assert.Equal(t, 0.0, v.Float())
 
-		v.Value = "2.5"
+		v.Set("2.5")
 		assert.Equal(t, 2.5, v.Float())
 
-		v.Value = []byte("non-convertible")
+		v.Set([]byte("non-convertible"))
 		assert.Equal(t, 0.0, v.Float())
 	})
 
 	t.Run("String", func(t *testing.T) {
-		v := variable.New("test-string")
+		v := variable.New(1, "test-string")
 		assert.Equal(t, "test-string", v.String())
 
-		v.Value = 2
+		v.Set(2)
 		assert.Equal(t, "2", v.String())
 
-		v.Value = true
-		assert.Equal(t, "true", v.String())
+		v.Set(true)
+		assert.Equal(t, "1", v.String())
 
-		v.Value = false
-		assert.Equal(t, "false", v.String())
+		v.Set(false)
+		assert.Equal(t, "0", v.String())
 
-		v.Value = 2.5445
-		assert.Equal(t, "2.54", v.String())
+		v.Set(2.5445)
+		assert.Equal(t, "2.5445", v.String())
 
-		v.Value = byte('a')
-		assert.Equal(t, "a", v.String())
+		v.Set(2.54459999999)
+		assert.Equal(t, "2.5446", v.String())
 
-		v.Value = []byte("test bytes")
-		assert.Equal(t, "test bytes", v.String())
+		v.Set(2.544511111111)
+		assert.Equal(t, "2.5445", v.String())
 
-		v.Value = []int{1, 2, 3}
+		v.Set(byte('a'))
+		assert.Equal(t, "97", v.String())
+
+		v.Set([]byte("test bytes"))
+		assert.Equal(t, "[116 101 115 116 32 98 121 116 101 115]", v.String())
+
+		v.Set([]int{1, 2, 3})
 		assert.Equal(t, "[1 2 3]", v.String())
 	})
 
 	t.Run("Bool", func(t *testing.T) {
-		v := variable.New(true)
+		v := variable.New(1, true)
 		assert.Equal(t, true, v.Bool())
 
-		v.Value = 2
+		v.Set(2)
 		assert.Equal(t, true, v.Bool())
 
-		v.Value = true
+		v.Set(true)
 		assert.Equal(t, true, v.Bool())
 
-		v.Value = false
+		v.Set(false)
 		assert.Equal(t, false, v.Bool())
 
-		v.Value = 2.5445
+		v.Set(2.5445)
 		assert.Equal(t, true, v.Bool())
 
-		v.Value = byte('a')
+		v.Set(byte('a'))
 		assert.Equal(t, true, v.Bool())
 
-		v.Value = []byte("non-convertible")
+		v.Set([]byte("non-convertible"))
 		assert.Equal(t, false, v.Bool())
 
 		testCases := []struct {
@@ -129,7 +141,7 @@ func TestVariable(t *testing.T) {
 			{"-1", false},
 			{"0", false},
 			{"1", true},
-			{"2", false},
+			{"2", true},
 			{"t", true},
 			{"f", false},
 			{"T", true},
@@ -137,30 +149,10 @@ func TestVariable(t *testing.T) {
 		}
 
 		for _, tc := range testCases {
-			v.Value = tc.val
-			assert.Equal(t, tc.want, v.Bool(), "val: %s", tc.val)
-		}
-	})
-
-	t.Run("Byte", func(t *testing.T) {
-		testCases := []struct {
-			val  any
-			want byte
-		}{
-			{32, 32},
-			{" ", 32},
-			{true, 1},
-			{false, 0},
-			{"true", 1},
-			{"false", 0},
-			{"abcdef", 97},
-			{" ", 32},
-			{[]int{1, 2, 3}, 0},
-		}
-
-		for _, tc := range testCases {
-			v := variable.New(tc.val)
-			assert.Equal(t, tc.want, v.Byte(), "val: %v", tc.val)
+			t.Run(tc.val, func(t *testing.T) {
+				v.Set(tc.val)
+				assert.Equal(t, tc.want, v.Bool(), "val: %s", tc.val)
+			})
 		}
 	})
 }

@@ -1,34 +1,24 @@
 package adventure
 
 import (
-	"fmt"
 	"io"
 
-	"github.com/jedib0t/go-pretty/v6/table"
+	"github.com/jorgefuertes/thenewquill/internal/bin"
 )
 
-func (a *Adventure) Export(w io.Writer) error {
+func (a *Adventure) Export(path string) (int64, error) {
 	if err := a.Validate(); err != nil {
-		return err
+		return 0, err
 	}
 
-	if _, err := fmt.Fprintf(w, "The New Quill Adventure\n"); err != nil {
-		return err
+	b := bin.New()
+	for _, s := range a.DB.Data {
+		if err := b.WriteStoreable(s); err != nil {
+			return 0, err
+		}
 	}
 
-	t := table.NewWriter()
-	t.SetOutputMirror(w)
-	t.AppendRow(table.Row{"Title", a.Config.GetField("title")})
-	t.AppendRow(table.Row{"Author", a.Config.GetField("author")})
-	t.AppendRow(table.Row{"Version", fmt.Sprintf("%d", VERSION)})
-	t.AppendRow(table.Row{"Date", a.Config.GetField("date")})
-	t.Render()
-
-	// if err := a.DB.Export(w); err != nil {
-	// 	return err
-	// }
-
-	return nil
+	return b.Save(path)
 }
 
 func (a *Adventure) Import(r io.Reader) error {

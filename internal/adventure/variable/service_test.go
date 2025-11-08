@@ -1,6 +1,7 @@
 package variable_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/jorgefuertes/thenewquill/internal/adventure/db"
@@ -22,7 +23,7 @@ func TestService(t *testing.T) {
 		{"flashlight.battery", db.AllowDot, true, false, false},
 		{"flashlight.on", db.DontAllowDot, true, true, false},
 		{"number", db.DontAllowDot, 333, false, false},
-		{"array", db.DontAllowDot, []int{1, 2, 3}, false, false},
+		{"float", db.DontAllowDot, 333.22, false, false},
 	}
 
 	updateCases := []struct {
@@ -40,7 +41,7 @@ func TestService(t *testing.T) {
 	}{
 		{"flashlight.battery", true, false},
 		{"number", 333, false},
-		{"array", []int{1, 2, 3}, false},
+		{"float", 333.22, false},
 		{"not-found", "", true},
 	}
 
@@ -55,7 +56,8 @@ func TestService(t *testing.T) {
 				require.True(t, label.ID.IsDefined())
 				require.NotEmpty(t, label.Name)
 
-				err := svc.Set(label.ID, tc.val)
+				v := variable.New(label.ID, tc.val)
+				err := svc.Set(v)
 				if tc.wantSetError {
 					require.Error(t, err)
 				} else {
@@ -78,7 +80,19 @@ func TestService(t *testing.T) {
 
 				v, err := svc.Get(label.ID)
 				require.NoError(t, err)
-				require.Equal(t, tc.val, v.Value)
+
+				switch val := tc.val.(type) {
+				case int:
+					require.Equal(t, val, v.Int())
+				case float32, float64:
+					require.Equal(t, val, v.Float())
+				case bool:
+					require.Equal(t, val, v.Bool())
+				case string:
+					require.Equal(t, tc.val, v.String())
+				default:
+					t.Errorf("unexpected type: %T", tc.val)
+				}
 			}
 		})
 	}
@@ -94,12 +108,13 @@ func TestService(t *testing.T) {
 				require.True(t, label.ID.IsDefined())
 				require.NotEmpty(t, label.Name)
 
-				err := svc.Set(label.ID, tc.val)
+				v := variable.New(label.ID, tc.val)
+				err := svc.Set(v)
 				require.NoError(t, err)
 
-				v, err := svc.Get(label.ID)
+				v, err = svc.Get(label.ID)
 				require.NoError(t, err)
-				require.Equal(t, tc.val, v.Value)
+				require.Equal(t, fmt.Sprint(tc.val), v.String())
 			}
 		})
 	}

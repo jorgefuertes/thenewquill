@@ -120,29 +120,9 @@ func (b *BinDB) ReadStoreable() (db.Storeable, error) {
 		return nil, err
 	}
 
-	var s db.Storeable
-
-	switch k {
-	case kind.Label:
-		s = &db.Label{ID: id}
-	case kind.Param:
-		s = &config.Param{ID: id}
-	case kind.Variable:
-		s = &variable.Variable{ID: id}
-	case kind.Word:
-		s = &word.Word{ID: id}
-	case kind.Message:
-		s = &message.Message{ID: id}
-	case kind.Item:
-		s = &item.Item{ID: id}
-	case kind.Location:
-		s = &location.Location{ID: id}
-	case kind.Character:
-		s = &character.Character{ID: id}
-	case kind.None:
-		return nil, ErrNextKindIsNone
-	default:
-		return nil, ErrNextKindIsUnknown
+	s, err := getStoreable(k, id)
+	if err != nil {
+		return nil, err
 	}
 
 	// read the rest of the fields
@@ -196,5 +176,30 @@ func (b *BinDB) ReadStoreable() (db.Storeable, error) {
 		}
 	}
 
-	return s, nil
+	return reflect.ValueOf(s).Elem().Interface().(db.Storeable), nil
+}
+
+func getStoreable(k kind.Kind, id db.ID) (db.Storeable, error) {
+	switch k {
+	case kind.Label:
+		return &db.Label{ID: id}, nil
+	case kind.Param:
+		return &config.Param{ID: id}, nil
+	case kind.Variable:
+		return &variable.Variable{ID: id}, nil
+	case kind.Word:
+		return &word.Word{ID: id}, nil
+	case kind.Message:
+		return &message.Message{ID: id}, nil
+	case kind.Item:
+		return &item.Item{ID: id}, nil
+	case kind.Location:
+		return &location.Location{ID: id}, nil
+	case kind.Character:
+		return &character.Character{ID: id}, nil
+	case kind.None:
+		return nil, ErrNextKindIsNone
+	default:
+		return nil, ErrNextKindIsUnknown
+	}
 }

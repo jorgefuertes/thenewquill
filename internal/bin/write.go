@@ -41,6 +41,40 @@ func (b *BinDB) writeInt16(v int16) {
 	}
 }
 
+func (b *BinDB) writeUint32(v uint32) {
+	values := make([]byte, 2)
+	endian.PutUint32(values, v)
+
+	b.buf.Write(values)
+}
+
+func (b *BinDB) writeInt32(v int32) {
+	if v < 0 {
+		b.write(negativeSign)
+		b.writeUint32(uint32(-v))
+	} else {
+		b.write(positiveSign)
+		b.writeUint32(uint32(v))
+	}
+}
+
+func (b *BinDB) writeUint64(v uint64) {
+	values := make([]byte, 2)
+	endian.PutUint64(values, v)
+
+	b.buf.Write(values)
+}
+
+func (b *BinDB) writeInt64(v int64) {
+	if v < 0 {
+		b.write(negativeSign)
+		b.writeUint64(uint64(-v))
+	} else {
+		b.write(positiveSign)
+		b.writeUint64(uint64(v))
+	}
+}
+
 func (b *BinDB) writeString(f string) {
 	b.buf.WriteString(f)
 	b.buf.WriteByte(strEnd)
@@ -71,6 +105,8 @@ func (b *BinDB) WriteStoreable(s db.Storeable) error {
 		t = t.Elem()
 	}
 
+	log.Debug("WriteStoreable %05d:%s", s.GetID(), kind.KindOf(s))
+
 	for i := 0; i < v.NumField(); i++ {
 		field := t.Field(i)
 		value := v.Field(i)
@@ -79,20 +115,36 @@ func (b *BinDB) WriteStoreable(s db.Storeable) error {
 			continue
 		}
 
-		switch field.Type.Kind() {
-		case reflect.Uint8:
-			b.write(byte(value.Uint()))
-		case reflect.Uint16:
-			b.writeUint16(uint16(value.Uint()))
-		case reflect.Int16:
-			b.writeInt16(int16(value.Int()))
-		case reflect.String:
-			b.writeString(value.String())
-		case reflect.Bool:
-			b.writeBool(value.Bool())
-		default:
-			return fmt.Errorf("export: unsupported type %q", field.Type.Kind())
+		if err := b.writeValue(value); err != nil {
+			return fmt.Errorf("error writing storeable %q field %q: %s", kind.KindOf(s), field.Name, err)
 		}
+	}
+
+	return nil
+}
+
+func (b *BinDB) writeValue(v reflect.Value) error {
+	switch v.Type().Kind() {
+	case reflect.Uint8:
+		b.write(byte(v.Uint()))
+	case reflect.Uint16:
+		b.writeUint16(uint16(v.Uint()))
+	case reflect.Int16:
+		b.writeInt16(int16(v.Int()))
+	case reflect.Uint32:
+		b.writeUint32(uint32(v.Uint()))
+	case reflect.Int32:
+		b.writeInt32(int32(v.Int()))
+	case reflect.Uint64:
+		b.writeUint64(uint64(v.Uint()))
+	case reflect.Int64:
+		b.writeInt64(int64(v.Int()))
+	case reflect.String:
+		b.writeString(v.String())
+	case reflect.Bool:
+		b.writeBool(v.Bool())
+	default:
+		return fmt.Errorf("writeValue: unsupported type %q", v.Type().Kind())
 	}
 
 	return nil

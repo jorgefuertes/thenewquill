@@ -61,18 +61,9 @@ func compileAction(c *cli.Context) error {
 		return err
 	}
 
-	f, err := os.Create(outputFilename)
+	n, err := a.Export(outputFilename)
 	if err != nil {
-		return err
-	}
-	defer func() {
-		if err := f.Close(); err != nil {
-			log.Fatal("Unexpected error clossing file: %s", err)
-		}
-	}()
-
-	if err := a.Export(f); err != nil {
-		return err
+		return fmt.Errorf("database export error: %s", err)
 	}
 
 	elapsed := time.Since(start)
@@ -100,12 +91,7 @@ func compileAction(c *cli.Context) error {
 	fmt.Printf("> Compiled in %dms\n", elapsed.Milliseconds())
 	fmt.Println("> Compiler: v" + compiler.VERSION)
 
-	stat, err := f.Stat()
-	if err != nil {
-		return err
-	}
-
-	fmt.Printf("> %d bytes writen to \"%s\"\n", stat.Size(), outputFilename)
+	fmt.Printf("> %d bytes writen to %q\n", n, outputFilename)
 	fmt.Println()
 	t.Render()
 	fmt.Println()

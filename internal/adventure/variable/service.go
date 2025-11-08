@@ -15,9 +15,8 @@ func NewService(d *db.DB) *Service {
 	return &Service{db: d}
 }
 
-func (s *Service) Set(id db.ID, value any) error {
-	v := Variable{ID: id, Value: value}
-	if s.db.Exists(db.FilterByID(id)) {
+func (s *Service) Set(v Variable) error {
+	if s.db.Exists(db.FilterByID(v.GetID())) {
 		return s.db.Update(v)
 	}
 

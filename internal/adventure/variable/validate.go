@@ -11,10 +11,6 @@ func (v Variable) Validate(allowNoID db.Allow) error {
 		return db.ErrInvalidLabelID
 	}
 
-	if v.Value == nil {
-		return ErrNilValue
-	}
-
 	return nil
 }
 

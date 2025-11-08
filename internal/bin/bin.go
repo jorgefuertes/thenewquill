@@ -27,13 +27,13 @@ func (b *BinDB) GetReader() io.Reader {
 	return bytes.NewReader(b.buf.Bytes())
 }
 
-func (b *BinDB) Save(path string) error {
+func (b *BinDB) Save(path string) (int64, error) {
 	b.lock.Lock()
 	defer b.lock.Unlock()
 
 	f, err := os.Create(path)
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	gzw := gzip.NewWriter(f)
@@ -43,12 +43,7 @@ func (b *BinDB) Save(path string) error {
 		_ = f.Close()
 	}()
 
-	_, err = b.buf.WriteTo(gzw)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return b.buf.WriteTo(gzw)
 }
 
 func (b *BinDB) Load(path string) error {
