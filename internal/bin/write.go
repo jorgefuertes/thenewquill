@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"reflect"
+	"strings"
 
 	"github.com/jorgefuertes/thenewquill/internal/adventure/db"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
@@ -16,6 +17,9 @@ const (
 	strEnd       byte = 0x1f
 	negativeSign byte = 0x2d
 	positiveSign byte = 0x2b
+	sliceBegin   byte = 0x1d
+	sliceEnd     byte = 0x1e
+	sliceSep     byte = 0x1c
 )
 
 func (b *BinDB) write(v byte) {
@@ -105,8 +109,6 @@ func (b *BinDB) WriteStoreable(s db.Storeable) error {
 		t = t.Elem()
 	}
 
-	log.Debug("WriteStoreable %05d:%s", s.GetID(), kind.KindOf(s))
-
 	for i := 0; i < v.NumField(); i++ {
 		field := t.Field(i)
 		value := v.Field(i)
@@ -143,9 +145,25 @@ func (b *BinDB) writeValue(v reflect.Value) error {
 		b.writeString(v.String())
 	case reflect.Bool:
 		b.writeBool(v.Bool())
+	case reflect.Slice:
+		return b.writeSlice(v)
 	default:
 		return fmt.Errorf("writeValue: unsupported type %q", v.Type().Kind())
 	}
+
+	return nil
+}
+
+func (b *BinDB) writeSlice(v reflect.Value) error {
+	b.write(sliceBegin)
+
+	if v.Type().Elem().Kind() == reflect.String {
+		b.writeString(strings.Join(v.Interface().([]string), ","))
+	} else {
+		return fmt.Errorf("writeSlice: unsupported type %q", v.Type().Elem().Kind())
+	}
+
+	b.write(sliceEnd)
 
 	return nil
 }
