@@ -1,6 +1,7 @@
 package kind
 
 import (
+	"fmt"
 	"reflect"
 	"slices"
 	"strings"
@@ -59,6 +60,10 @@ func (s Kind) Byte() byte {
 	return byte(s)
 }
 
+func (s Kind) Int() uint8 {
+	return uint8(s)
+}
+
 func KindFromByte(b byte) Kind {
 	if int(b) < 0 || int(b) >= len(kindNamesAndAliases()) {
 		return None
@@ -91,4 +96,12 @@ func KindOf(s any) Kind {
 	}
 
 	return KindFromString(t.Name())
+}
+
+func (k Kind) Is(s string) bool {
+	if k.String() == s {
+		return true
+	}
+
+	return fmt.Sprint(k.Int()) == s
 }

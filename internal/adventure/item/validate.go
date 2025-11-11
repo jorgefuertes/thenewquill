@@ -3,20 +3,18 @@ package item
 import (
 	"errors"
 	"fmt"
-
-	"github.com/jorgefuertes/thenewquill/internal/adventure/db"
 )
 
-func (i Item) Validate(allowNoID db.Allow) error {
-	if err := i.ID.Validate(db.DontAllowSpecial); err != nil && !allowNoID {
+func (i Item) Validate(allowNoID bool) error {
+	if err := i.ID.Validate(false); err != nil && !allowNoID {
 		return fmt.Errorf("ID %q: %w", i.ID, err)
 	}
 
-	if err := i.NounID.Validate(db.DontAllowSpecial); err != nil {
+	if err := i.NounID.Validate(false); err != nil {
 		return fmt.Errorf("noun ID %q: %w", i.NounID, err)
 	}
 
-	if err := i.AdjectiveID.Validate(db.AllowSpecial); err != nil {
+	if err := i.AdjectiveID.Validate(true); err != nil {
 		return fmt.Errorf("adjective ID %q: %w", i.AdjectiveID, err)
 	}
 
@@ -38,7 +36,7 @@ func (s *Service) ValidateAll() error {
 			return errors.Join(err, fmt.Errorf("item ID: %d", i.ID))
 		}
 
-		if err := i.Validate(db.DontAllowNoID); err != nil {
+		if err := i.Validate(false); err != nil {
 			return errors.Join(
 				ErrItemValidationFailed,
 				err,

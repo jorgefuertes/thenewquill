@@ -2,16 +2,17 @@ package message
 
 import (
 	"github.com/jorgefuertes/thenewquill/internal/adventure/db"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/id"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 )
 
-func (m Message) Validate(allowNoID db.Allow) error {
-	if err := m.ID.Validate(db.DontAllowSpecial); err != nil && !allowNoID {
+func (m Message) Validate(allowNoID bool) error {
+	if err := m.ID.Validate(false); err != nil && !allowNoID {
 		return err
 	}
 
-	if m.ID < db.MinMeaningfulID && !allowNoID {
-		return db.ErrInvalidLabelID
+	if m.ID < id.Min && !allowNoID {
+		return id.ErrInvalid
 	}
 
 	if m.Text == "" {
@@ -33,7 +34,7 @@ func (s *Service) ValidateAll() error {
 
 	var m Message
 	for msgs.Next(&m) {
-		if err := m.Validate(db.DontAllowNoID); err != nil {
+		if err := m.Validate(false); err != nil {
 			return err
 		}
 	}

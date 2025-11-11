@@ -63,7 +63,12 @@ func compileAction(c *cli.Context) error {
 
 	n, err := a.Export(outputFilename)
 	if err != nil {
-		return fmt.Errorf("database export error: %s", err)
+		return fmt.Errorf("database export error: %w", err)
+	}
+
+	outFileInfo, err := os.Stat(outputFilename)
+	if err != nil {
+		return fmt.Errorf("error getting output file info: %s", err)
 	}
 
 	elapsed := time.Since(start)
@@ -92,6 +97,7 @@ func compileAction(c *cli.Context) error {
 	fmt.Println("> Compiler: v" + compiler.VERSION)
 
 	fmt.Printf("> %d bytes writen to %q\n", n, outputFilename)
+	fmt.Printf("> %d bytes packed size\n", outFileInfo.Size())
 	fmt.Println()
 	t.Render()
 	fmt.Println()

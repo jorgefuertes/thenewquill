@@ -4,44 +4,54 @@ import (
 	"reflect"
 	"sync"
 
+	"github.com/jorgefuertes/thenewquill/internal/adapter"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/id"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/label"
 	"github.com/jorgefuertes/thenewquill/pkg/log"
 )
 
 const NotFound int = -1
 
-type Allow bool
-
-const (
-	AllowNoID     Allow = true
-	DontAllowNoID Allow = false
-)
-
-type Storeable interface {
-	GetID() ID
-	SetID(id ID) Storeable
-	Validate(allowNoID Allow) error
+type DB struct {
+	nextID id.ID
+	mut    *sync.Mutex
+	Labels []label.Label
+	Data   []adapter.Storeable
 }
 
-type DB struct {
-	nextID ID
-	mut    *sync.Mutex
-	Labels []Label
-	Data   []Storeable
+func (b *DB) lock() {
+	b.mut.Lock()
+}
+
+func (b *DB) unlock() {
+	b.mut.Unlock()
 }
 
 func New() *DB {
 	return &DB{
 		mut:    &sync.Mutex{},
-		nextID: MinMeaningfulID,
-		Labels: []Label{UndefinedLabel, ConfigLabel, UnderscoreLabel, WildcardLabel},
-		Data:   make([]Storeable, 0),
+		nextID: id.Min,
+		Labels: []label.Label{label.Undefined, label.Config, label.Underscore, label.Wildcard},
+		Data:   make([]adapter.Storeable, 0),
 	}
 }
 
+func (d *DB) Reset() {
+	d.lock()
+	defer d.unlock()
+
+	// reset labels
+	d.Labels = []label.Label{label.Undefined, label.Config, label.Underscore, label.Wildcard}
+	d.nextID = id.Min
+
+	// reset entities
+	d.Data = make([]adapter.Storeable, 0)
+}
+
 func (d *DB) Len() int {
-	d.mut.Lock()
-	defer d.mut.Unlock()
+	d.lock()
+	defer d.unlock()
 
 	return len(d.Data)
 }
@@ -57,32 +67,32 @@ func (d *DB) indexOf(filters ...filter) int {
 }
 
 func (d *DB) Exists(filters ...filter) bool {
-	d.mut.Lock()
-	defer d.mut.Unlock()
+	d.lock()
+	defer d.unlock()
 
 	return d.indexOf(filters...) != NotFound
 }
 
-func (d *DB) Create(labelName string, s Storeable) (ID, error) {
-	if s.GetID() != UndefinedLabel.ID {
-		return UndefinedLabel.ID, ErrCannotCreateWithDefinedID
+func (d *DB) Create(labelName string, s adapter.Storeable) (id.ID, error) {
+	if s.GetID() != label.Undefined.ID {
+		return label.Undefined.ID, ErrCannotCreateWithDefinedID
 	}
 
-	if err := s.Validate(AllowNoID); err != nil {
-		return UndefinedLabel.ID, err
+	if err := s.Validate(true); err != nil {
+		return label.Undefined.ID, err
 	}
 
-	label, err := d.AddLabel(labelName, kind.KindOf(s) == kind.Variable)
+	l, err := d.AddLabel(labelName)
 	if err != nil {
-		return UndefinedLabel.ID, err
+		return label.Undefined.ID, err
 	}
 
-	s = s.SetID(label.ID)
+	s = s.SetID(l.ID)
 
-	return label.ID, d.Append(s)
+	return l.ID, d.Append(s)
 }
 
-func (d *DB) Append(s Storeable) error {
+func (d *DB) Append(s adapter.Storeable) error {
 	if kind.KindOf(s) == kind.None {
 		return ErrKindCannotBeNone
 	}
@@ -90,7 +100,7 @@ func (d *DB) Append(s Storeable) error {
 	if d.Exists(FilterByID(s.GetID()), FilterByKind(kind.KindOf(s))) {
 		l, err := d.GetLabel(s.GetID())
 		if err != nil {
-			l = Label{Name: err.Error()}
+			l = label.Label{Name: err.Error()}
 		}
 
 		k := kind.KindOf(s)
@@ -103,29 +113,29 @@ func (d *DB) Append(s Storeable) error {
 		return ErrDuplicatedRecord
 	}
 
-	if err := s.GetID().Validate(true); err != nil {
+	if err := s.GetID().Validate(false); err != nil {
 		return err
 	}
 
-	if err := s.Validate(AllowNoID); err != nil {
+	if err := s.Validate(false); err != nil {
 		return err
 	}
 
-	d.mut.Lock()
-	defer d.mut.Unlock()
+	d.lock()
+	defer d.unlock()
 
 	d.Data = append(d.Data, s)
 
 	return nil
 }
 
-func (d *DB) Update(s Storeable) error {
+func (d *DB) Update(s adapter.Storeable) error {
 	if !d.Exists(FilterByID(s.GetID()), FilterByKind(kind.KindOf(s))) {
 		return ErrRecordNotFound
 	}
 
-	d.mut.Lock()
-	defer d.mut.Unlock()
+	d.lock()
+	defer d.unlock()
 
 	idx := d.indexOf(FilterByID(s.GetID()), FilterByKind(kind.KindOf(s)))
 
@@ -136,16 +146,16 @@ func (d *DB) Update(s Storeable) error {
 }
 
 func (d *DB) GetByLabel(labelName string, dst any) error {
-	label, err := d.GetLabelByName(labelName)
+	l, err := d.GetLabelByName(labelName)
 	if err != nil {
 		return err
 	}
 
-	return d.Get(label.ID, dst)
+	return d.Get(l.ID, dst)
 }
 
-func (d *DB) Get(id ID, dst any) error {
-	if id < MinMeaningfulID {
+func (d *DB) Get(i id.ID, dst any) error {
+	if i < id.Min {
 		return ErrRecordNotFound
 	}
 
@@ -158,11 +168,11 @@ func (d *DB) Get(id ID, dst any) error {
 	// kind
 	dstKind := kind.KindOf(dst)
 
-	d.mut.Lock()
-	defer d.mut.Unlock()
+	d.lock()
+	defer d.unlock()
 
 	for _, r := range d.Data {
-		if r.GetID() == id && kind.KindOf(r) == dstKind {
+		if r.GetID() == i && kind.KindOf(r) == dstKind {
 			dstValue.Elem().Set(reflect.ValueOf(r))
 			return nil
 		}
@@ -171,9 +181,9 @@ func (d *DB) Get(id ID, dst any) error {
 	return ErrRecordNotFound
 }
 
-func (d *DB) Remove(id ID, kind kind.Kind) error {
-	d.mut.Lock()
-	defer d.mut.Unlock()
+func (d *DB) Remove(id id.ID, kind kind.Kind) error {
+	d.lock()
+	defer d.unlock()
 
 	i := d.indexOf(FilterByID(id), FilterByKind(kind))
 	if i == -1 {
@@ -185,28 +195,16 @@ func (d *DB) Remove(id ID, kind kind.Kind) error {
 	return nil
 }
 
-func (d *DB) Reset() {
-	d.mut.Lock()
-	defer d.mut.Unlock()
-
-	// reset labels
-	d.Labels = []Label{UndefinedLabel, ConfigLabel, UnderscoreLabel, WildcardLabel}
-	d.nextID = MinMeaningfulID
-
-	// reset entities
-	d.Data = make([]Storeable, 0)
-}
-
 func (d *DB) Count() int {
-	d.mut.Lock()
-	defer d.mut.Unlock()
+	d.lock()
+	defer d.unlock()
 
 	return len(d.Data)
 }
 
 func (d *DB) CountByKind(k kind.Kind) int {
-	d.mut.Lock()
-	defer d.mut.Unlock()
+	d.lock()
+	defer d.unlock()
 
 	var count int
 

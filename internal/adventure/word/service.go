@@ -2,6 +2,7 @@ package word
 
 import (
 	"github.com/jorgefuertes/thenewquill/internal/adventure/db"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/id"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 )
 
@@ -25,7 +26,7 @@ func (s *Service) Update(w Word) error {
 	return s.db.Update(w)
 }
 
-func (s *Service) Get(id db.ID) (Word, error) {
+func (s *Service) Get(id id.ID) (Word, error) {
 	i := Word{}
 	err := s.db.Get(id, &i)
 

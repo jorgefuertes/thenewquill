@@ -17,7 +17,7 @@ func readMessage(l line.Line, st *status.Status, a *adventure.Adventure) error {
 			return err
 		}
 
-		label, err := a.DB.AddLabel(labelName, false)
+		label, err := a.DB.AddLabel(labelName)
 		if err != nil {
 			return cerr.ErrInvalidLabel.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
 				WithFilename(st.CurrentFilename()).AddErr(err)

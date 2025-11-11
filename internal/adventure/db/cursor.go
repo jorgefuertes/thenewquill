@@ -2,11 +2,13 @@ package db
 
 import (
 	"reflect"
+
+	"github.com/jorgefuertes/thenewquill/internal/adapter"
 )
 
 type cursor struct {
 	i    int
-	regs []Storeable
+	regs []adapter.Storeable
 }
 
 func (c *cursor) Reset() {
@@ -55,7 +57,7 @@ func (c *cursor) First(dst any) bool {
 }
 
 func (d *DB) Query(filters ...filter) *cursor {
-	c := &cursor{i: 0, regs: make([]Storeable, 0)}
+	c := &cursor{i: 0, regs: make([]adapter.Storeable, 0)}
 
 	for _, r := range d.Data {
 		if matches(r, filters...) {

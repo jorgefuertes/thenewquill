@@ -1,7 +1,9 @@
 package item
 
 import (
+	"github.com/jorgefuertes/thenewquill/internal/adapter"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/db"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/id"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 )
 
@@ -26,7 +28,7 @@ func (s *Service) Weight(i Item) int {
 	return w
 }
 
-func (s *Service) Move(i *Item, to db.Storeable) error {
+func (s *Service) Move(i *Item, to adapter.Storeable) error {
 	if s.IsContained(*i) {
 		return ErrItemAlreadyContained
 	}
@@ -58,7 +60,7 @@ func (s *Service) GetItemContainer(item Item) (Item, error) {
 
 // IsContained returns true if the given item is contained in any container
 func (s *Service) IsContained(item Item) bool {
-	if item.At == db.UndefinedLabel.ID {
+	if item.At == id.Undefined {
 		return false
 	}
 
@@ -67,7 +69,7 @@ func (s *Service) IsContained(item Item) bool {
 	return err != nil
 }
 
-func (s *Service) Contents(id db.ID) []Item {
+func (s *Service) Contents(id id.ID) []Item {
 	items := make([]Item, 0)
 
 	var item Item

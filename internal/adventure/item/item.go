@@ -1,29 +1,30 @@
 package item
 
 import (
-	"github.com/jorgefuertes/thenewquill/internal/adventure/db"
+	"github.com/jorgefuertes/thenewquill/internal/adapter"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/id"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 )
 
 type Item struct {
-	ID          db.ID
-	NounID      db.ID
-	AdjectiveID db.ID
+	ID          id.ID
+	NounID      id.ID
+	AdjectiveID id.ID
 	Description string
 	Weight      int
 	MaxWeight   int
 	Container   bool
 	Wearable    bool
 	Created     bool
-	At          db.ID
+	At          id.ID
 	Worn        bool
 }
 
-var _ db.Storeable = Item{}
+var _ adapter.Storeable = Item{}
 
-func New(nounID db.ID, adjectiveID db.ID) Item {
+func New(nounID id.ID, adjectiveID id.ID) Item {
 	return Item{
-		ID:          db.UndefinedLabel.ID,
+		ID:          id.Undefined,
 		NounID:      nounID,
 		AdjectiveID: adjectiveID,
 		Weight:      0,
@@ -31,13 +32,13 @@ func New(nounID db.ID, adjectiveID db.ID) Item {
 	}
 }
 
-func (i Item) SetID(id db.ID) db.Storeable {
+func (i Item) SetID(id id.ID) adapter.Storeable {
 	i.ID = id
 
 	return i
 }
 
-func (i Item) GetID() db.ID {
+func (i Item) GetID() id.ID {
 	return i.ID
 }
 

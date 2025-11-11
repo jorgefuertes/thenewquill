@@ -15,15 +15,14 @@ func TestService(t *testing.T) {
 
 	setCases := []struct {
 		name           string
-		allowDot       db.Allow
 		val            any
 		wantLabelError bool
 		wantSetError   bool
 	}{
-		{"flashlight.battery", db.AllowDot, true, false, false},
-		{"flashlight.on", db.DontAllowDot, true, true, false},
-		{"number", db.DontAllowDot, 333, false, false},
-		{"float", db.DontAllowDot, 333.22, false, false},
+		{"flashlight.battery", true, false, false},
+		{"flashlight.on", true, false, false},
+		{"number", 333, false, false},
+		{"float", 333.22, false, false},
 	}
 
 	updateCases := []struct {
@@ -48,7 +47,7 @@ func TestService(t *testing.T) {
 	// SET
 	for _, tc := range setCases {
 		t.Run(tc.name, func(t *testing.T) {
-			label, err := d.AddLabel(tc.name, tc.allowDot)
+			label, err := d.AddLabel(tc.name)
 			if tc.wantLabelError {
 				require.Error(t, err)
 			} else {

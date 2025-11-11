@@ -1,13 +1,18 @@
 package util
 
-func BoolToByte(b bool) byte {
+const (
+	TrueSring   = "T"
+	FalseString = "F"
+)
+
+func BoolToString(b bool) string {
 	if b {
-		return 1
+		return TrueSring
 	}
 
-	return 0
+	return FalseString
 }
 
-func ByteToBool(i int) bool {
-	return i == 1
+func StringToBool(s string) bool {
+	return s == TrueSring
 }

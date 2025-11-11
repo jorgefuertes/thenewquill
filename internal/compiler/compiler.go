@@ -32,7 +32,6 @@ func Compile(filename string) (*adventure.Adventure, error) {
 		log.WithoutFormat(log.NoLevel, cErr.Dump())
 
 		return a, cErr
-
 	}
 
 	// validate

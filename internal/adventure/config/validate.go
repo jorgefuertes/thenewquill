@@ -1,16 +1,15 @@
 package config
 
 import (
+	"errors"
 	"fmt"
 	"slices"
-
-	"github.com/jorgefuertes/thenewquill/internal/adventure/db"
 )
 
 var allowedLanguages = []string{"en", "es"}
 
-func (v Param) Validate(allowNoID db.Allow) error {
-	if err := v.ID.Validate(db.DontAllowSpecial); err != nil && !allowNoID {
+func (v Param) Validate(allowNoID bool) error {
+	if err := v.ID.Validate(false); err != nil && !allowNoID {
 		return err
 	}
 
@@ -22,6 +21,8 @@ func (v Param) Validate(allowNoID db.Allow) error {
 }
 
 func (s *Service) ValidateAll() error {
+	seen := []string{}
+
 	for _, v := range s.All() {
 		if err := v.Validate(false); err != nil {
 			return err
@@ -38,6 +39,15 @@ func (s *Service) ValidateAll() error {
 
 		if label.Name == "lang" && !slices.Contains(allowedLanguages, fmt.Sprintf("%v", v.V)) {
 			return ErrUnrecognizedLanguage
+		}
+
+		seen = append(seen, label.Name)
+	}
+
+	// check required
+	for _, allowed := range allowedFields {
+		if !slices.Contains(seen, allowed.labelName) && allowed.required {
+			return errors.Join(ErrMissingConfigField, fmt.Errorf("label %q not found", allowed.labelName))
 		}
 	}
 

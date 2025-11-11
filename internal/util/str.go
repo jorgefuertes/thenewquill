@@ -1,7 +1,8 @@
 package util
 
 import (
-	"fmt"
+	"encoding/base64"
+	"regexp"
 	"strconv"
 	"strings"
 )
@@ -45,73 +46,90 @@ func RemoveSymbols(s string) string {
 	return output
 }
 
-func ValueToString(v any) string {
-	switch v.(type) {
-	case string:
-		return fmt.Sprintf("s:%s", v)
-	case int, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64:
-		return fmt.Sprintf("i:%d", v)
-	case float32, float64:
-		return fmt.Sprintf("f:%.4f", v)
-	case bool:
-		if v == true {
-			return "b:T"
-		} else {
-			return "b:F"
+func SplitIntoLines(text string, maxLen int) []string {
+	lines := make([]string, 0)
+	words := regexp.MustCompile(`\s+`).Split(text, -1)
+
+	var line string
+	for _, w := range words {
+		line = strings.TrimSpace(line)
+
+		if len(w) > maxLen {
+			if line != "" {
+				lines = append(lines, line)
+				line = ""
+			}
+
+			lines = append(lines, SplitWithDashes(w, maxLen)...)
+
+			continue
+		}
+
+		if len(line)+len(w)+1 > maxLen {
+			if line != "" {
+				lines = append(lines, line)
+				line = ""
+			}
+		}
+
+		if line != "" {
+			line += " "
+		}
+
+		line += w
+	}
+
+	if line != "" {
+		lines = append(lines, line)
+	}
+
+	return lines
+}
+
+func SplitWithDashes(text string, maxLen int) []string {
+	lines := make([]string, 0)
+
+	var line string
+	for _, c := range text {
+		if len(line)+1 == maxLen {
+			lines = append(lines, strings.TrimSpace(line)+"-")
+			line = ""
+
+			continue
+		}
+
+		line += string(c)
+	}
+
+	line = strings.TrimSpace(line)
+	if line != "" {
+		lines = append(lines, line)
+	}
+
+	return lines
+}
+
+func SplitIntoFields(s string) []string {
+	fields := strings.Split(s, "|")
+
+	for i, field := range fields {
+		if strings.HasPrefix(field, "@B64:") && len(field) > 5 {
+			b, err := base64.StdEncoding.DecodeString(field[4:])
+			if err == nil {
+				fields[i] = string(b)
+			}
 		}
 	}
 
-	return fmt.Sprintf("s:%v", v)
+	return fields
 }
 
-func StringToValue(s string) any {
-	switch s[0] {
-	case 's':
-		return s[2:]
-	case 'i':
-		i, _ := strconv.Atoi(s[2:])
-		return i
-	case 'f':
-		f, _ := strconv.ParseFloat(s[2:], 64)
-		return f
-	case 'b':
-		if s[2:] == "T" {
-			return true
-		} else {
-			return false
-		}
-	}
-
-	panic("invalid string")
+func EscapeField(s string) string {
+	return "@B64:" + base64.StdEncoding.EncodeToString([]byte(s))
 }
 
-func SplitString(text string, chunkSize int) []string {
-	var chunks []string
-	for i := 0; i < len(text); i += chunkSize {
-		end := i + chunkSize
-		if end > len(text) {
-			end = len(text)
-		}
-		chunks = append(chunks, text[i:end])
-	}
+func StringToInt(s string) int {
+	i, _ := strconv.Atoi(s)
 
-	return chunks
-}
-
-func EscapeExportString(s string) string {
-	s = strings.ReplaceAll(s, "\n", "\\n")
-	s = strings.ReplaceAll(s, "\r", "\\r")
-	s = strings.ReplaceAll(s, "\t", "\\t")
-	s = strings.ReplaceAll(s, "|", "\\|")
-
-	return s
-}
-
-func UnescapeExportString(s string) string {
-	s = strings.ReplaceAll(s, "\\n", "\n")
-	s = strings.ReplaceAll(s, "\\r", "\r")
-	s = strings.ReplaceAll(s, "\\t", "\t")
-	s = strings.ReplaceAll(s, "\\|", "|")
-
-	return s
+	return i
 }

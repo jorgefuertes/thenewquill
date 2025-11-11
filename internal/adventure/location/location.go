@@ -1,68 +1,41 @@
 package location
 
 import (
-	"fmt"
-
-	"github.com/jorgefuertes/thenewquill/internal/adventure/db"
-	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
-	"github.com/jorgefuertes/thenewquill/internal/util"
+	"github.com/jorgefuertes/thenewquill/internal/adapter"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/id"
 )
 
 const Undefined = `undefined`
 
 type Location struct {
-	ID          db.ID
+	ID          id.ID
 	Title       string
 	Description string
 	Conns       []Connection
 }
 
-var _ db.Storeable = &Location{}
-
-func (l Location) Export() string {
-	out := fmt.Sprintf("%d|%d|%s|%s",
-		kind.KindOf(l).Byte(),
-		l.ID,
-		util.EscapeExportString(l.Title),
-		util.EscapeExportString(l.Description),
-	)
-
-	if len(l.Conns) == 0 {
-		return out + "\n"
-	}
-
-	out += "|"
-
-	for i := 0; i < len(l.Conns); i++ {
-		out += fmt.Sprintf("%d:%d", l.Conns[i].WordID, l.Conns[i].LocationID)
-		if i != len(l.Conns)-1 {
-			out += ","
-		}
-	}
-
-	return out + "\n"
-}
+var _ adapter.Storeable = &Location{}
 
 func New(title, desc string) Location {
 	return Location{
-		ID:          db.UndefinedLabel.ID,
+		ID:          id.Undefined,
 		Title:       title,
 		Description: desc,
 		Conns:       make([]Connection, 0),
 	}
 }
 
-func (l Location) SetID(id db.ID) db.Storeable {
+func (l Location) SetID(id id.ID) adapter.Storeable {
 	l.ID = id
 
 	return l
 }
 
-func (l Location) GetID() db.ID {
+func (l Location) GetID() id.ID {
 	return l.ID
 }
 
-func (l *Location) connIndex(wordID db.ID) int {
+func (l *Location) connIndex(wordID id.ID) int {
 	for i, c := range l.Conns {
 		if c.WordID == wordID {
 			return i
@@ -72,7 +45,7 @@ func (l *Location) connIndex(wordID db.ID) int {
 	return -1
 }
 
-func (l *Location) SetConn(wordID, locationID db.ID) {
+func (l *Location) SetConn(wordID, locationID id.ID) {
 	idx := l.connIndex(wordID)
 	if idx != -1 {
 		l.Conns[idx].LocationID = locationID
@@ -83,15 +56,15 @@ func (l *Location) SetConn(wordID, locationID db.ID) {
 	l.Conns = append(l.Conns, Connection{WordID: wordID, LocationID: locationID})
 }
 
-func (l *Location) GetConn(wordID db.ID) db.ID {
+func (l *Location) GetConn(wordID id.ID) id.ID {
 	idx := l.connIndex(wordID)
 	if idx != -1 {
 		return l.Conns[idx].LocationID
 	}
 
-	return db.UndefinedLabel.ID
+	return id.Undefined
 }
 
-func (l *Location) HasConn(wordID db.ID) bool {
+func (l *Location) HasConn(wordID id.ID) bool {
 	return l.connIndex(wordID) != -1
 }

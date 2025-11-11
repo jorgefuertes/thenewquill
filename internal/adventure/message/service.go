@@ -2,6 +2,7 @@ package message
 
 import (
 	"github.com/jorgefuertes/thenewquill/internal/adventure/db"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/id"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 )
 
@@ -25,7 +26,7 @@ func (s *Service) Update(m Message) error {
 	return s.db.Update(m)
 }
 
-func (s *Service) Get(id db.ID) (Message, error) {
+func (s *Service) Get(id id.ID) (Message, error) {
 	i := Message{}
 	err := s.db.Get(id, &i)
 

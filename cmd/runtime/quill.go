@@ -28,16 +28,10 @@ func main() {
 		log.Fatal("Runtime Error: %s", errNoDatabase)
 	}
 
-	// reader from file
-	// r, err := os.ReadFile(dbFilename)
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-
 	a := adventure.New()
-	// if err := a.DB.Import(bytes.NewReader(r)); err != nil {
-	// 	log.Fatal(err)
-	// }
+	if err := a.Import(dbFilename); err != nil {
+		log.Fatal("Runtime Error importing database: %s", err)
+	}
 
 	// run adventure
 	o, err := console.New()

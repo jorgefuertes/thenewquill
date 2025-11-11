@@ -58,7 +58,7 @@ func TestLocations(t *testing.T) {
 				if errors.Is(err, db.ErrNotFound) {
 					// create the label
 					var addErr error
-					destLabel, addErr = d.AddLabel(v, false)
+					destLabel, addErr = d.AddLabel(v)
 					require.NoError(t, addErr)
 				} else if err != nil {
 					require.NoError(t, err)

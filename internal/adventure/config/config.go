@@ -1,9 +1,8 @@
 package config
 
 import (
-	"fmt"
-
-	"github.com/jorgefuertes/thenewquill/internal/adventure/db"
+	"github.com/jorgefuertes/thenewquill/internal/adapter"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/id"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 )
 
@@ -17,7 +16,7 @@ var allowedFields = []allowed{
 	{"author", true},
 	{"description", true},
 	{"version", true},
-	{"date", true},
+	{"date", false},
 	{"language", true},
 }
 
@@ -32,17 +31,13 @@ func AllowedFieldNames() []string {
 }
 
 type Param struct {
-	ID db.ID
+	ID id.ID
 	V  string
 }
 
-var _ db.Storeable = Param{}
+var _ adapter.Storeable = Param{}
 
-func (v Param) Export() string {
-	return fmt.Sprintf("%d|%d|%s\n", v.GetKind().Byte(), v.ID, v.V)
-}
-
-func (v Param) GetID() db.ID {
+func (v Param) GetID() id.ID {
 	return v.ID
 }
 
@@ -50,7 +45,7 @@ func (v Param) GetKind() kind.Kind {
 	return kind.Param
 }
 
-func (v Param) SetID(id db.ID) db.Storeable {
+func (v Param) SetID(id id.ID) adapter.Storeable {
 	v.ID = id
 
 	return v

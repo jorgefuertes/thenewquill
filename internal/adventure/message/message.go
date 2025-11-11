@@ -4,28 +4,18 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/jorgefuertes/thenewquill/internal/adventure/db"
+	"github.com/jorgefuertes/thenewquill/internal/adapter"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/id"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
-	"github.com/jorgefuertes/thenewquill/internal/util"
 )
 
 type Message struct {
-	ID      db.ID
+	ID      id.ID
 	Text    string
 	Plurals [2]string
 }
 
-var _ db.Storeable = Message{}
-
-func (m Message) Export() string {
-	out := fmt.Sprintf("%d|%d|%s|%s|%s\n", m.GetKind().Byte(), m.ID,
-		util.EscapeExportString(m.Text),
-		util.EscapeExportString(m.Plurals[0]),
-		util.EscapeExportString(m.Plurals[1]),
-	)
-
-	return out
-}
+var _ adapter.Storeable = Message{}
 
 type Plural int
 
@@ -47,18 +37,18 @@ func PluralFromString(s string) Plural {
 }
 
 func New(text string) Message {
-	m := Message{ID: db.UndefinedLabel.ID, Text: text, Plurals: [2]string{}}
+	m := Message{ID: id.Undefined, Text: text, Plurals: [2]string{}}
 
 	return m
 }
 
-func (m Message) SetID(id db.ID) db.Storeable {
+func (m Message) SetID(id id.ID) adapter.Storeable {
 	m.ID = id
 
 	return m
 }
 
-func (m Message) GetID() db.ID {
+func (m Message) GetID() id.ID {
 	return m.ID
 }
 

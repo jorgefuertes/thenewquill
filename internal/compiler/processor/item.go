@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/jorgefuertes/thenewquill/internal/adventure"
-	"github.com/jorgefuertes/thenewquill/internal/adventure/db"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/id"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/item"
 	cerr "github.com/jorgefuertes/thenewquill/internal/compiler/compiler_error"
 	"github.com/jorgefuertes/thenewquill/internal/compiler/line"
@@ -14,7 +14,7 @@ import (
 )
 
 func readItem(l line.Line, st *status.Status, a *adventure.Adventure) error {
-	i := item.New(db.UndefinedLabel.ID, db.UndefinedLabel.ID)
+	i := item.New(id.Undefined, id.Undefined)
 
 	if st.HasCurrent() {
 		if !st.GetCurrentStoreable(&i) {
@@ -69,7 +69,7 @@ func readItem(l line.Line, st *status.Status, a *adventure.Adventure) error {
 		if rg.ItemAt.MatchString(o) {
 			parts := rg.ItemAt.FindStringSubmatch(o)
 
-			atLabel, err := a.DB.AddLabel(parts[2], false)
+			atLabel, err := a.DB.AddLabel(parts[2])
 			if err != nil {
 				return cerr.ErrInvalidLabel.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
 					WithFilename(st.CurrentFilename()).AddErr(err)
@@ -139,7 +139,7 @@ func readItem(l line.Line, st *status.Status, a *adventure.Adventure) error {
 			return err
 		}
 
-		label, err := a.DB.AddLabel(labelName, false)
+		label, err := a.DB.AddLabel(labelName)
 		if err != nil {
 			return cerr.ErrInvalidLabel.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
 				WithFilename(st.CurrentFilename()).AddErr(err)
@@ -149,7 +149,7 @@ func readItem(l line.Line, st *status.Status, a *adventure.Adventure) error {
 			return err
 		}
 
-		nounLabel, err := a.DB.AddLabel(nounName, false)
+		nounLabel, err := a.DB.AddLabel(nounName)
 		if err != nil {
 			return cerr.ErrInvalidLabel.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
 				WithFilename(st.CurrentFilename()).AddErr(err)
@@ -157,7 +157,7 @@ func readItem(l line.Line, st *status.Status, a *adventure.Adventure) error {
 
 		i.NounID = nounLabel.ID
 
-		adjLabel, err := a.DB.AddLabel(adjName, false)
+		adjLabel, err := a.DB.AddLabel(adjName)
 		if err != nil {
 			return cerr.ErrInvalidLabel.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
 				WithFilename(st.CurrentFilename()).AddErr(err)

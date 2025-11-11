@@ -26,7 +26,7 @@ func readWord(l line.Line, st *status.Status, a *adventure.Adventure) error {
 			WithFilename(st.CurrentFilename())
 	}
 
-	label, err := a.DB.AddLabel(syns[0], false)
+	label, err := a.DB.AddLabel(syns[0])
 	if err != nil {
 		return cerr.ErrInvalidLabel.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
 			WithFilename(st.CurrentFilename()).AddErr(err)

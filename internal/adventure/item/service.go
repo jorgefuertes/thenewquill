@@ -1,7 +1,9 @@
 package item
 
 import (
+	"github.com/jorgefuertes/thenewquill/internal/adapter"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/db"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/id"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 )
 
@@ -25,7 +27,7 @@ func (s *Service) Update(i Item) error {
 	return s.db.Update(i)
 }
 
-func (s *Service) Get(id db.ID) (Item, error) {
+func (s *Service) Get(id id.ID) (Item, error) {
 	i := Item{}
 	err := s.db.Get(id, &i)
 
@@ -50,7 +52,7 @@ func (s *Service) SetCreated(i *Item, created bool) error {
 	return s.Update(*i)
 }
 
-func (s *Service) IsAt(i Item, at db.Storeable) bool {
+func (s *Service) IsAt(i Item, at adapter.Storeable) bool {
 	return i.At == at.GetID()
 }
 

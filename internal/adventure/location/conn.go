@@ -1,8 +1,8 @@
 package location
 
-import "github.com/jorgefuertes/thenewquill/internal/adventure/db"
+import "github.com/jorgefuertes/thenewquill/internal/adventure/id"
 
 type Connection struct {
-	WordID     db.ID
-	LocationID db.ID
+	WordID     id.ID
+	LocationID id.ID
 }

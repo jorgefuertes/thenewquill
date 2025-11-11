@@ -3,6 +3,7 @@ package db
 import (
 	"errors"
 	"fmt"
+	"math"
 )
 
 var (
@@ -10,7 +11,7 @@ var (
 	ErrRecordNotFound            = errors.New("record not found")
 	ErrDstMustBePointer          = errors.New("destination must be a pointer")
 	ErrDstMustBePointerSlice     = errors.New("destination must be a pointer to a slice")
-	ErrLimitReached              = fmt.Errorf("limit reached (%d), cannot add more labels", Limit)
+	ErrLimitReached              = fmt.Errorf("limit reached (%d), cannot add more labels", math.MaxUint32)
 	ErrNotFound                  = errors.New("label not found")
 	ErrCannotCastFromStoreable   = errors.New("cannot cast from storeable")
 	ErrUndefinedLabel            = errors.New("undefined label")

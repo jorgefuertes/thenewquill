@@ -5,17 +5,18 @@ import (
 	"fmt"
 
 	"github.com/jorgefuertes/thenewquill/internal/adventure/db"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/id"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 )
 
-func (l Location) Validate(allowNoID db.Allow) error {
-	if err := l.ID.Validate(db.DontAllowSpecial); err != nil && !allowNoID {
+func (l Location) Validate(allowNoID bool) error {
+	if err := l.ID.Validate(false); err != nil && !allowNoID {
 		if err == db.ErrInvalidLabelID && !allowNoID {
 			return err
 		}
 	}
 
-	if l.ID < db.MinMeaningfulID && !allowNoID {
+	if l.ID < id.Min && !allowNoID {
 		return ErrWrongLabel
 	}
 
@@ -24,7 +25,7 @@ func (l Location) Validate(allowNoID db.Allow) error {
 	}
 
 	for _, conn := range l.Conns {
-		if conn.WordID == db.UndefinedLabel.ID {
+		if conn.WordID == id.Undefined {
 			return ErrConnUndefLabel
 		}
 	}
@@ -38,7 +39,7 @@ func (s *Service) ValidateAll() error {
 
 	var loc Location
 	for locations.Next(&loc) {
-		if err := loc.Validate(db.DontAllowNoID); err != nil {
+		if err := loc.Validate(false); err != nil {
 			return errors.Join(err, fmt.Errorf("label: %s", s.db.GetLabelName(loc.ID)))
 		}
 

@@ -4,33 +4,34 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/jorgefuertes/thenewquill/internal/adventure/db"
+	"github.com/jorgefuertes/thenewquill/internal/adapter"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/id"
 	"github.com/jorgefuertes/thenewquill/internal/util"
 )
 
 type Word struct {
-	ID       db.ID
+	ID       id.ID
 	Type     WordType
 	Synonyms []string
 }
 
-var _ db.Storeable = Word{}
+var _ adapter.Storeable = Word{}
 
 func New(t WordType, synonyms ...string) Word {
 	for i, s := range synonyms {
 		synonyms[i] = strings.ToLower(s)
 	}
 
-	return Word{ID: db.UndefinedLabel.ID, Type: t, Synonyms: synonyms}
+	return Word{ID: id.Undefined, Type: t, Synonyms: synonyms}
 }
 
-func (w Word) SetID(id db.ID) db.Storeable {
+func (w Word) SetID(id id.ID) adapter.Storeable {
 	w.ID = id
 
 	return w
 }
 
-func (w Word) GetID() db.ID {
+func (w Word) GetID() id.ID {
 	return w.ID
 }
 

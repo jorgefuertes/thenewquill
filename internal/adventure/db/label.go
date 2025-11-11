@@ -1,102 +1,39 @@
 package db
 
 import (
-	"errors"
-	"fmt"
 	"math"
-	"regexp"
+
+	"github.com/jorgefuertes/thenewquill/internal/adventure/id"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/label"
 )
 
-const (
-	Limit                  = math.MaxUint16
-	MinMeaningfulID  ID    = 4
-	AllowSpecial     Allow = true
-	DontAllowSpecial Allow = false
-	AllowDot         Allow = true
-	DontAllowDot     Allow = false
-)
-
-type ID uint16
-
-func (id ID) String() string {
-	return fmt.Sprintf("%d", id)
-}
-
-func (id ID) UInt16() uint16 {
-	return uint16(id)
-}
-
-func (id ID) IsDefined() bool {
-	return id != UndefinedLabel.ID
-}
-
-// Validate checks if the ID is valid, allowSpecial allows _ and * to be valid IDs
-func (id ID) Validate(allowSpecial Allow) error {
-	if id == UndefinedLabel.ID {
-		return ErrUndefinedLabel
-	}
-
-	if id < MinMeaningfulID && !allowSpecial {
-		return ErrInvalidLabelID
-	}
-
-	if id >= Limit {
-		return ErrInvalidLabelID
-	}
-
-	return nil
-}
-
-type Label struct {
-	ID   ID
-	Name string
-}
-
-var _ Storeable = &Label{}
-
-func (l Label) GetID() ID {
-	return l.ID
-}
-
-func (l Label) SetID(id ID) Storeable {
-	l.ID = id
-
-	return l
-}
-
-var (
-	UndefinedLabel  = Label{ID: 0, Name: "undefined"}
-	ConfigLabel     = Label{ID: 1, Name: "adv-config"}
-	UnderscoreLabel = Label{ID: 2, Name: "_"}
-	WildcardLabel   = Label{ID: 3, Name: "*"}
-)
-
-func (d *DB) AddLabel(name string, allowDot Allow) (Label, error) {
+func (d *DB) AddLabel(name string) (label.Label, error) {
 	if d.ExistsLabelName(name) {
 		return d.GetLabelByName(name)
 	}
 
-	if !IsValidLabelName(name, allowDot) {
-		return Label{}, errors.Join(ErrInvalidLabelName, errors.New(name))
+	l := label.Label{ID: d.nextID, Name: name}
+	if err := l.Validate(false); err != nil {
+		return l, err
 	}
 
-	d.mut.Lock()
-	defer d.mut.Unlock()
+	d.lock()
+	defer d.unlock()
 
-	if d.nextID >= Limit {
-		return Label{}, ErrLimitReached
+	d.Labels = append(d.Labels, l)
+
+	if d.nextID == math.MaxUint32 {
+		return label.Label{}, ErrLimitReached
 	}
 
-	label := Label{ID: d.nextID, Name: name}
-	d.Labels = append(d.Labels, label)
 	d.nextID++
 
-	return label, nil
+	return l, nil
 }
 
-func (d *DB) GetLabel(id ID) (Label, error) {
-	d.mut.Lock()
-	defer d.mut.Unlock()
+func (d *DB) GetLabel(id id.ID) (label.Label, error) {
+	d.lock()
+	defer d.unlock()
 
 	for _, l := range d.Labels {
 		if l.ID == id {
@@ -104,21 +41,21 @@ func (d *DB) GetLabel(id ID) (Label, error) {
 		}
 	}
 
-	return Label{ID: id, Name: "not-found"}, ErrNotFound
+	return label.Label{ID: id, Name: "not-found"}, ErrNotFound
 }
 
-func (d *DB) GetLabelName(id ID) string {
+func (d *DB) GetLabelName(id id.ID) string {
 	l, err := d.GetLabel(id)
 	if err != nil {
-		return UndefinedLabel.Name
+		return label.Undefined.Name
 	}
 
 	return l.Name
 }
 
-func (d *DB) GetLabelByName(name string) (Label, error) {
-	d.mut.Lock()
-	defer d.mut.Unlock()
+func (d *DB) GetLabelByName(name string) (label.Label, error) {
+	d.lock()
+	defer d.unlock()
 
 	for _, l := range d.Labels {
 		if l.Name == name {
@@ -126,12 +63,12 @@ func (d *DB) GetLabelByName(name string) (Label, error) {
 		}
 	}
 
-	return Label{}, ErrNotFound
+	return label.Label{}, ErrNotFound
 }
 
 func (d *DB) ExistsLabelName(name string) bool {
-	d.mut.Lock()
-	defer d.mut.Unlock()
+	d.lock()
+	defer d.unlock()
 
 	for _, l := range d.Labels {
 		if l.Name == name {
@@ -140,24 +77,4 @@ func (d *DB) ExistsLabelName(name string) bool {
 	}
 
 	return false
-}
-
-func IsValidLabelName(name string, allowDot Allow) bool {
-	if allowDot {
-		return regexp.MustCompile(`^[\d\p{L}\-_\.]{1,25}$`).MatchString(name)
-	}
-
-	return regexp.MustCompile(`^[\d\p{L}\-_]{1,25}$`).MatchString(name)
-}
-
-func (l Label) Validate(allowSpecial Allow) error {
-	if !IsValidLabelName(l.Name, allowSpecial) {
-		return errors.Join(ErrInvalidLabelName, errors.New(l.Name))
-	}
-
-	if l.ID == UndefinedLabel.ID {
-		return ErrUndefinedLabel
-	}
-
-	return nil
 }

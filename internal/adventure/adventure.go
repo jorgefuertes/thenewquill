@@ -2,6 +2,8 @@ package adventure
 
 import (
 	"errors"
+	"fmt"
+	"time"
 
 	"github.com/jorgefuertes/thenewquill/internal/adventure/character"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/config"
@@ -65,4 +67,20 @@ func (a *Adventure) Validate() error {
 	}
 
 	return err
+}
+
+func (a *Adventure) Export(path string) (int, error) {
+	if err := a.Config.Set("date", fmt.Sprintf("%d", time.Now().Unix())); err != nil {
+		return 0, err
+	}
+
+	if err := a.Validate(); err != nil {
+		return 0, err
+	}
+
+	return a.DB.Export(path)
+}
+
+func (a *Adventure) Import(path string) error {
+	return a.DB.Import(path)
 }

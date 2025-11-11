@@ -47,3 +47,6 @@ doc:
 		pdflatex -shell-escape -interaction=nonstopmode \
 			-file-line-error manual.tex; \
 		popd > /dev/null
+
+go-upgrade-deps:
+	@go get -u ./...

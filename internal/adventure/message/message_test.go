@@ -3,7 +3,7 @@ package message_test
 import (
 	"testing"
 
-	"github.com/jorgefuertes/thenewquill/internal/adventure/db"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/id"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/message"
 	"github.com/stretchr/testify/assert"
@@ -104,11 +104,11 @@ func TestStoreable(t *testing.T) {
 	assert.Equal(t, "One coin.", m.Stringf(1))
 	assert.Equal(t, "Many coins.", m.Stringf(2))
 
-	m.ID = db.ID(5)
-	assert.Equal(t, db.ID(5), m.GetID())
+	m.ID = id.ID(5)
+	assert.Equal(t, id.ID(5), m.GetID())
 
-	s := m.SetID(db.ID(10))
-	assert.Equal(t, db.ID(10), s.GetID())
+	s := m.SetID(id.ID(10))
+	assert.Equal(t, id.ID(10), s.GetID())
 
 	assert.Equal(t, kind.Message, m.GetKind())
 
@@ -122,24 +122,24 @@ func TestStoreable(t *testing.T) {
 
 func TestValidate(t *testing.T) {
 	m := message.New("Hello, World!")
-	require.Error(t, m.Validate(db.DontAllowNoID))
-	assert.ErrorIs(t, db.ErrUndefinedLabel, m.Validate(db.DontAllowNoID))
+	require.Error(t, m.Validate(false))
+	assert.ErrorIs(t, id.ErrUndefined, m.Validate(false))
 
-	m.ID = db.ID(3)
-	require.Error(t, m.Validate(db.DontAllowNoID))
-	assert.ErrorIs(t, db.ErrInvalidLabelID, m.Validate(db.DontAllowNoID))
+	m.ID = id.ID(3)
+	require.Error(t, m.Validate(false))
+	assert.ErrorIs(t, id.ErrInvalid, m.Validate(false))
 
-	m.ID = db.ID(4)
-	require.NoError(t, m.Validate(db.DontAllowNoID))
+	m.ID = id.ID(4)
+	require.NoError(t, m.Validate(false))
 
 	m.Text = ""
-	require.Error(t, m.Validate(db.DontAllowNoID))
-	assert.ErrorIs(t, message.ErrUndefinedText, m.Validate(db.DontAllowNoID))
+	require.Error(t, m.Validate(false))
+	assert.ErrorIs(t, message.ErrUndefinedText, m.Validate(false))
 
 	m.Text = "Hello, World!"
 	m.Plurals[message.One] = "One"
-	require.Error(t, m.Validate(db.DontAllowNoID))
-	assert.ErrorIs(t, message.ErrUndefinedPlural, m.Validate(db.DontAllowNoID))
+	require.Error(t, m.Validate(false))
+	assert.ErrorIs(t, message.ErrUndefinedPlural, m.Validate(false))
 	m.Plurals[message.Many] = "Many"
-	require.NoError(t, m.Validate(db.DontAllowNoID))
+	require.NoError(t, m.Validate(false))
 }

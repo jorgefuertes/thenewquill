@@ -5,6 +5,8 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/jorgefuertes/thenewquill/internal/adapter"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/id"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
@@ -33,11 +35,11 @@ func FilterByKind(k kind.Kind) filter {
 	return filter{Equal, "kind", k}
 }
 
-func FilterByID(id ID) filter {
+func FilterByID(id id.ID) filter {
 	return filter{Equal, "id", id}
 }
 
-func matches(s Storeable, filters ...filter) bool {
+func matches(s adapter.Storeable, filters ...filter) bool {
 	if len(filters) == 0 {
 		return false
 	}
@@ -98,7 +100,7 @@ func fieldContains(field reflect.Value, value any) bool {
 	return false
 }
 
-func getFieldValueByName(s Storeable, fieldName string) (reflect.Value, bool) {
+func getFieldValueByName(s adapter.Storeable, fieldName string) (reflect.Value, bool) {
 	val := reflect.ValueOf(s)
 	if val.Kind() == reflect.Ptr {
 		val = val.Elem()

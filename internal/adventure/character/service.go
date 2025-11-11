@@ -2,6 +2,7 @@ package character
 
 import (
 	"github.com/jorgefuertes/thenewquill/internal/adventure/db"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/id"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 )
 
@@ -25,7 +26,7 @@ func (s *Service) Update(c Character) error {
 	return s.db.Update(c)
 }
 
-func (s *Service) Get(id db.ID) (Character, error) {
+func (s *Service) Get(id id.ID) (Character, error) {
 	c := Character{}
 	err := s.db.Get(id, &c)
 

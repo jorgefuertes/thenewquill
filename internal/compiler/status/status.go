@@ -5,8 +5,10 @@ import (
 	"reflect"
 	"slices"
 
+	"github.com/jorgefuertes/thenewquill/internal/adapter"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/db"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/label"
 	cerr "github.com/jorgefuertes/thenewquill/internal/compiler/compiler_error"
 	"github.com/jorgefuertes/thenewquill/internal/compiler/line"
 )
@@ -14,8 +16,8 @@ import (
 const stackSize = 5
 
 type currentStoreable struct {
-	label     db.Label
-	storeable db.Storeable
+	label     label.Label
+	storeable adapter.Storeable
 	line      line.Line
 	filename  string
 }
@@ -113,13 +115,13 @@ func (s *Status) GetCurrentStoreable(dst any) bool {
 	return true
 }
 
-func (s *Status) SetCurrentStoreable(storeable db.Storeable) error {
+func (s *Status) SetCurrentStoreable(storeable adapter.Storeable) error {
 	s.current.storeable = storeable
 
 	return nil
 }
 
-func (s *Status) SetCurrentLabel(label db.Label) error {
+func (s *Status) SetCurrentLabel(label label.Label) error {
 	if s.current != nil {
 		return errors.New("unexpected: cannot set a new label, current storeable already set")
 	}
@@ -133,9 +135,9 @@ func (s *Status) SetCurrentLabel(label db.Label) error {
 	return nil
 }
 
-func (s *Status) GetCurrentLabel() db.Label {
+func (s *Status) GetCurrentLabel() label.Label {
 	if s.current == nil {
-		return db.UndefinedLabel
+		return label.Undefined
 	}
 
 	return s.current.label

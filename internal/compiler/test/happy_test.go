@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/jorgefuertes/thenewquill/internal/adventure/db"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/label"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/word"
 	"github.com/jorgefuertes/thenewquill/internal/compiler"
 
@@ -245,7 +245,7 @@ func TestCompilerHappyPath(t *testing.T) {
 				assert.Equal(t, c.NounID, noun.ID)
 				assert.Equal(t, word.Noun, noun.Type)
 
-				if tc.adj != db.UnderscoreLabel.Name {
+				if tc.adj != label.Underscore.Name {
 					adj, err := a.Words.FindByLabel(tc.adj)
 					require.NoError(t, err, "cannot find adjective %q", tc.adj)
 					assert.Equal(t, c.AdjectiveID, adj.ID)

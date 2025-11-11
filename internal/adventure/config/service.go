@@ -2,6 +2,7 @@ package config
 
 import (
 	"github.com/jorgefuertes/thenewquill/internal/adventure/db"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/id"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 )
 
@@ -18,7 +19,7 @@ func (s *Service) Set(field string, v string) error {
 		return ErrUnrecognizedConfigField
 	}
 
-	l, err := s.db.AddLabel(field, false)
+	l, err := s.db.AddLabel(field)
 	if err != nil {
 		return err
 	}
@@ -35,7 +36,7 @@ func (s *Service) Update(v Param) error {
 	return s.db.Update(v)
 }
 
-func (s *Service) Get(id db.ID) (Param, error) {
+func (s *Service) Get(id id.ID) (Param, error) {
 	v := Param{}
 	err := s.db.Get(id, &v)
 

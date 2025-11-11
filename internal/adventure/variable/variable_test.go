@@ -3,7 +3,7 @@ package variable_test
 import (
 	"testing"
 
-	"github.com/jorgefuertes/thenewquill/internal/adventure/db"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/id"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/variable"
 	"github.com/stretchr/testify/assert"
@@ -11,10 +11,10 @@ import (
 
 func TestVariable(t *testing.T) {
 	t.Run("SetID", func(t *testing.T) {
-		v := variable.New(db.ID(5), 2)
-		assert.Equal(t, db.ID(5), v.GetID())
+		v := variable.New(id.ID(5), 2)
+		assert.Equal(t, id.ID(5), v.GetID())
 		s := v.SetID(6)
-		assert.Equal(t, db.ID(6), s.GetID())
+		assert.Equal(t, id.ID(6), s.GetID())
 	})
 
 	t.Run("int", func(t *testing.T) {

@@ -5,7 +5,8 @@ import (
 	"regexp"
 	"strconv"
 
-	"github.com/jorgefuertes/thenewquill/internal/adventure/db"
+	"github.com/jorgefuertes/thenewquill/internal/adapter"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/id"
 	"github.com/jorgefuertes/thenewquill/pkg/log"
 )
 
@@ -22,26 +23,26 @@ var (
 )
 
 type Variable struct {
-	ID    db.ID
+	ID    id.ID
 	Value string
 }
 
-var _ db.Storeable = Variable{}
+var _ adapter.Storeable = Variable{}
 
-func New(id db.ID, value any) Variable {
+func New(id id.ID, value any) Variable {
 	v := Variable{ID: id}
 	v.Set(value)
 
 	return v
 }
 
-func (v Variable) SetID(id db.ID) db.Storeable {
+func (v Variable) SetID(id id.ID) adapter.Storeable {
 	v.ID = id
 
 	return v
 }
 
-func (v Variable) GetID() db.ID {
+func (v Variable) GetID() id.ID {
 	return v.ID
 }
 
@@ -60,7 +61,7 @@ func (v *Variable) Set(value any) {
 	case string:
 		v.Value = val
 	default:
-		log.Warning("storing unknown value type %+v into var %s", val, v.ID)
+		log.Warning("storing unknown value type %+v into var %d", val, v.ID)
 		v.Value = fmt.Sprint(value)
 	}
 }

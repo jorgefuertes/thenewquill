@@ -5,15 +5,16 @@ import (
 	"fmt"
 
 	"github.com/jorgefuertes/thenewquill/internal/adventure/db"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/id"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 )
 
-func (w Word) Validate(allowNoID db.Allow) error {
-	if w.ID == db.UndefinedLabel.ID && allowNoID == db.AllowNoID {
+func (w Word) Validate(allowNoID bool) error {
+	if w.ID == id.Undefined && !allowNoID {
 		return nil
 	}
 
-	if err := w.ID.Validate(db.DontAllowSpecial); err != nil && !allowNoID {
+	if err := w.ID.Validate(false); err != nil && !allowNoID {
 		return fmt.Errorf("ID %q: %w", w.ID, err)
 	}
 
@@ -30,7 +31,7 @@ func (s *Service) ValidateAll() error {
 
 	var w Word
 	for words.Next(&w) {
-		if err := w.Validate(db.DontAllowNoID); err != nil {
+		if err := w.Validate(false); err != nil {
 			return err
 		}
 

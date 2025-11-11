@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/jorgefuertes/thenewquill/internal/adventure/db"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/id"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 )
 
@@ -23,7 +24,7 @@ func (s *Service) Set(v Variable) error {
 	return s.db.Append(v)
 }
 
-func (s *Service) Get(id db.ID) (Variable, error) {
+func (s *Service) Get(id id.ID) (Variable, error) {
 	var v Variable
 	err := s.db.Get(id, &v)
 

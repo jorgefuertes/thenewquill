@@ -7,8 +7,8 @@ import (
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 )
 
-func (c Character) Validate(allowNoID db.Allow) error {
-	if err := c.ID.Validate(db.DontAllowSpecial); err != nil && !allowNoID {
+func (c Character) Validate(allowNoID bool) error {
+	if err := c.ID.Validate(allowNoID); err != nil && !allowNoID {
 		return err
 	}
 
@@ -16,15 +16,15 @@ func (c Character) Validate(allowNoID db.Allow) error {
 		return ErrEmptyDescription
 	}
 
-	if err := c.NounID.Validate(db.DontAllowSpecial); err != nil {
+	if err := c.NounID.Validate(false); err != nil {
 		return fmt.Errorf("name ID %q: %w", c.NounID, err)
 	}
 
-	if err := c.AdjectiveID.Validate(db.AllowSpecial); err != nil {
+	if err := c.AdjectiveID.Validate(true); err != nil {
 		return fmt.Errorf("adjective ID %q: %w", c.AdjectiveID, err)
 	}
 
-	if err := c.LocationID.Validate(db.DontAllowSpecial); err != nil {
+	if err := c.LocationID.Validate(false); err != nil {
 		return fmt.Errorf("location ID %q: %w", c.LocationID, err)
 	}
 
@@ -39,7 +39,7 @@ func (s *Service) ValidateAll() error {
 
 	c := Character{}
 	for chars.Next(&c) {
-		if err := c.Validate(db.DontAllowNoID); err != nil {
+		if err := c.Validate(false); err != nil {
 			return err
 		}
 

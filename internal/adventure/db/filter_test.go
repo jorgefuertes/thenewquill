@@ -3,13 +3,15 @@ package db
 import (
 	"testing"
 
+	"github.com/jorgefuertes/thenewquill/internal/adapter"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/id"
 	"github.com/stretchr/testify/require"
 )
 
 type testStoreable struct {
-	ID      ID
+	ID      id.ID
 	Title   string
-	At      ID
+	At      id.ID
 	OK      bool
 	NOOK    bool
 	Weight  int16
@@ -17,19 +19,19 @@ type testStoreable struct {
 	Numbers []int
 }
 
-var _ Storeable = testStoreable{}
+var _ adapter.Storeable = testStoreable{}
 
-func (s testStoreable) GetID() ID {
+func (s testStoreable) GetID() id.ID {
 	return s.ID
 }
 
-func (s testStoreable) SetID(id ID) Storeable {
+func (s testStoreable) SetID(id id.ID) adapter.Storeable {
 	s.ID = id
 
 	return s
 }
 
-func (s testStoreable) Validate(allowNoID Allow) error {
+func (s testStoreable) Validate(allowNoID bool) error {
 	return nil
 }
 
@@ -42,9 +44,9 @@ func TestMatches(t *testing.T) {
 	}
 
 	testItem := &testStoreable{
-		ID:      ID(7),
+		ID:      id.ID(7),
 		Title:   "This is just a Test Title",
-		At:      ID(10),
+		At:      id.ID(10),
 		OK:      true,
 		NOOK:    false,
 		Weight:  10,
@@ -54,15 +56,15 @@ func TestMatches(t *testing.T) {
 
 	testCases := []testCase{
 		{
-			name: "Equal ID",
+			name: "Equal id.ID",
 			sut:  testItem,
 			filters: []filter{
-				{Equal, "ID", ID(7)},
+				{Equal, "ID", id.ID(7)},
 			},
 			expected: true,
 		},
 		{
-			name: "Equal ID by number",
+			name: "Equal id.ID by number",
 			sut:  testItem,
 			filters: []filter{
 				{Equal, "ID", 7},
@@ -70,18 +72,18 @@ func TestMatches(t *testing.T) {
 			expected: true,
 		},
 		{
-			name: "Equal ID false",
+			name: "Equal id.ID false",
 			sut:  testItem,
 			filters: []filter{
-				{Equal, "ID", ID(23)},
+				{Equal, "ID", id.ID(23)},
 			},
 			expected: false,
 		},
 		{
-			name: "NotEqual ID",
+			name: "NotEqual id.ID",
 			sut:  testItem,
 			filters: []filter{
-				{NotEqual, "ID", ID(23)},
+				{NotEqual, "ID", id.ID(23)},
 			},
 			expected: true,
 		},

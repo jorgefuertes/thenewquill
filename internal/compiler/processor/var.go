@@ -11,7 +11,7 @@ import (
 func tryReadEntityVar(l line.Line, st *status.Status, a *adventure.Adventure) (bool, error) {
 	name, value, ok := l.AsVar()
 	if ok {
-		vLabel, err := a.DB.AddLabel(st.GetCurrentLabel().Name+"."+name, true)
+		vLabel, err := a.DB.AddLabel(st.GetCurrentLabel().Name + "." + name)
 		if err != nil {
 			return true, cerr.ErrInvalidLabel.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
 				WithFilename(st.CurrentFilename()).AddErr(err)
@@ -35,7 +35,7 @@ func readVar(l line.Line, st *status.Status, a *adventure.Adventure) error {
 			WithFilename(st.CurrentFilename())
 	}
 
-	vLabel, err := a.DB.AddLabel(name, false)
+	vLabel, err := a.DB.AddLabel(name)
 	if err != nil {
 		return cerr.ErrInvalidLabel.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
 			WithFilename(st.CurrentFilename()).AddErr(err)
