@@ -14,5 +14,7 @@ func readConfig(l line.Line, st *status.Status, a *adventure.Adventure) error {
 			WithFilename(st.CurrentFilename())
 	}
 
-	return a.Config.Set(field, value)
+	_, err := a.Config.Set(field, value)
+
+	return err
 }

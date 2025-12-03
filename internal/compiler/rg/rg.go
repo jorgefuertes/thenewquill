@@ -5,7 +5,7 @@ import (
 )
 
 const (
-	labelGroup      = `([\d\p{L}\-_]+)`
+	labelGroup      = `([\d\p{L}\-_\.]+)`
 	intOrFloatGroup = `(\d+|\d+\.\d+)`
 )
 

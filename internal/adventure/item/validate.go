@@ -3,18 +3,22 @@ package item
 import (
 	"errors"
 	"fmt"
+
+	"github.com/jorgefuertes/thenewquill/internal/adventure/database"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/database/primitive"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 )
 
 func (i Item) Validate(allowNoID bool) error {
-	if err := i.ID.Validate(false); err != nil && !allowNoID {
+	if err := i.ID.ValidateID(false); err != nil && !allowNoID {
 		return fmt.Errorf("ID %q: %w", i.ID, err)
 	}
 
-	if err := i.NounID.Validate(false); err != nil {
+	if err := i.NounID.ValidateID(false); err != nil {
 		return fmt.Errorf("noun ID %q: %w", i.NounID, err)
 	}
 
-	if err := i.AdjectiveID.Validate(true); err != nil {
+	if err := i.AdjectiveID.ValidateID(true); err != nil {
 		return fmt.Errorf("adjective ID %q: %w", i.AdjectiveID, err)
 	}
 
@@ -30,38 +34,55 @@ func (i Item) Validate(allowNoID bool) error {
 }
 
 func (s *Service) ValidateAll() error {
-	for _, i := range s.All() {
-		label, err := s.db.GetLabel(i.ID)
+	res := s.db.Query(database.FilterByKind(kind.Item))
+	defer res.Close()
+
+	i := &Item{}
+	for res.Next(i) {
+		l, err := s.db.GetLabel(i.ID)
 		if err != nil {
-			return errors.Join(err, fmt.Errorf("item ID: %d", i.ID))
+			return errors.Join(err, fmt.Errorf("item %q: %d", l, i.ID))
 		}
 
 		if err := i.Validate(false); err != nil {
 			return errors.Join(
 				ErrItemValidationFailed,
 				err,
-				fmt.Errorf("label %d: %s", label.ID, label.Name),
+				fmt.Errorf("item %q: %d", l, i.ID),
 			)
 		}
 
-		for _, i2 := range s.All() {
-			if i.ID == i2.ID {
-				continue
-			}
+		if err := s.findDuplicatedNounAdj(l, i); err != nil {
+			return err
+		}
+	}
 
-			if i.NounID == i2.NounID && i.AdjectiveID == i2.AdjectiveID {
-				label2, err := s.db.GetLabel(i2.ID)
-				if err != nil {
-					return errors.Join(
-						err,
-						fmt.Errorf("items %q and %d, noun %d and adjective %d", label, i2.ID, i.NounID, i.AdjectiveID),
-					)
-				}
+	return nil
+}
+
+func (s *Service) findDuplicatedNounAdj(l primitive.Label, i *Item) error {
+	res2 := s.db.Query(database.FilterByKind(kind.Item))
+	defer res2.Close()
+
+	i2 := &Item{}
+	for res2.Next(i2) {
+		if i.ID == i2.ID {
+			continue
+		}
+
+		if i.NounID == i2.NounID && i.AdjectiveID == i2.AdjectiveID {
+			l2, err := s.db.GetLabel(i2.ID)
+			if err != nil {
 				return errors.Join(
-					ErrDuplicatedNounAdj,
-					fmt.Errorf("items %q and %q: noun %d and adjective %d", label, label2, i.NounID, i.AdjectiveID),
+					err,
+					fmt.Errorf("items %q and %d, noun %d and adjective %d", l, i2.ID, i.NounID, i.AdjectiveID),
 				)
 			}
+
+			return errors.Join(
+				ErrDuplicatedNounAdj,
+				fmt.Errorf("items %q and %q: noun %d and adjective %d", l, l2, i.NounID, i.AdjectiveID),
+			)
 		}
 	}
 

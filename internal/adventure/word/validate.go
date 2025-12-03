@@ -4,17 +4,17 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/jorgefuertes/thenewquill/internal/adventure/db"
-	"github.com/jorgefuertes/thenewquill/internal/adventure/id"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/database"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/database/primitive"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 )
 
 func (w Word) Validate(allowNoID bool) error {
-	if w.ID == id.Undefined && !allowNoID {
+	if w.ID == primitive.UndefinedID && !allowNoID {
 		return nil
 	}
 
-	if err := w.ID.Validate(false); err != nil && !allowNoID {
+	if err := w.ID.ValidateID(false); err != nil && !allowNoID {
 		return fmt.Errorf("ID %q: %w", w.ID, err)
 	}
 
@@ -26,7 +26,7 @@ func (w Word) Validate(allowNoID bool) error {
 }
 
 func (s *Service) ValidateAll() error {
-	words := s.db.Query(db.FilterByKind(kind.Word))
+	words := s.db.Query(database.FilterByKind(kind.Word))
 	defer words.Close()
 
 	var w Word
@@ -35,7 +35,7 @@ func (s *Service) ValidateAll() error {
 			return err
 		}
 
-		words2 := s.db.Query(db.FilterByKind(kind.Word), db.Filter("type", db.Equal, w.Type))
+		words2 := s.db.Query(database.FilterByKind(kind.Word), database.Filter("type", database.Equal, w.Type))
 		defer words2.Close()
 
 		var w2 Word

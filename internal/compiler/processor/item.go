@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/jorgefuertes/thenewquill/internal/adventure"
-	"github.com/jorgefuertes/thenewquill/internal/adventure/id"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/database/primitive"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/item"
 	cerr "github.com/jorgefuertes/thenewquill/internal/compiler/compiler_error"
 	"github.com/jorgefuertes/thenewquill/internal/compiler/line"
@@ -14,7 +14,7 @@ import (
 )
 
 func readItem(l line.Line, st *status.Status, a *adventure.Adventure) error {
-	i := item.New(id.Undefined, id.Undefined)
+	i := item.New(primitive.UndefinedID, primitive.UndefinedID, primitive.UndefinedID)
 
 	if st.HasCurrent() {
 		if !st.GetCurrentStoreable(&i) {
@@ -22,7 +22,7 @@ func readItem(l line.Line, st *status.Status, a *adventure.Adventure) error {
 				WithFilename(st.CurrentFilename())
 		}
 
-		desc, ok := l.GetTextForFirstFoundLabelName("description", "desc")
+		desc, ok := l.GetTextForFirstFoundLabel("description", "desc")
 		if ok {
 			i.Description = desc
 
@@ -69,13 +69,13 @@ func readItem(l line.Line, st *status.Status, a *adventure.Adventure) error {
 		if rg.ItemAt.MatchString(o) {
 			parts := rg.ItemAt.FindStringSubmatch(o)
 
-			atLabel, err := a.DB.AddLabel(parts[2])
+			atLabelID, _, err := a.DB.CreateLabelFromString(parts[2], false)
 			if err != nil {
 				return cerr.ErrInvalidLabel.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
 					WithFilename(st.CurrentFilename()).AddErr(err)
 			}
 
-			i.At = atLabel.ID
+			i.At = atLabelID
 			i.Worn = strings.Contains(parts[1], "worn")
 
 			if err := st.SetCurrentStoreable(i); err != nil {
@@ -139,31 +139,31 @@ func readItem(l line.Line, st *status.Status, a *adventure.Adventure) error {
 			return err
 		}
 
-		label, err := a.DB.AddLabel(labelName)
+		labelID, _, err := a.DB.CreateLabelFromString(labelName, false)
 		if err != nil {
 			return cerr.ErrInvalidLabel.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
 				WithFilename(st.CurrentFilename()).AddErr(err)
 		}
 
-		if err := st.SetCurrentLabel(label); err != nil {
+		if err := st.SetCurrentLabelID(labelID); err != nil {
 			return err
 		}
 
-		nounLabel, err := a.DB.AddLabel(nounName)
+		nounLabelID, _, err := a.DB.CreateLabelFromString(nounName, false)
 		if err != nil {
 			return cerr.ErrInvalidLabel.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
 				WithFilename(st.CurrentFilename()).AddErr(err)
 		}
 
-		i.NounID = nounLabel.ID
+		i.NounID = nounLabelID
 
-		adjLabel, err := a.DB.AddLabel(adjName)
+		adjLabelID, _, err := a.DB.CreateLabelFromString(adjName, false)
 		if err != nil {
 			return cerr.ErrInvalidLabel.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
 				WithFilename(st.CurrentFilename()).AddErr(err)
 		}
 
-		i.AdjectiveID = adjLabel.ID
+		i.AdjectiveID = adjLabelID
 
 		if err := st.SetCurrentStoreable(i); err != nil {
 			return err

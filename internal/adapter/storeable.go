@@ -1,9 +1,11 @@
 package adapter
 
-import "github.com/jorgefuertes/thenewquill/internal/adventure/id"
+import "github.com/jorgefuertes/thenewquill/internal/adventure/database/primitive"
 
 type Storeable interface {
-	GetID() id.ID
-	SetID(i id.ID) Storeable
+	GetID() primitive.ID
+	SetID(id primitive.ID)
+	GetLabelID() primitive.ID
+	SetLabelID(id primitive.ID)
 	Validate(allowNoID bool) error
 }

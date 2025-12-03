@@ -1,59 +1,46 @@
 package location
 
 import (
-	"github.com/jorgefuertes/thenewquill/internal/adventure/db"
-	"github.com/jorgefuertes/thenewquill/internal/adventure/id"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/database"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/database/primitive"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 )
 
 type Service struct {
-	db *db.DB
+	db *database.DB
 }
 
-func NewService(d *db.DB) *Service {
-	return &Service{db: d}
+func NewService(db *database.DB) *Service {
+	return &Service{db: db}
 }
 
-func (s *Service) Create(l Location) error {
-	if err := s.db.Append(l); err != nil {
-		return err
-	}
-
-	return nil
+func (s *Service) Create(loc *Location) (primitive.ID, error) {
+	return s.db.Create(loc)
 }
 
-func (s *Service) Update(l Location) error {
-	return s.db.Update(l)
+func (s *Service) Update(loc *Location) error {
+	return s.db.Update(loc)
 }
 
-func (s *Service) Get(id id.ID) (Location, error) {
-	i := Location{}
-	err := s.db.Get(id, &i)
+func (s *Service) Get(id primitive.ID) (*Location, error) {
+	loc := &Location{}
+	err := s.db.Get(id, &loc)
 
-	return i, err
+	return loc, err
 }
 
-func (s *Service) All() []Location {
-	locations := make([]Location, 0)
-
-	q := s.db.Query(db.FilterByKind(kind.Location))
-	var location Location
-	for q.Next(&location) {
-		locations = append(locations, location)
-	}
-
-	return locations
-}
-
-func (s *Service) FindByLabel(labelName string) (Location, error) {
-	label, err := s.db.GetLabelByName(labelName)
+func (s *Service) GetByLabel(labelOrString any) (*Location, error) {
+	label, err := primitive.LabelFromLabelOrString(labelOrString)
 	if err != nil {
-		return Location{}, err
+		return nil, err
 	}
 
-	return s.Get(label.ID)
+	loc := &Location{}
+	err = s.db.GetByLabel(label, loc)
+
+	return loc, err
 }
 
 func (s *Service) Count() int {
-	return s.db.CountByKind(kind.Location)
+	return s.db.Count(database.FilterByKind(kind.Location))
 }

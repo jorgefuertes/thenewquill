@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/jorgefuertes/thenewquill/internal/adapter"
-	"github.com/jorgefuertes/thenewquill/internal/adventure/id"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/database/primitive"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 	"github.com/jorgefuertes/thenewquill/internal/util"
 )
@@ -41,11 +41,11 @@ func Import(s string) Character {
 
 	c := Character{}
 
-	c.ID = id.FromString(fields[IDFieldIndex])
-	c.NounID = id.FromString(fields[NounFieldIndex])
-	c.AdjectiveID = id.FromString(fields[AdjFieldIndex])
+	c.ID = primitive.IDFromString(fields[IDFieldIndex])
+	c.NounID = primitive.IDFromString(fields[NounFieldIndex])
+	c.AdjectiveID = primitive.IDFromString(fields[AdjFieldIndex])
 	c.Description = fields[DescFieldIndex]
-	c.LocationID = id.FromString(fields[LocFieldIndex])
+	c.LocationID = primitive.IDFromString(fields[LocFieldIndex])
 	c.Created = util.StringToBool(fields[CreatedFieldIndex])
 	c.Human = util.StringToBool(fields[HumanFieldIndex])
 

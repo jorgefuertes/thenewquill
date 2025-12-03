@@ -3,17 +3,20 @@ package line_test
 import (
 	"testing"
 
+	"github.com/jorgefuertes/thenewquill/internal/adventure/database/primitive"
 	"github.com/jorgefuertes/thenewquill/internal/compiler/line"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
+const testString = "this is a test"
+
 func TestGetTextForLabel(t *testing.T) {
 	tests := []struct {
 		name        string
 		lineText    string
-		label       string
+		label       primitive.Label
 		expected    string
 		shouldMatch bool
 	}{
@@ -71,7 +74,7 @@ func TestGetTextForLabel(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			l := line.New(tt.lineText, 0)
-			result, ok := l.GetTextForLabelName(tt.label)
+			result, ok := l.GetTextForLabel(tt.label)
 			require.Equal(t, tt.shouldMatch, ok)
 			assert.Equal(t, tt.expected, result)
 		})
@@ -79,17 +82,17 @@ func TestGetTextForLabel(t *testing.T) {
 }
 
 func TestGetTextForFirstFoundLabelName(t *testing.T) {
-	l := line.New(`desc: "this is a test"`, 0)
-	result, ok := l.GetTextForFirstFoundLabelName("desc", "description")
+	l := line.New(`desc: "`+testString+`"`, 0)
+	result, ok := l.GetTextForFirstFoundLabel("desc", "description")
 	require.True(t, ok)
-	assert.Equal(t, "this is a test", result)
+	assert.Equal(t, testString, result)
 
-	result, ok = l.GetTextForFirstFoundLabelName("title", "desc")
+	result, ok = l.GetTextForFirstFoundLabel("title", "desc")
 	require.True(t, ok)
-	assert.Equal(t, "this is a test", result)
+	assert.Equal(t, testString, result)
 
-	l = line.New(`title: "this is a test"`, 0)
-	result, ok = l.GetTextForFirstFoundLabelName("foo", "bar", "title", "desc")
+	l = line.New(`title: "`+testString+`"`, 0)
+	result, ok = l.GetTextForFirstFoundLabel("foo", "bar", "title", "desc")
 	require.True(t, ok)
-	assert.Equal(t, "this is a test", result)
+	assert.Equal(t, testString, result)
 }

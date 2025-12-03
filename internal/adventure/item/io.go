@@ -3,7 +3,8 @@ package item
 import (
 	"fmt"
 
-	"github.com/jorgefuertes/thenewquill/internal/adventure/id"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/database/primitive"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 	"github.com/jorgefuertes/thenewquill/internal/util"
 )
 
@@ -23,7 +24,7 @@ const (
 
 func (i Item) Export() string {
 	return fmt.Sprintf("%d|%d|%d|%d|%s|%d|%d|%s|%s|%s|%s",
-		i.GetKind().Int(),
+		kind.Item,
 		i.ID,
 		i.NounID,
 		i.AdjectiveID,
@@ -41,9 +42,9 @@ func Import(s string) (Item, error) {
 	fields := util.SplitIntoFields(s)
 
 	i := Item{}
-	i.ID = id.FromString(fields[IDFieldIndex])
-	i.NounID = id.FromString(fields[NounFieldIndex])
-	i.AdjectiveID = id.FromString(fields[AdjFieldIndex])
+	i.ID = primitive.IDFromString(fields[IDFieldIndex])
+	i.NounID = primitive.IDFromString(fields[NounFieldIndex])
+	i.AdjectiveID = primitive.IDFromString(fields[AdjFieldIndex])
 	i.Description = fields[DescFieldIndex]
 	i.Weight = util.StringToInt(fields[WeightFieldIndex])
 	i.MaxWeight = util.StringToInt(fields[MaxWeightFieldIndex])

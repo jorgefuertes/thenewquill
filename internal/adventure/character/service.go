@@ -1,45 +1,29 @@
 package character
 
 import (
-	"github.com/jorgefuertes/thenewquill/internal/adventure/db"
-	"github.com/jorgefuertes/thenewquill/internal/adventure/id"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/database"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 )
 
 type Service struct {
-	db *db.DB
+	db *database.DB
 }
 
-func NewService(d *db.DB) *Service {
-	return &Service{db: d}
+func NewService(db *database.DB) *Service {
+	return &Service{db: db}
 }
 
-func (s *Service) Create(c Character) error {
-	if err := s.db.Append(c); err != nil {
-		return err
-	}
-
-	return nil
+func (s *Service) DB() *database.DB {
+	return s.db
 }
 
-func (s *Service) Update(c Character) error {
-	return s.db.Update(c)
-}
-
-func (s *Service) Get(id id.ID) (Character, error) {
-	c := Character{}
-	err := s.db.Get(id, &c)
-
-	return c, err
-}
-
-func (s *Service) GetHuman() (Character, error) {
-	chars := s.db.Query(db.FilterByKind(kind.Character), db.Filter("Human", db.Equal, true))
+func (s *Service) GetHuman() (*Character, error) {
+	chars := s.db.Query(database.FilterByKind(kind.Character), database.Filter("Human", database.Equal, true))
 	defer chars.Close()
 
-	var c Character
-	if !chars.Next(&c) {
-		return Character{}, ErrNoHuman
+	c := &Character{}
+	if err := chars.First(c); err != nil {
+		return nil, err
 	}
 
 	return c, nil
@@ -51,15 +35,6 @@ func (s *Service) HasHuman() bool {
 	return err == nil
 }
 
-func (s *Service) FindByLabel(labelName string) (Character, error) {
-	label, err := s.db.GetLabelByName(labelName)
-	if err != nil {
-		return Character{}, err
-	}
-
-	return s.Get(label.ID)
-}
-
 func (s *Service) Count() int {
-	return s.db.CountByKind(kind.Character)
+	return s.db.Count(database.FilterByKind(kind.Character))
 }

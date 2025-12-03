@@ -2,8 +2,8 @@ package item
 
 import (
 	"github.com/jorgefuertes/thenewquill/internal/adapter"
-	"github.com/jorgefuertes/thenewquill/internal/adventure/db"
-	"github.com/jorgefuertes/thenewquill/internal/adventure/id"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/database"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/database/primitive"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 )
 
@@ -15,9 +15,9 @@ func (s *Service) Weight(i Item) int {
 	w := i.Weight
 
 	items := s.db.Query(
-		db.FilterByKind(kind.Item),
-		db.Filter("At", db.Equal, i.ID),
-		db.Filter("Container", db.Equal, true),
+		database.FilterByKind(kind.Item),
+		database.Filter("At", database.Equal, i.ID),
+		database.Filter("Container", database.Equal, true),
 	)
 
 	var item Item
@@ -35,12 +35,12 @@ func (s *Service) Move(i *Item, to adapter.Storeable) error {
 
 	switch kind.KindOf(to) {
 	case kind.Item:
-		container, ok := to.(Item)
+		container, ok := to.(*Item)
 		if !ok {
 			return ErrCannotAssertIntoItem
 		}
 
-		if s.Weight(*i)+s.Weight(container) > container.MaxWeight {
+		if s.Weight(*i)+s.Weight(*container) > container.MaxWeight {
 			return ErrContainerCantCarrySoMuch
 		}
 
@@ -51,16 +51,16 @@ func (s *Service) Move(i *Item, to adapter.Storeable) error {
 		return ErrInvalidTo
 	}
 
-	return s.Update(*i)
+	return s.Update(i)
 }
 
-func (s *Service) GetItemContainer(item Item) (Item, error) {
+func (s *Service) GetItemContainer(item Item) (*Item, error) {
 	return s.Get(item.At)
 }
 
 // IsContained returns true if the given item is contained in any container
 func (s *Service) IsContained(item Item) bool {
-	if item.At == id.Undefined {
+	if item.At == primitive.UndefinedID {
 		return false
 	}
 
@@ -69,11 +69,11 @@ func (s *Service) IsContained(item Item) bool {
 	return err != nil
 }
 
-func (s *Service) Contents(id id.ID) []Item {
+func (s *Service) Contents(id primitive.ID) []Item {
 	items := make([]Item, 0)
 
 	var item Item
-	q := s.db.Query(db.FilterByKind(kind.Item), db.Filter("At", db.Equal, id))
+	q := s.db.Query(database.FilterByKind(kind.Item), database.Filter("At", database.Equal, id))
 	for q.Next(&item) {
 		items = append(items, item)
 	}

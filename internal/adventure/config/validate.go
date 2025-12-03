@@ -4,12 +4,16 @@ import (
 	"errors"
 	"fmt"
 	"slices"
+
+	"github.com/jorgefuertes/thenewquill/internal/adventure/database"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/database/primitive"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 )
 
 var allowedLanguages = []string{"en", "es"}
 
 func (v Param) Validate(allowNoID bool) error {
-	if err := v.ID.Validate(false); err != nil && !allowNoID {
+	if err := v.ID.ValidateID(false); err != nil && !allowNoID {
 		return err
 	}
 
@@ -20,34 +24,37 @@ func (v Param) Validate(allowNoID bool) error {
 	return nil
 }
 
-func (s *Service) ValidateAll() error {
-	seen := []string{}
+func ValidateAll(db *database.DB) error {
+	seen := []primitive.Label{}
 
-	for _, v := range s.All() {
-		if err := v.Validate(false); err != nil {
+	res := db.Query(database.FilterByKind(kind.Param))
+
+	p := Param{}
+	for res.Next(p) {
+		if err := p.Validate(false); err != nil {
 			return err
 		}
 
-		label, err := s.db.GetLabel(v.ID)
+		l, err := db.GetLabel(p.LabelID)
 		if err != nil {
 			return err
 		}
 
-		if !isKeyAllowed(label.Name) {
+		if !isLabelAllowed(l) {
 			return ErrUnrecognizedConfigField
 		}
 
-		if label.Name == "lang" && !slices.Contains(allowedLanguages, fmt.Sprintf("%v", v.V)) {
+		if l == "lang" && !slices.Contains(allowedLanguages, fmt.Sprintf("%v", p.V)) {
 			return ErrUnrecognizedLanguage
 		}
 
-		seen = append(seen, label.Name)
+		seen = append(seen, l)
 	}
 
 	// check required
-	for _, allowed := range allowedFields {
-		if !slices.Contains(seen, allowed.labelName) && allowed.required {
-			return errors.Join(ErrMissingConfigField, fmt.Errorf("label %q not found", allowed.labelName))
+	for _, allowed := range allowedFieldLabels {
+		if !slices.Contains(seen, allowed.label) && allowed.required {
+			return errors.Join(ErrMissingConfigField, fmt.Errorf("label %q not found", allowed.label))
 		}
 	}
 

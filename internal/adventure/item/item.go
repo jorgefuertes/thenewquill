@@ -2,29 +2,29 @@ package item
 
 import (
 	"github.com/jorgefuertes/thenewquill/internal/adapter"
-	"github.com/jorgefuertes/thenewquill/internal/adventure/id"
-	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/database/primitive"
 )
 
 type Item struct {
-	ID          id.ID
-	NounID      id.ID
-	AdjectiveID id.ID
+	ID          primitive.ID
+	LabelID     primitive.ID
+	NounID      primitive.ID
+	AdjectiveID primitive.ID
 	Description string
 	Weight      int
 	MaxWeight   int
 	Container   bool
 	Wearable    bool
 	Created     bool
-	At          id.ID
+	At          primitive.ID
 	Worn        bool
 }
 
-var _ adapter.Storeable = Item{}
+var _ adapter.Storeable = &Item{}
 
-func New(nounID id.ID, adjectiveID id.ID) Item {
-	return Item{
-		ID:          id.Undefined,
+func New(id, nounID, adjectiveID primitive.ID) *Item {
+	return &Item{
+		ID:          id,
 		NounID:      nounID,
 		AdjectiveID: adjectiveID,
 		Weight:      0,
@@ -32,16 +32,18 @@ func New(nounID id.ID, adjectiveID id.ID) Item {
 	}
 }
 
-func (i Item) SetID(id id.ID) adapter.Storeable {
+func (i *Item) SetID(id primitive.ID) {
 	i.ID = id
-
-	return i
 }
 
-func (i Item) GetID() id.ID {
+func (i Item) GetID() primitive.ID {
 	return i.ID
 }
 
-func (i Item) GetKind() kind.Kind {
-	return kind.Item
+func (i *Item) SetLabelID(id primitive.ID) {
+	i.LabelID = id
+}
+
+func (i Item) GetLabelID() primitive.ID {
+	return i.LabelID
 }

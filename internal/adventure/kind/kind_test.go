@@ -3,6 +3,7 @@ package kind_test
 import (
 	"testing"
 
+	"github.com/jorgefuertes/thenewquill/internal/adapter"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/character"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/config"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/item"
@@ -30,6 +31,7 @@ func TestKindString(t *testing.T) {
 	}{
 		{"None", kind.None, "none"},
 		{"Config", kind.Param, "config"},
+		{"Param", kind.Param, "config"},
 		{"Variable", kind.Variable, "var"},
 		{"Word", kind.Word, "word"},
 		{"Message", kind.Message, "message"},
@@ -112,18 +114,16 @@ func TestFromString(t *testing.T) {
 func TestKindOf(t *testing.T) {
 	testCases := []struct {
 		name     string
-		input    any
+		input    adapter.Storeable
 		expected kind.Kind
 	}{
-		{"Pointer to Item", &item.Item{}, kind.Item},
-		{"Item", item.Item{}, kind.Item},
-		{"Character", character.Character{}, kind.Character},
-		{"Location", location.Location{}, kind.Location},
-		{"Word", word.Word{}, kind.Word},
-		{"Message", message.Message{}, kind.Message},
-		{"Config", config.Param{}, kind.Param},
-		{"Config pointer", &config.Param{}, kind.Param},
-		{"Variable", variable.Variable{}, kind.Variable},
+		{"Item", &item.Item{}, kind.Item},
+		{"Character", &character.Character{}, kind.Character},
+		{"Location", &location.Location{}, kind.Location},
+		{"Word", &word.Word{}, kind.Word},
+		{"Message", &message.Message{}, kind.Message},
+		{"Config", &config.Param{}, kind.Param},
+		{"Variable", &variable.Variable{}, kind.Variable},
 		{"None", nil, kind.None},
 	}
 

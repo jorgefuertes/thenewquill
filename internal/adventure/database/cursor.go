@@ -1,4 +1,4 @@
-package db
+package database
 
 import (
 	"reflect"
@@ -41,26 +41,29 @@ func (c *cursor) Next(dst any) bool {
 	return true
 }
 
-func (c *cursor) First(dst any) bool {
+func (c *cursor) First(dst any) error {
 	dstValue := reflect.ValueOf(dst)
 	if dstValue.Kind() != reflect.Ptr {
-		return false
+		return ErrDstMustBePointer
 	}
 
 	if len(c.regs) == 0 {
-		return false
+		return ErrNotFound
 	}
 
 	dstValue.Elem().Set(reflect.ValueOf(c.regs[0]))
 
-	return true
+	return nil
 }
 
-func (d *DB) Query(filters ...filter) *cursor {
+func (db *DB) Query(filters ...filter) *cursor {
 	c := &cursor{i: 0, regs: make([]adapter.Storeable, 0)}
 
-	for _, r := range d.Data {
-		if matches(r, filters...) {
+	db.lock()
+	defer db.unlock()
+
+	for _, r := range db.data {
+		if db.matches(r, filters...) {
 			c.regs = append(c.regs, r)
 		}
 	}

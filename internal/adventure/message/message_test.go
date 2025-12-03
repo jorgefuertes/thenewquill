@@ -3,11 +3,17 @@ package message_test
 import (
 	"testing"
 
-	"github.com/jorgefuertes/thenewquill/internal/adventure/id"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/database/primitive"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/message"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+)
+
+const (
+	noCoinsInTheBox = "There's no coins in the box."
+	oneCoinInTheBox = "There's one coin in the box."
+	helloWorld      = "Hello, World!"
 )
 
 func TestMessages(t *testing.T) {
@@ -26,11 +32,11 @@ func TestMessages(t *testing.T) {
 		{
 			name: "plain",
 			msg: message.Message{
-				Text: "Hello, World!",
+				Text: helloWorld,
 			},
 			calls: []msgCall{
-				{args: []any{}, want: "Hello, World!"},
-				{args: []any{0, 1}, want: "Hello, World!"},
+				{args: []any{}, want: helloWorld},
+				{args: []any{0, 1}, want: helloWorld},
 			},
 		},
 		{
@@ -59,22 +65,22 @@ func TestMessages(t *testing.T) {
 		{
 			name: "pluralization",
 			msg: message.Message{
-				Text: "There's no coins in the box.",
+				Text: noCoinsInTheBox,
 				Plurals: [2]string{
-					"There's one coin in the box.",
+					oneCoinInTheBox,
 					"There's _ coins in the box.",
 				},
 			},
 			calls: []msgCall{
-				{args: []any{0}, want: "There's no coins in the box."},
-				{args: []any{1}, want: "There's one coin in the box."},
+				{args: []any{0}, want: noCoinsInTheBox},
+				{args: []any{1}, want: oneCoinInTheBox},
 				{args: []any{2}, want: "There's 2 coins in the box."},
 				{args: []any{18}, want: "There's 18 coins in the box."},
 				{args: []any{1.5}, want: "There's 1.50 coins in the box."},
-				{args: []any{"zero"}, want: "There's no coins in the box."},
-				{args: []any{"one"}, want: "There's one coin in the box."},
-				{args: []any{"una"}, want: "There's one coin in the box."},
-				{args: []any{"1"}, want: "There's one coin in the box."},
+				{args: []any{"zero"}, want: noCoinsInTheBox},
+				{args: []any{"one"}, want: oneCoinInTheBox},
+				{args: []any{"una"}, want: oneCoinInTheBox},
+				{args: []any{"1"}, want: oneCoinInTheBox},
 				{args: []any{"a lot of"}, want: "There's a lot of coins in the box."},
 				{args: []any{true}, want: "There's true coins in the box."},
 			},
@@ -94,25 +100,25 @@ func TestMessages(t *testing.T) {
 }
 
 func TestStoreable(t *testing.T) {
-	m := message.New("Hello, World!")
+	m := message.New(primitive.UndefinedID, helloWorld)
 	require.NotEmpty(t, m)
-	assert.Equal(t, "Hello, World!", m.String())
+	assert.Equal(t, helloWorld, m.String())
 
-	m = message.New("No coins.")
+	m = message.New(primitive.UndefinedID, "No coins.")
 	m.SetPlurals([2]string{"One coin.", "Many coins."})
 	assert.Equal(t, "No coins.", m.String())
 	assert.Equal(t, "One coin.", m.Stringf(1))
 	assert.Equal(t, "Many coins.", m.Stringf(2))
 
-	m.ID = id.ID(5)
-	assert.Equal(t, id.ID(5), m.GetID())
+	m.ID = primitive.ID(5)
+	assert.Equal(t, primitive.ID(5), m.GetID())
 
-	s := m.SetID(id.ID(10))
-	assert.Equal(t, id.ID(10), s.GetID())
+	m.SetID(primitive.ID(10))
+	assert.Equal(t, primitive.ID(10), m.GetID())
 
-	assert.Equal(t, kind.Message, m.GetKind())
+	assert.Equal(t, kind.Message, kind.KindOf(m))
 
-	m = message.New("No one")
+	m = message.New(primitive.UndefinedID, "No one")
 	m.SetPlural(message.One, "Only one")
 	m.SetPlural(message.Many, "Many")
 	assert.Equal(t, "No one", m.String())
@@ -121,22 +127,22 @@ func TestStoreable(t *testing.T) {
 }
 
 func TestValidate(t *testing.T) {
-	m := message.New("Hello, World!")
+	m := message.New(primitive.UndefinedID, helloWorld)
 	require.Error(t, m.Validate(false))
-	assert.ErrorIs(t, id.ErrUndefined, m.Validate(false))
+	assert.ErrorIs(t, primitive.ErrUndefinedID, m.Validate(false))
 
-	m.ID = id.ID(3)
+	m.ID = primitive.ID(3)
 	require.Error(t, m.Validate(false))
-	assert.ErrorIs(t, id.ErrInvalid, m.Validate(false))
+	assert.ErrorIs(t, primitive.ErrInvalidID, m.Validate(false))
 
-	m.ID = id.ID(4)
+	m.ID = primitive.ID(4)
 	require.NoError(t, m.Validate(false))
 
 	m.Text = ""
 	require.Error(t, m.Validate(false))
 	assert.ErrorIs(t, message.ErrUndefinedText, m.Validate(false))
 
-	m.Text = "Hello, World!"
+	m.Text = helloWorld
 	m.Plurals[message.One] = "One"
 	require.Error(t, m.Validate(false))
 	assert.ErrorIs(t, message.ErrUndefinedPlural, m.Validate(false))

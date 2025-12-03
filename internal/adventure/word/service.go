@@ -1,79 +1,66 @@
 package word
 
 import (
-	"github.com/jorgefuertes/thenewquill/internal/adventure/db"
-	"github.com/jorgefuertes/thenewquill/internal/adventure/id"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/database"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/database/primitive"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 )
 
 type Service struct {
-	db *db.DB
+	db *database.DB
 }
 
-func NewService(d *db.DB) *Service {
+func NewService(d *database.DB) *Service {
 	return &Service{db: d}
 }
 
-func (s *Service) Create(w Word) error {
-	if err := s.db.Append(w); err != nil {
-		return err
-	}
-
-	return nil
+func (s *Service) Create(w *Word) (primitive.ID, error) {
+	return s.db.Create(w)
 }
 
-func (s *Service) Update(w Word) error {
+func (s *Service) Update(w *Word) error {
 	return s.db.Update(w)
 }
 
-func (s *Service) Get(id id.ID) (Word, error) {
-	i := Word{}
-	err := s.db.Get(id, &i)
+func (s *Service) Get(id primitive.ID) (*Word, error) {
+	w := &Word{}
+	err := s.db.Get(id, &w)
 
-	return i, err
+	return w, err
 }
 
-func (s *Service) All() []Word {
-	words := make([]Word, 0)
+func (s *Service) GetByLabel(label primitive.Label) (*Word, error) {
+	w := &Word{}
+	err := s.db.GetByLabel(label, w)
 
-	q := s.db.Query(db.FilterByKind(kind.Word))
-	var word Word
-	for q.Next(&word) {
-		words = append(words, word)
-	}
-
-	return words
+	return w, err
 }
 
-func (s *Service) FindByLabel(labelName string) (Word, error) {
-	label, err := s.db.GetLabelByName(labelName)
+func (s *Service) First(label primitive.Label) (*Word, error) {
+	cursor := s.db.Query(database.FilterByKind(kind.Word))
+	defer cursor.Close()
+
+	labelID, err := s.db.GetLabelID(label)
 	if err != nil {
-		return Word{}, err
+		return nil, err
 	}
 
-	return s.Get(label.ID)
-}
-
-func (s *Service) First(t WordType, syn string) (Word, error) {
-	for _, w := range s.All() {
-		if w.Is(t, syn) {
+	w := &Word{}
+	for cursor.Next(w) {
+		if w.LabelID == labelID {
 			return w, nil
+		}
+
+		for _, syn := range w.Synonyms {
+			if syn == label.String() {
+				return w, nil
+			}
 		}
 	}
 
-	return Word{}, db.ErrNotFound
-}
-
-func (s *Service) FirstOfAny(syn string) (Word, error) {
-	for _, w := range s.All() {
-		if w.HasSynonym(syn) {
-			return w, nil
-		}
-	}
-
-	return Word{}, db.ErrNotFound
+	return nil, database.ErrNotFound
 }
 
 func (s *Service) Count() int {
-	return s.db.CountByKind(kind.Word)
+	return s.db.Count(database.FilterByKind(kind.Word))
 }

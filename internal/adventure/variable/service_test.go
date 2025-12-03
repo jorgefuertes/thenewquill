@@ -1,17 +1,17 @@
 package variable_test
 
 import (
-	"fmt"
 	"testing"
 
-	"github.com/jorgefuertes/thenewquill/internal/adventure/db"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/database"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/database/primitive"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/variable"
 	"github.com/stretchr/testify/require"
 )
 
 func TestService(t *testing.T) {
-	d := db.New()
-	svc := variable.NewService(d)
+	db := database.New()
+	svc := variable.NewService(db)
 
 	setCases := []struct {
 		name           string
@@ -25,14 +25,6 @@ func TestService(t *testing.T) {
 		{"float", 333.22, false, false},
 	}
 
-	updateCases := []struct {
-		name      string
-		val       any
-		wantError bool
-	}{
-		{"number", 666, false},
-	}
-
 	getCases := []struct {
 		name      string
 		val       any
@@ -44,54 +36,76 @@ func TestService(t *testing.T) {
 		{"not-found", "", true},
 	}
 
-	// SET
+	updateCases := []struct {
+		name      string
+		val       any
+		wantError bool
+	}{
+		{"number", 666, false},
+		{"flashligt.on", true, false},
+	}
+
 	for _, tc := range setCases {
 		t.Run(tc.name, func(t *testing.T) {
-			label, err := d.AddLabel(tc.name)
-			if tc.wantLabelError {
-				require.Error(t, err)
-			} else {
-				require.NoError(t, err)
-				require.True(t, label.ID.IsDefined())
-				require.NotEmpty(t, label.Name)
+			var id primitive.ID
+			var err error
 
-				v := variable.New(label.ID, tc.val)
-				err := svc.Set(v)
+			t.Run("set", func(t *testing.T) {
+				id, err = svc.CreateWithLabel(tc.name, tc.val)
 				if tc.wantSetError {
 					require.Error(t, err)
-				} else {
-					require.NoError(t, err)
+
+					return
 				}
-			}
+
+				require.NoError(t, err)
+				require.True(t, id.IsDefinedID())
+			})
+
+			t.Run("get by id", func(t *testing.T) {
+				v, err := svc.Get(id)
+				require.NoError(t, err)
+				require.True(t, v.LabelID.IsDefinedID())
+				require.Equal(t, tc.val, v.Value)
+			})
+
+			t.Run("by label", func(t *testing.T) {
+				v, err := svc.GetByLabel(tc.name)
+				require.NoError(t, err)
+				require.Equal(t, id, v.ID)
+				require.Equal(t, tc.val, v.Value)
+			})
 		})
 	}
 
-	// GET
 	for _, tc := range getCases {
 		t.Run(tc.name, func(t *testing.T) {
-			label, err := d.GetLabelByName(tc.name)
+			v, err := svc.GetByLabel(tc.name)
 			if tc.wantError {
 				require.Error(t, err)
-			} else {
-				require.NoError(t, err)
-				require.True(t, label.ID.IsDefined())
-				require.NotEmpty(t, label.Name)
 
-				v, err := svc.Get(label.ID)
-				require.NoError(t, err)
+				return
+			}
 
-				switch val := tc.val.(type) {
-				case int:
-					require.Equal(t, val, v.Int())
-				case float32, float64:
-					require.Equal(t, val, v.Float())
-				case bool:
-					require.Equal(t, val, v.Bool())
-				case string:
-					require.Equal(t, tc.val, v.String())
-				default:
-					t.Errorf("unexpected type: %T", tc.val)
-				}
+			require.NoError(t, err)
+			require.True(t, v.ID.IsDefinedID())
+			require.True(t, v.LabelID.IsDefinedID())
+
+			label, err := db.GetLabel(v.LabelID)
+			require.NoError(t, err)
+			require.Equal(t, tc.name, label)
+
+			switch val := tc.val.(type) {
+			case int:
+				require.Equal(t, val, v.Int())
+			case float32, float64:
+				require.Equal(t, val, v.Float())
+			case bool:
+				require.Equal(t, val, v.Bool())
+			case string:
+				require.Equal(t, tc.val, v.String())
+			default:
+				t.Errorf("unexpected type: %T", tc.val)
 			}
 		})
 	}
@@ -99,31 +113,24 @@ func TestService(t *testing.T) {
 	// UPDATE
 	for _, tc := range updateCases {
 		t.Run(tc.name, func(t *testing.T) {
-			label, err := d.GetLabelByName(tc.name)
-			if tc.wantError {
-				require.Error(t, err)
-			} else {
-				require.NoError(t, err)
-				require.True(t, label.ID.IsDefined())
-				require.NotEmpty(t, label.Name)
-
-				v := variable.New(label.ID, tc.val)
-				err := svc.Set(v)
+			t.Run("update", func(t *testing.T) {
+				v, err := svc.GetByLabel(primitive.Label(tc.name))
 				require.NoError(t, err)
 
-				v, err = svc.Get(label.ID)
+				v.Set(tc.val)
+			})
+
+			t.Run("check", func(t *testing.T) {
+				tcVar := &variable.Variable{}
+				tcVar.Set(tc.val)
+
+				v, err := svc.GetByLabel(primitive.Label(tc.name))
 				require.NoError(t, err)
-				require.Equal(t, fmt.Sprint(tc.val), v.String())
-			}
+
+				require.Equal(t, tcVar.Value, v.Value)
+			})
 		})
 	}
-
-	// ALL
-	t.Run("All", func(t *testing.T) {
-		all := svc.All()
-		require.NotEmpty(t, all)
-		require.NotZero(t, len(all))
-	})
 
 	// VALIDATE
 	t.Run("Validate", func(t *testing.T) {

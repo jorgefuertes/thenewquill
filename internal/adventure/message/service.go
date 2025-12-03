@@ -1,59 +1,57 @@
 package message
 
 import (
-	"github.com/jorgefuertes/thenewquill/internal/adventure/db"
-	"github.com/jorgefuertes/thenewquill/internal/adventure/id"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/database"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/database/primitive"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 )
 
 type Service struct {
-	db *db.DB
+	db *database.DB
 }
 
-func NewService(d *db.DB) *Service {
-	return &Service{db: d}
+func NewService(db *database.DB) *Service {
+	return &Service{db: db}
 }
 
-func (s *Service) Create(m Message) error {
-	if err := s.db.Append(m); err != nil {
-		return err
-	}
-
-	return nil
+func (s *Service) Create(msg *Message) (primitive.ID, error) {
+	return s.db.Create(msg)
 }
 
-func (s *Service) Update(m Message) error {
-	return s.db.Update(m)
+func (s *Service) Update(msg *Message) error {
+	return s.db.Update(msg)
 }
 
-func (s *Service) Get(id id.ID) (Message, error) {
-	i := Message{}
-	err := s.db.Get(id, &i)
+func (s *Service) Get(id primitive.ID) (*Message, error) {
+	msg := &Message{}
+	err := s.db.Get(id, &msg)
 
-	return i, err
+	return msg, err
 }
 
-func (s *Service) All() []Message {
-	words := make([]Message, 0)
+func (s *Service) GetByLabel(label primitive.Label) (*Message, error) {
+	msg := &Message{}
+	err := s.db.GetByLabel(label, msg)
 
-	q := s.db.Query(db.FilterByKind(kind.Message))
-	var word Message
-	for q.Next(&word) {
-		words = append(words, word)
-	}
-
-	return words
-}
-
-func (s *Service) FindByLabel(labelName string) (Message, error) {
-	label, err := s.db.GetLabelByName(labelName)
-	if err != nil {
-		return Message{}, err
-	}
-
-	return s.Get(label.ID)
+	return msg, err
 }
 
 func (s *Service) Count() int {
-	return s.db.CountByKind(kind.Message)
+	return s.db.Count(database.FilterByKind(kind.Message))
+}
+
+func (s *Service) GetHuman() (*Message, error) {
+	chars := s.db.Query(database.FilterByKind(kind.Message), database.Filter("Human", database.Equal, true))
+	defer chars.Close()
+
+	var loc *Message
+	err := chars.First(loc)
+
+	return loc, err
+}
+
+func (s *Service) HasHuman() bool {
+	_, err := s.GetHuman()
+
+	return err == nil
 }

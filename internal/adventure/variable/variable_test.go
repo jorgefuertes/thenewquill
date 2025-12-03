@@ -3,22 +3,24 @@ package variable_test
 import (
 	"testing"
 
-	"github.com/jorgefuertes/thenewquill/internal/adventure/id"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/database/primitive"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/variable"
 	"github.com/stretchr/testify/assert"
 )
 
+const nonConvertible = "non-convertible"
+
 func TestVariable(t *testing.T) {
 	t.Run("SetID", func(t *testing.T) {
-		v := variable.New(id.ID(5), 2)
-		assert.Equal(t, id.ID(5), v.GetID())
-		s := v.SetID(6)
-		assert.Equal(t, id.ID(6), s.GetID())
+		v := variable.New(primitive.ID(5), primitive.UndefinedID, 2)
+		assert.Equal(t, primitive.ID(5), v.GetID())
+		v.SetID(6)
+		assert.Equal(t, primitive.ID(6), v.GetID())
 	})
 
 	t.Run("int", func(t *testing.T) {
-		v := variable.New(0, 2)
+		v := variable.New(primitive.UndefinedID, primitive.UndefinedID, 2)
 		assert.Equal(t, kind.Variable, kind.KindOf(v))
 		assert.Equal(t, 2, v.Int())
 		assert.Equal(t, "2", v.String())
@@ -32,7 +34,7 @@ func TestVariable(t *testing.T) {
 		v.Set(9.1)
 		assert.Equal(t, 9.1, v.Float())
 
-		v.Set([]byte("non-convertible"))
+		v.Set([]byte(nonConvertible))
 		assert.Equal(t, 0, v.Int())
 
 		v.Set(true)
@@ -49,7 +51,7 @@ func TestVariable(t *testing.T) {
 	})
 
 	t.Run("Float", func(t *testing.T) {
-		v := variable.New(1, 2.5)
+		v := variable.New(1, primitive.UndefinedID, 2.5)
 		assert.Equal(t, 2.5, v.Float())
 
 		v.Set(true)
@@ -61,12 +63,12 @@ func TestVariable(t *testing.T) {
 		v.Set("2.5")
 		assert.Equal(t, 2.5, v.Float())
 
-		v.Set([]byte("non-convertible"))
+		v.Set([]byte(nonConvertible))
 		assert.Equal(t, 0.0, v.Float())
 	})
 
 	t.Run("String", func(t *testing.T) {
-		v := variable.New(1, "test-string")
+		v := variable.New(1, primitive.UndefinedID, "test-string")
 		assert.Equal(t, "test-string", v.String())
 
 		v.Set(2)
@@ -98,7 +100,7 @@ func TestVariable(t *testing.T) {
 	})
 
 	t.Run("Bool", func(t *testing.T) {
-		v := variable.New(1, true)
+		v := variable.New(1, primitive.UndefinedID, true)
 		assert.Equal(t, true, v.Bool())
 
 		v.Set(2)
@@ -116,7 +118,7 @@ func TestVariable(t *testing.T) {
 		v.Set(byte('a'))
 		assert.Equal(t, true, v.Bool())
 
-		v.Set([]byte("non-convertible"))
+		v.Set([]byte(nonConvertible))
 		assert.Equal(t, false, v.Bool())
 
 		testCases := []struct {

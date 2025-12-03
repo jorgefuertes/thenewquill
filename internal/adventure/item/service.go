@@ -2,69 +2,60 @@ package item
 
 import (
 	"github.com/jorgefuertes/thenewquill/internal/adapter"
-	"github.com/jorgefuertes/thenewquill/internal/adventure/db"
-	"github.com/jorgefuertes/thenewquill/internal/adventure/id"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/database"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/database/primitive"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 )
 
 type Service struct {
-	db *db.DB
+	db *database.DB
 }
 
-func NewService(d *db.DB) *Service {
+func NewService(d *database.DB) *Service {
 	return &Service{db: d}
 }
 
-func (s *Service) Create(i Item) error {
-	if err := s.db.Append(i); err != nil {
-		return err
-	}
-
-	return nil
+func (s *Service) DB() *database.DB {
+	return s.db
 }
 
-func (s *Service) Update(i Item) error {
+func (s *Service) Create(i *Item) (primitive.ID, error) {
+	return s.db.Create(i)
+}
+
+func (s *Service) Update(i *Item) error {
 	return s.db.Update(i)
 }
 
-func (s *Service) Get(id id.ID) (Item, error) {
-	i := Item{}
+func (s *Service) Get(id primitive.ID) (*Item, error) {
+	i := &Item{}
 	err := s.db.Get(id, &i)
 
 	return i, err
 }
 
-func (s *Service) All() []Item {
-	items := make([]Item, 0)
-
-	q := s.db.Query(db.FilterByKind(kind.Item))
-	var item Item
-	for q.Next(&item) {
-		items = append(items, item)
+func (s *Service) GetByLabel(labelOrString any) (*Item, error) {
+	label, err := primitive.LabelFromLabelOrString(labelOrString)
+	if err != nil {
+		return nil, err
 	}
 
-	return items
+	i := &Item{}
+	err = s.db.GetByLabel(label, i)
+
+	return i, err
+}
+
+func (s *Service) Count() int {
+	return s.db.Count(database.FilterByKind(kind.Item))
 }
 
 func (s *Service) SetCreated(i *Item, created bool) error {
 	i.Created = created
 
-	return s.Update(*i)
+	return s.Update(i)
 }
 
 func (s *Service) IsAt(i Item, at adapter.Storeable) bool {
 	return i.At == at.GetID()
-}
-
-func (s *Service) FindByLabel(labelName string) (Item, error) {
-	label, err := s.db.GetLabelByName(labelName)
-	if err != nil {
-		return Item{}, err
-	}
-
-	return s.Get(label.ID)
-}
-
-func (s *Service) Count() int {
-	return s.db.CountByKind(kind.Item)
 }

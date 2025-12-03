@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/jorgefuertes/thenewquill/internal/adventure/config"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/database/primitive"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/message"
 	"github.com/jorgefuertes/thenewquill/internal/compiler/rg"
@@ -122,12 +123,12 @@ func (l Line) AsLocationLabel() (string, bool) {
 
 // AsLocationDescription returns the location description and true if it was found
 func (l Line) AsLocationDescription() (string, bool) {
-	return l.GetTextForLabelName("desc")
+	return l.GetTextForLabel("desc")
 }
 
 // AsLocationTitle returns the location title and true if it was found
 func (l Line) AsLocationTitle() (string, bool) {
-	return l.GetTextForLabelName("title")
+	return l.GetTextForLabel("title")
 }
 
 // AsLocationConns returns the location connections and true if it was found
@@ -167,12 +168,12 @@ func (l Line) AsLabelNounAdjDeclaration() (labelName, nounName, adjetiveName str
 }
 
 // AsConfig returns the config field name and value and true if it was found
-func (l Line) AsConfig() (string, string, bool) {
-	for _, f := range config.AllowedFieldNames() {
-		v, ok := l.GetTextForLabelName(f)
+func (l Line) AsConfig() (primitive.Label, string, bool) {
+	for _, label := range config.AllowedFieldLabels() {
+		v, ok := l.GetTextForLabel(label)
 
 		if ok {
-			return f, v, true
+			return label, v, true
 		}
 	}
 

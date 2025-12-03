@@ -6,7 +6,7 @@ import (
 	"strconv"
 
 	"github.com/jorgefuertes/thenewquill/internal/adapter"
-	"github.com/jorgefuertes/thenewquill/internal/adventure/id"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/database/primitive"
 	"github.com/jorgefuertes/thenewquill/pkg/log"
 )
 
@@ -23,26 +23,33 @@ var (
 )
 
 type Variable struct {
-	ID    id.ID
-	Value string
+	ID      primitive.ID
+	LabelID primitive.ID
+	Value   string
 }
 
-var _ adapter.Storeable = Variable{}
+var _ adapter.Storeable = &Variable{}
 
-func New(id id.ID, value any) Variable {
-	v := Variable{ID: id}
+func New(id, labelID primitive.ID, value any) *Variable {
+	v := &Variable{ID: id, LabelID: labelID}
 	v.Set(value)
 
 	return v
 }
 
-func (v Variable) SetID(id id.ID) adapter.Storeable {
+func (v *Variable) SetID(id primitive.ID) {
 	v.ID = id
-
-	return v
 }
 
-func (v Variable) GetID() id.ID {
+func (v Variable) GetID() primitive.ID {
+	return v.ID
+}
+
+func (v *Variable) SetLabelID(id primitive.ID) {
+	v.ID = id
+}
+
+func (v Variable) GetLabelID() primitive.ID {
 	return v.ID
 }
 
@@ -126,4 +133,8 @@ func (v Variable) IsTrue() bool {
 
 func (v Variable) IsFalse() bool {
 	return !v.Bool()
+}
+
+func (v *Variable) IsEqual(other *Variable) bool {
+	return v.Value == other.Value
 }

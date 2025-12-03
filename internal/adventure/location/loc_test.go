@@ -1,11 +1,11 @@
 package location_test
 
 import (
-	"errors"
+	"fmt"
 	"testing"
 
-	"github.com/jorgefuertes/thenewquill/internal/adventure/db"
-	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/database"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/database/primitive"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/location"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/word"
 
@@ -14,76 +14,99 @@ import (
 )
 
 func TestLocations(t *testing.T) {
-	createWords := func(d *db.DB) {
-		words := []word.Word{
-			{Type: word.Noun, Synonyms: []string{"north", "n"}},
-			{Type: word.Noun, Synonyms: []string{"east", "e"}},
-			{Type: word.Noun, Synonyms: []string{"west", "w"}},
-			{Type: word.Noun, Synonyms: []string{"south", "s"}},
+	db := database.New()
+	wordStore := word.NewService(db)
+	locationStore := location.NewService(db)
+
+	t.Run("Words", func(t *testing.T) {
+		wordsToCreate := [][]string{
+			{"north", "n"},
+			{"east", "e"},
+			{"west", "w"},
+			{"south", "s"},
 		}
 
-		for _, w := range words {
-			id, err := d.Create(w.Synonyms[0], w)
-			require.NoError(t, err, "cannot create word %q", w.Synonyms[0])
-			assert.NotEmpty(t, id, "word %q should have an id", w.Synonyms[0])
-		}
-	}
+		// create words
+		for _, syns := range wordsToCreate {
+			labelID, err := db.CreateLabelIfNotExists(syns[0], false)
+			require.NoError(t, err)
 
-	createLocations := func(d *db.DB) {
-		definitions := []struct {
-			label string
-			title string
-			desc  string
-			conns map[string]string
+			w := word.New(word.Noun, syns...)
+			w.SetLabelID(labelID)
+
+			id, err := wordStore.Create(w)
+			require.NoError(t, err, "cannot create word %q", syns[0])
+			assert.False(t, id.IsUndefinedID(), "word %q should have an id", syns[0])
+		}
+
+		require.Equal(t, len(wordsToCreate), wordStore.Count())
+	})
+
+	t.Run("Locations", func(t *testing.T) {
+		const (
+			loc1 primitive.Label = "loc-001"
+			loc2 primitive.Label = "loc-002"
+			loc3 primitive.Label = "loc-003"
+			loc4 primitive.Label = "loc-004"
+			loc5 primitive.Label = "loc-005"
+			loc6 primitive.Label = "loc-006"
+			loc7 primitive.Label = "loc-007"
+			loc8 primitive.Label = "loc-008"
+			loc9 primitive.Label = "loc-009"
+		)
+
+		locData := []struct {
+			label primitive.Label
+			conns map[primitive.Label]primitive.Label
 		}{
-			{"loc-001", "loc 001 title", "loc 001 desc", map[string]string{"east": "loc-002"}},
-			{"loc-002", "loc 002 title", "loc 002 desc", map[string]string{"west": "loc-001"}},
-			{"loc-003", "loc 003 title", "loc 003 desc", map[string]string{"north": "loc-004", "south": "loc-005"}},
-			{"loc-004", "loc 004 title", "loc 004 desc", map[string]string{"east": "loc-003"}},
-			{"loc-005", "loc 005 title", "loc 005 desc", map[string]string{"west": "loc-003"}},
-			{"loc-006", "loc 006 title", "loc 006 desc", map[string]string{"north": "loc-007", "south": "loc-008"}},
-			{"loc-007", "loc 007 title", "loc 007 desc", map[string]string{"east": "loc-006"}},
-			{"loc-008", "loc 008 title", "loc 008 desc", map[string]string{"west": "loc-006"}},
-			{"loc-009", "loc 009 title", "loc 009 desc", map[string]string{"north": "loc-001", "south": "loc-002"}},
+			{loc1, map[primitive.Label]primitive.Label{"east": loc2}},
+			{loc2, map[primitive.Label]primitive.Label{"west": loc1}},
+			{loc3, map[primitive.Label]primitive.Label{"north": loc4, "south": loc5}},
+			{loc4, map[primitive.Label]primitive.Label{"east": loc3}},
+			{loc5, map[primitive.Label]primitive.Label{"west": loc3}},
+			{loc6, map[primitive.Label]primitive.Label{"north": loc7, "south": loc8}},
+			{loc7, map[primitive.Label]primitive.Label{"east": loc6}},
+			{loc8, map[primitive.Label]primitive.Label{"west": loc6}},
+			{loc9, map[primitive.Label]primitive.Label{"north": loc1, "south": loc2}},
 		}
 
-		for _, locDef := range definitions {
-			l := location.New(locDef.title, locDef.desc)
-			for k, v := range locDef.conns {
-				var w word.Word
-				err := d.GetByLabel(k, &w)
-				require.NoError(t, err)
+		// create locations without connections
+		for _, cur := range locData {
+			title := fmt.Sprintf("%s title", cur.label)
+			desc := fmt.Sprintf("%s desc", cur.label)
+			loc := location.New(title, desc)
 
-				destLabel, err := d.GetLabelByName(v)
-				if errors.Is(err, db.ErrNotFound) {
-					// create the label
-					var addErr error
-					destLabel, addErr = d.AddLabel(v)
-					require.NoError(t, addErr)
-				} else if err != nil {
-					require.NoError(t, err)
-				}
+			labelID, err := db.CreateLabelIfNotExists(cur.label, false)
+			require.NoError(t, err, "cannot create label %q", cur.label)
 
-				l.SetConn(w.GetID(), destLabel.ID)
+			loc.SetLabelID(labelID)
+
+			id, err := locationStore.Create(loc)
+			require.NoError(t, err, "creating location %q", cur.label)
+			assert.True(t, id.IsDefinedID(), "location %q should have an id", cur.label)
+		}
+
+		require.Equal(t, len(locData), locationStore.Count())
+
+		// create connections
+		for _, cur := range locData {
+			loc, err := locationStore.GetByLabel(cur.label)
+			require.NoError(t, err, "cannot get location %q", cur.label)
+
+			for wordLabel, dstLabel := range cur.conns {
+				word, err := wordStore.GetByLabel(wordLabel)
+				require.NoError(t, err, "cannot get destination word %q", wordLabel)
+
+				dst, err := locationStore.GetByLabel(dstLabel)
+				require.NoError(t, err, "cannot get destination location %q", dstLabel)
+
+				loc.SetConn(word.ID, dst.ID)
+				require.NoError(t, err, "cannot set connection %q->%q", wordLabel, dstLabel)
 			}
 
-			_, err := d.Create(locDef.label, l)
-			require.NoError(t, err, "creating location %q", locDef.label)
+			// update location
+			err = locationStore.Update(loc)
+			require.NoError(t, err, "cannot update location %q", cur.label)
 		}
-	}
-
-	newDatabase := func() *db.DB {
-		d := db.New()
-		createWords(d)
-		createLocations(d)
-
-		return d
-	}
-
-	t.Run("create locations", func(t *testing.T) {
-		d := newDatabase()
-		require.NotZero(t, d.Count())
-		require.NotZero(t, d.Query(db.FilterByKind(kind.Word)).Count())
-		require.NotZero(t, d.Query(db.FilterByKind(kind.Location)).Count())
 	})
 }

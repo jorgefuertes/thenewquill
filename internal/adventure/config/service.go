@@ -1,69 +1,97 @@
 package config
 
 import (
-	"github.com/jorgefuertes/thenewquill/internal/adventure/db"
-	"github.com/jorgefuertes/thenewquill/internal/adventure/id"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/database"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/database/primitive"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 )
 
 type Service struct {
-	db *db.DB
+	db *database.DB
 }
 
-func NewService(d *db.DB) *Service {
-	return &Service{db: d}
+func NewService(db *database.DB) *Service {
+	return &Service{db: db}
 }
 
-func (s *Service) Set(field string, v string) error {
-	if !isKeyAllowed(field) {
-		return ErrUnrecognizedConfigField
-	}
-
-	l, err := s.db.AddLabel(field)
+func (s *Service) Set(labelOrString any, v string) (primitive.ID, error) {
+	label, err := primitive.LabelFromLabelOrString(labelOrString)
 	if err != nil {
-		return err
+		return primitive.UndefinedID, err
 	}
 
-	c := Param{ID: l.ID, V: v}
-	if err := s.db.Append(c); err != nil {
-		return err
+	if !isLabelAllowed(label) {
+		return primitive.UndefinedID, ErrUnrecognizedConfigField
 	}
 
-	return nil
-}
+	if s.Exists(label) {
+		p, err := s.GetByLabel(label)
+		if err != nil {
+			return primitive.UndefinedID, err
+		}
 
-func (s *Service) Update(v Param) error {
-	return s.db.Update(v)
-}
+		p.V = v
 
-func (s *Service) Get(id id.ID) (Param, error) {
-	v := Param{}
-	err := s.db.Get(id, &v)
-
-	return v, err
-}
-
-func (s *Service) GetField(name string) string {
-	v := Param{}
-	if err := s.db.GetByLabel(name, &v); err != nil {
-		return ""
+		return p.ID, s.db.Update(p)
 	}
 
-	return v.V
-}
-
-func (s *Service) All() []Param {
-	values := make([]Param, 0)
-
-	q := s.db.Query(db.FilterByKind(kind.Param))
-	var value Param
-	for q.Next(&value) {
-		values = append(values, value)
+	labelID, err := s.db.CreateLabelIfNotExists(label, false)
+	if err != nil {
+		return primitive.UndefinedID, err
 	}
 
-	return values
+	p := New(primitive.UndefinedID, labelID, v)
+
+	return s.db.Create(p)
+}
+
+func (s *Service) Get(id primitive.ID) (*Param, error) {
+	p := &Param{}
+	err := s.db.Get(id, p)
+
+	return p, err
+}
+
+func (s *Service) GetByLabel(labelOrString any) (*Param, error) {
+	label, err := primitive.LabelFromLabelOrString(labelOrString)
+	if err != nil {
+		return nil, err
+	}
+
+	p := &Param{}
+	err = s.db.GetByLabel(label, p)
+
+	return p, err
+}
+
+func (s *Service) Exists(labelOrString any) bool {
+	label, err := primitive.LabelFromLabelOrString(labelOrString)
+	if err != nil {
+		return false
+	}
+
+	labelID, err := s.db.GetLabelID(label)
+	if err != nil {
+		return false
+	}
+
+	return s.db.Exists(database.FilterByLabelID(labelID), database.FilterByKind(kind.Param))
 }
 
 func (s *Service) Count() int {
-	return s.db.CountByKind(kind.Param)
+	return s.db.Count(database.FilterByKind(kind.Param))
+}
+
+func (s *Service) GetField(labelOrString any) string {
+	label, err := primitive.LabelFromLabelOrString(labelOrString)
+	if err != nil {
+		return ""
+	}
+
+	c, err := s.GetByLabel(label)
+	if err != nil {
+		return ""
+	}
+
+	return c.V
 }

@@ -5,17 +5,17 @@ import (
 	"strings"
 
 	"github.com/jorgefuertes/thenewquill/internal/adapter"
-	"github.com/jorgefuertes/thenewquill/internal/adventure/id"
-	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/database/primitive"
 )
 
 type Message struct {
-	ID      id.ID
+	ID      primitive.ID
+	LabelID primitive.ID
 	Text    string
 	Plurals [2]string
 }
 
-var _ adapter.Storeable = Message{}
+var _ adapter.Storeable = &Message{}
 
 type Plural int
 
@@ -36,24 +36,26 @@ func PluralFromString(s string) Plural {
 	}
 }
 
-func New(text string) Message {
-	m := Message{ID: id.Undefined, Text: text, Plurals: [2]string{}}
+func New(id primitive.ID, text string) Message {
+	m := Message{ID: id, Text: text, Plurals: [2]string{}}
 
 	return m
 }
 
-func (m Message) SetID(id id.ID) adapter.Storeable {
+func (m *Message) SetID(id primitive.ID) {
 	m.ID = id
-
-	return m
 }
 
-func (m Message) GetID() id.ID {
+func (m Message) GetID() primitive.ID {
 	return m.ID
 }
 
-func (m Message) GetKind() kind.Kind {
-	return kind.Message
+func (m *Message) SetLabelID(id primitive.ID) {
+	m.LabelID = id
+}
+
+func (m Message) GetLabelID() primitive.ID {
+	return m.LabelID
 }
 
 func (m *Message) SetPlural(pluralName Plural, text string) {

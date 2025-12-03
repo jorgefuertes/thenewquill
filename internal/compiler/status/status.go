@@ -6,9 +6,9 @@ import (
 	"slices"
 
 	"github.com/jorgefuertes/thenewquill/internal/adapter"
-	"github.com/jorgefuertes/thenewquill/internal/adventure/db"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/database"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/database/primitive"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
-	"github.com/jorgefuertes/thenewquill/internal/adventure/label"
 	cerr "github.com/jorgefuertes/thenewquill/internal/compiler/compiler_error"
 	"github.com/jorgefuertes/thenewquill/internal/compiler/line"
 )
@@ -16,14 +16,14 @@ import (
 const stackSize = 5
 
 type currentStoreable struct {
-	label     label.Label
+	labelID   primitive.ID
 	storeable adapter.Storeable
 	line      line.Line
 	filename  string
 }
 
 type Status struct {
-	db        *db.DB
+	db        *database.DB
 	Section   kind.Kind
 	Comment   line.Multi
 	MultiLine line.Multi
@@ -32,7 +32,7 @@ type Status struct {
 	filenames []string
 }
 
-func New(d *db.DB) *Status {
+func New(d *database.DB) *Status {
 	return &Status{
 		db:        d,
 		Section:   kind.None,
@@ -88,7 +88,9 @@ func (s *Status) SaveCurrentStoreable() cerr.CompilerError {
 		return cerr.OK
 	}
 
-	_, err := s.db.Create(s.current.label.Name, s.current.storeable)
+	s.current.storeable.SetLabelID(s.current.labelID)
+
+	_, err := s.db.Create(s.current.storeable)
 	if err != nil {
 		return cerr.ErrDBCreate.WithStack(s.Stack).WithSection(s.Section).WithLine(s.current.line).
 			WithFilename(s.current.filename).AddErr(err)
@@ -121,13 +123,13 @@ func (s *Status) SetCurrentStoreable(storeable adapter.Storeable) error {
 	return nil
 }
 
-func (s *Status) SetCurrentLabel(label label.Label) error {
+func (s *Status) SetCurrentLabelID(id primitive.ID) error {
 	if s.current != nil {
 		return errors.New("unexpected: cannot set a new label, current storeable already set")
 	}
 
 	s.current = &currentStoreable{
-		label:    label,
+		labelID:  id,
 		line:     s.Stack[len(s.Stack)-1],
 		filename: s.CurrentFilename(),
 	}
@@ -135,12 +137,12 @@ func (s *Status) SetCurrentLabel(label label.Label) error {
 	return nil
 }
 
-func (s *Status) GetCurrentLabel() label.Label {
+func (s *Status) GetCurrentLabelID() primitive.ID {
 	if s.current == nil {
-		return label.Undefined
+		return primitive.UndefinedID
 	}
 
-	return s.current.label
+	return s.current.labelID
 }
 
 func (s *Status) ClearCurrent() {

@@ -19,6 +19,40 @@ func TestRegexps(t *testing.T) {
 		matches     []string
 	}{
 		{
+			name:        "valid label",
+			text:        "foo",
+			rg:          rg.Label,
+			shouldMatch: true,
+		},
+		{
+			name:        "valid label 2",
+			text:        "foo_bar",
+			rg:          rg.Label,
+			shouldMatch: true,
+		},
+		{
+			name:        "valid label 3",
+			text:        "foo-bar",
+			rg:          rg.Label,
+			shouldMatch: true,
+		},
+		{
+			name:        "valid label 4",
+			text:        "foo.bar",
+			rg:          rg.Label,
+			shouldMatch: true,
+		},
+		{
+			name: "invalid label",
+			text: "foo&bar",
+			rg:   rg.Label,
+		},
+		{
+			name: "invalid label 2",
+			text: "$foobar",
+			rg:   rg.Label,
+		},
+		{
 			name:        "blank",
 			text:        "    \t",
 			rg:          rg.Blank,
@@ -174,14 +208,14 @@ func TestRegexps(t *testing.T) {
 			matches:     []string{"foo.zero", "No foos."},
 		},
 		{
-			name:        "pluralized message",
+			name:        "pluralized message 2",
 			text:        `foo.one: "One foo."`,
 			rg:          rg.Msg,
 			shouldMatch: true,
 			matches:     []string{"foo.one", "One foo."},
 		},
 		{
-			name:        "pluralized message",
+			name:        "pluralized message 3",
 			text:        `foo.many: "We have _ foos."`,
 			rg:          rg.MsgPlural,
 			shouldMatch: true,
@@ -194,7 +228,7 @@ func TestRegexps(t *testing.T) {
 			shouldMatch: false,
 		},
 		{
-			name:        "not pluralized message",
+			name:        "not pluralized message 2",
 			text:        `foo.bar: "We have _ foos."`,
 			rg:          rg.Msg,
 			shouldMatch: false,

@@ -5,33 +5,40 @@ import (
 	"strings"
 
 	"github.com/jorgefuertes/thenewquill/internal/adapter"
-	"github.com/jorgefuertes/thenewquill/internal/adventure/id"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/database/primitive"
 	"github.com/jorgefuertes/thenewquill/internal/util"
 )
 
 type Word struct {
-	ID       id.ID
+	ID       primitive.ID
+	LabelID  primitive.ID
 	Type     WordType
 	Synonyms []string
 }
 
-var _ adapter.Storeable = Word{}
+var _ adapter.Storeable = &Word{}
 
-func New(t WordType, synonyms ...string) Word {
+func New(t WordType, synonyms ...string) *Word {
 	for i, s := range synonyms {
 		synonyms[i] = strings.ToLower(s)
 	}
 
-	return Word{ID: id.Undefined, Type: t, Synonyms: synonyms}
+	return &Word{ID: primitive.UndefinedID, Type: t, Synonyms: synonyms}
 }
 
-func (w Word) SetID(id id.ID) adapter.Storeable {
+func (w *Word) SetID(id primitive.ID) {
 	w.ID = id
-
-	return w
 }
 
-func (w Word) GetID() id.ID {
+func (w Word) GetID() primitive.ID {
+	return w.ID
+}
+
+func (w *Word) SetLabelID(id primitive.ID) {
+	w.ID = id
+}
+
+func (w Word) GetLabelID() primitive.ID {
 	return w.ID
 }
 

@@ -86,7 +86,7 @@ func main() {
 		if w.Is(word.Noun, "salidas") {
 			o.Print("Las salidas son: ")
 			for i, c := range loc.Conns {
-				o.Print(a.DB.GetLabelName(c.WordID))
+				o.Print(a.DB.GetLabelName(c.LabelID))
 				if i < len(loc.Conns)-1 {
 					o.Print(", ")
 				} else {
@@ -100,7 +100,7 @@ func main() {
 					log.Fatal("Runtime Error: %s", err)
 				}
 
-				o.Printf("- %s->%s: %s\n", a.DB.GetLabelName(c.WordID), a.DB.GetLabelName(c.LocationID), conLoc.Title)
+				o.Printf("- %s->%s: %s\n", a.DB.GetLabelName(c.LabelID), a.DB.GetLabelName(c.LocationID), conLoc.Title)
 			}
 		}
 

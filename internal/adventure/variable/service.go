@@ -1,57 +1,57 @@
 package variable
 
 import (
-	"strings"
-
-	"github.com/jorgefuertes/thenewquill/internal/adventure/db"
-	"github.com/jorgefuertes/thenewquill/internal/adventure/id"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/database"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/database/primitive"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 )
 
 type Service struct {
-	db *db.DB
+	db *database.DB
 }
 
-func NewService(d *db.DB) *Service {
-	return &Service{db: d}
+func NewService(db *database.DB) *Service {
+	return &Service{db: db}
 }
 
-func (s *Service) Set(v Variable) error {
-	if s.db.Exists(db.FilterByID(v.GetID())) {
-		return s.db.Update(v)
+func (s *Service) Create(v *Variable) (primitive.ID, error) {
+	return s.db.Create(v)
+}
+
+func (s *Service) CreateWithLabel(labelOrString any, value any) (primitive.ID, error) {
+	labelID, err := s.db.CreateLabelIfNotExists(labelOrString, true)
+	if err != nil {
+		return primitive.UndefinedID, err
 	}
 
-	return s.db.Append(v)
+	v := New(primitive.UndefinedID, labelID, value)
+
+	return s.db.Create(v)
 }
 
-func (s *Service) Get(id id.ID) (Variable, error) {
-	var v Variable
-	err := s.db.Get(id, &v)
+func (s *Service) Update(v *Variable) error {
+	return s.db.Update(v)
+}
+
+func (s *Service) Get(id primitive.ID) (*Variable, error) {
+	v := &Variable{}
+	err := s.db.Get(id, v)
 
 	return v, err
 }
 
-func (s *Service) All() []Variable {
-	vars := make([]Variable, 0)
-
-	q := s.db.Query(db.FilterByKind(kind.Variable))
-	var varr Variable
-	for q.Next(&varr) {
-		vars = append(vars, varr)
-	}
-
-	return vars
-}
-
-func (s *Service) FindByLabel(paths ...string) (Variable, error) {
-	label, err := s.db.GetLabelByName(strings.Join(paths, "."))
+func (s *Service) GetByLabel(labelOrString any) (*Variable, error) {
+	label, err := primitive.LabelFromLabelOrString(labelOrString)
 	if err != nil {
-		return Variable{}, err
+		return nil, err
 	}
 
-	return s.Get(label.ID)
+	v := &Variable{}
+	err = s.db.GetByLabel(label, v)
+
+	return v, err
 }
 
 func (s *Service) Count() int {
-	return s.db.CountByKind(kind.Variable)
+	return s.db.Count(database.FilterByKind(kind.Variable))
 }

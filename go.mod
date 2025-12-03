@@ -4,7 +4,6 @@ go 1.25.3
 
 require (
 	github.com/drhodes/golorem v0.0.0-20220328165741-da82e5b29246
-	github.com/fxamacker/cbor/v2 v2.9.0
 	github.com/gdamore/tcell/v2 v2.9.0
 	github.com/jedib0t/go-pretty/v6 v6.7.0
 	github.com/mitchellh/go-wordwrap v1.0.1
@@ -15,9 +14,6 @@ require (
 require (
 	github.com/clipperhouse/stringish v0.1.1 // indirect
 	github.com/clipperhouse/uax29/v2 v2.3.0 // indirect
-	github.com/x448/float16 v0.8.4 // indirect
-	golang.org/x/tools/go/expect v0.1.1-deprecated // indirect
-	golang.org/x/tools/go/packages/packagestest v0.1.1-deprecated // indirect
 )
 
 require (

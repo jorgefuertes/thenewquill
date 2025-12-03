@@ -1,24 +1,29 @@
 package variable
 
 import (
-	"github.com/jorgefuertes/thenewquill/internal/adventure/db"
-	"github.com/jorgefuertes/thenewquill/internal/adventure/id"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/database"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/database/primitive"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 )
 
 func (v Variable) Validate(allowNoID bool) error {
-	if err := v.ID.Validate(false); err != nil && !allowNoID {
+	if err := v.ID.ValidateID(false); err != nil && !allowNoID {
 		return err
 	}
 
-	if v.ID < id.Min && !allowNoID {
-		return db.ErrInvalidLabelID
+	if v.ID < primitive.MinID && !allowNoID {
+		return primitive.ErrInvalidID
 	}
 
 	return nil
 }
 
 func (s Service) ValidateAll() error {
-	for _, v := range s.All() {
+	res := s.db.Query(database.FilterByKind(kind.Variable))
+	defer res.Close()
+
+	var v Variable
+	for res.Next(&v) {
 		if err := v.Validate(false); err != nil {
 			return err
 		}

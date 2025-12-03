@@ -84,13 +84,13 @@ func readLocation(l line.Line, st *status.Status, a *adventure.Adventure) error 
 			return err
 		}
 
-		label, err := a.DB.AddLabel(labelName)
+		labelID, _, err := a.DB.CreateLabelIfNotExists(labelName, false)
 		if err != nil {
 			return cerr.ErrInvalidLabel.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
 				WithFilename(st.CurrentFilename()).AddErr(err)
 		}
 
-		if err := st.SetCurrentLabel(label); err != nil {
+		if err := st.SetCurrentLabelID(labelID); err != nil {
 			return err
 		}
 

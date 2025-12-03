@@ -4,6 +4,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/jorgefuertes/thenewquill/internal/adventure/database/primitive"
 	"github.com/jorgefuertes/thenewquill/internal/compiler/rg"
 )
 
@@ -33,8 +34,8 @@ func (l Line) Number() int {
 }
 
 // GetTextForLabelName returns the text for the given label and true if it was found
-func (l Line) GetTextForLabelName(labelName string) (string, bool) {
-	re := regexp.MustCompile(`(?s)^\s*` + labelName + `:\s+["^(\\")]{1}(.+)["^(\\")]{1}`)
+func (l Line) GetTextForLabel(label primitive.Label) (string, bool) {
+	re := regexp.MustCompile(`(?s)^\s*` + label.String() + `:\s+["^(\\")]{1}(.+)["^(\\")]{1}`)
 
 	if !re.MatchString(l.text) {
 		return "", false
@@ -49,9 +50,9 @@ func (l Line) GetTextForLabelName(labelName string) (string, bool) {
 	return text, true
 }
 
-func (l Line) GetTextForFirstFoundLabelName(labelNames ...string) (string, bool) {
-	for _, labelName := range labelNames {
-		text, ok := l.GetTextForLabelName(labelName)
+func (l Line) GetTextForFirstFoundLabel(labels ...primitive.Label) (string, bool) {
+	for _, label := range labels {
+		text, ok := l.GetTextForLabel(label)
 		if ok {
 			return text, ok
 		}

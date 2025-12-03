@@ -73,6 +73,10 @@ func KindFromByte(b byte) Kind {
 }
 
 func KindFromString(s string) Kind {
+	if s == "" {
+		return None
+	}
+
 	s = strings.ToLower(s)
 
 	for sec, names := range kindNamesAndAliases() {
@@ -91,7 +95,7 @@ func KindOf(s any) Kind {
 
 	t := reflect.TypeOf(s)
 
-	if t.Kind() == reflect.Ptr {
+	for t.Kind() == reflect.Ptr {
 		t = t.Elem()
 	}
 

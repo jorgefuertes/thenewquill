@@ -2,16 +2,15 @@ package config
 
 import (
 	"github.com/jorgefuertes/thenewquill/internal/adapter"
-	"github.com/jorgefuertes/thenewquill/internal/adventure/id"
-	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/database/primitive"
 )
 
 type allowed struct {
-	labelName string
-	required  bool
+	label    primitive.Label
+	required bool
 }
 
-var allowedFields = []allowed{
+var allowedFieldLabels = []allowed{
 	{"title", true},
 	{"author", true},
 	{"description", true},
@@ -20,40 +19,47 @@ var allowedFields = []allowed{
 	{"language", true},
 }
 
-func AllowedFieldNames() []string {
-	fields := make([]string, 0)
+func AllowedFieldLabels() []primitive.Label {
+	fields := make([]primitive.Label, 0)
 
-	for _, allowed := range allowedFields {
-		fields = append(fields, allowed.labelName)
+	for _, allowed := range allowedFieldLabels {
+		fields = append(fields, allowed.label)
 	}
 
 	return fields
 }
 
 type Param struct {
-	ID id.ID
-	V  string
+	ID      primitive.ID
+	LabelID primitive.ID
+	V       string
 }
 
-var _ adapter.Storeable = Param{}
+func New(id, labelID primitive.ID, v string) *Param {
+	return &Param{ID: id, V: v}
+}
 
-func (v Param) GetID() id.ID {
+var _ adapter.Storeable = &Param{}
+
+func (v Param) GetID() primitive.ID {
 	return v.ID
 }
 
-func (v Param) GetKind() kind.Kind {
-	return kind.Param
-}
-
-func (v Param) SetID(id id.ID) adapter.Storeable {
+func (v *Param) SetID(id primitive.ID) {
 	v.ID = id
-
-	return v
 }
 
-func isKeyAllowed(key string) bool {
-	for _, allowed := range allowedFields {
-		if key == allowed.labelName {
+func (v Param) GetLabelID() primitive.ID {
+	return v.LabelID
+}
+
+func (v *Param) SetLabelID(id primitive.ID) {
+	v.LabelID = id
+}
+
+func isLabelAllowed(label primitive.Label) bool {
+	for _, allowed := range allowedFieldLabels {
+		if label == allowed.label {
 			return true
 		}
 	}

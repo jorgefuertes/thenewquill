@@ -1,18 +1,18 @@
 package message
 
 import (
-	"github.com/jorgefuertes/thenewquill/internal/adventure/db"
-	"github.com/jorgefuertes/thenewquill/internal/adventure/id"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/database"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/database/primitive"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 )
 
 func (m Message) Validate(allowNoID bool) error {
-	if err := m.ID.Validate(false); err != nil && !allowNoID {
+	if err := m.ID.ValidateID(false); err != nil && !allowNoID {
 		return err
 	}
 
-	if m.ID < id.Min && !allowNoID {
-		return id.ErrInvalid
+	if m.ID < primitive.MinID && !allowNoID {
+		return primitive.ErrInvalidID
 	}
 
 	if m.Text == "" {
@@ -29,7 +29,7 @@ func (m Message) Validate(allowNoID bool) error {
 }
 
 func (s *Service) ValidateAll() error {
-	msgs := s.db.Query(db.FilterByKind(kind.Message))
+	msgs := s.db.Query(database.FilterByKind(kind.Message))
 	defer msgs.Close()
 
 	var m Message

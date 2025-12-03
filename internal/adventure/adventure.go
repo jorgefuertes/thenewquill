@@ -7,8 +7,9 @@ import (
 
 	"github.com/jorgefuertes/thenewquill/internal/adventure/character"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/config"
-	"github.com/jorgefuertes/thenewquill/internal/adventure/db"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/database"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/item"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/label"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/location"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/message"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/variable"
@@ -18,7 +19,7 @@ import (
 const VERSION = 2
 
 type Adventure struct {
-	DB         *db.DB
+	DB         *database.DB
 	Config     *config.Service
 	Characters *character.Service
 	Items      *item.Service
@@ -29,17 +30,18 @@ type Adventure struct {
 }
 
 func New() *Adventure {
-	d := db.New()
+	d := database.New()
+	labels := label.NewService(d)
 
 	return &Adventure{
 		DB:         d,
-		Config:     config.NewService(d),
-		Characters: character.NewService(d),
-		Items:      item.NewService(d),
-		Messages:   message.NewService(d),
-		Words:      word.NewService(d),
-		Locations:  location.NewService(d),
-		Variables:  variable.NewService(d),
+		Config:     config.NewService(d, labels),
+		Characters: character.NewService(d, labels),
+		Items:      item.NewService(d, labels),
+		Messages:   message.NewService(d, labels),
+		Words:      word.NewService(d, labels),
+		Locations:  location.NewService(d, labels),
+		Variables:  variable.NewService(d, labels),
 	}
 }
 
@@ -70,7 +72,7 @@ func (a *Adventure) Validate() error {
 }
 
 func (a *Adventure) Export(path string) (int, error) {
-	if err := a.Config.Set("date", fmt.Sprintf("%d", time.Now().Unix())); err != nil {
+	if _, err := a.Config.Set("date", fmt.Sprintf("%d", time.Now().Unix())); err != nil {
 		return 0, err
 	}
 
@@ -78,9 +80,10 @@ func (a *Adventure) Export(path string) (int, error) {
 		return 0, err
 	}
 
-	return a.DB.Export(path)
+	// TODO: return a.DB.Export(path)
+	return 0, nil
 }
 
 func (a *Adventure) Import(path string) error {
-	return a.DB.Import(path)
+	return nil
 }

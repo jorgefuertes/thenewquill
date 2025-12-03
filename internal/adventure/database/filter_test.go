@@ -1,39 +1,11 @@
-package db
+package database
 
 import (
 	"testing"
 
-	"github.com/jorgefuertes/thenewquill/internal/adapter"
-	"github.com/jorgefuertes/thenewquill/internal/adventure/id"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/database/primitive"
 	"github.com/stretchr/testify/require"
 )
-
-type testStoreable struct {
-	ID      id.ID
-	Title   string
-	At      id.ID
-	OK      bool
-	NOOK    bool
-	Weight  int16
-	Names   []string
-	Numbers []int
-}
-
-var _ adapter.Storeable = testStoreable{}
-
-func (s testStoreable) GetID() id.ID {
-	return s.ID
-}
-
-func (s testStoreable) SetID(id id.ID) adapter.Storeable {
-	s.ID = id
-
-	return s
-}
-
-func (s testStoreable) Validate(allowNoID bool) error {
-	return nil
-}
 
 func TestMatches(t *testing.T) {
 	type testCase struct {
@@ -44,9 +16,9 @@ func TestMatches(t *testing.T) {
 	}
 
 	testItem := &testStoreable{
-		ID:      id.ID(7),
+		ID:      primitive.ID(7),
 		Title:   "This is just a Test Title",
-		At:      id.ID(10),
+		At:      primitive.ID(10),
 		OK:      true,
 		NOOK:    false,
 		Weight:  10,
@@ -56,15 +28,15 @@ func TestMatches(t *testing.T) {
 
 	testCases := []testCase{
 		{
-			name: "Equal id.ID",
+			name: "Equal primitive.ID",
 			sut:  testItem,
 			filters: []filter{
-				{Equal, "ID", id.ID(7)},
+				{Equal, "ID", primitive.ID(7)},
 			},
 			expected: true,
 		},
 		{
-			name: "Equal id.ID by number",
+			name: "Equal primitive.ID by number",
 			sut:  testItem,
 			filters: []filter{
 				{Equal, "ID", 7},
@@ -72,18 +44,18 @@ func TestMatches(t *testing.T) {
 			expected: true,
 		},
 		{
-			name: "Equal id.ID false",
+			name: "Equal primitive.ID false",
 			sut:  testItem,
 			filters: []filter{
-				{Equal, "ID", id.ID(23)},
+				{Equal, "ID", primitive.ID(23)},
 			},
 			expected: false,
 		},
 		{
-			name: "NotEqual id.ID",
+			name: "NotEqual primitive.ID",
 			sut:  testItem,
 			filters: []filter{
-				{NotEqual, "ID", id.ID(23)},
+				{NotEqual, "ID", primitive.ID(23)},
 			},
 			expected: true,
 		},
@@ -217,9 +189,11 @@ func TestMatches(t *testing.T) {
 		},
 	}
 
+	db := New()
+
 	for _, tt := range testCases {
 		t.Run(tt.name, func(t *testing.T) {
-			result := matches(tt.sut, tt.filters...)
+			result := db.matches(tt.sut, tt.filters...)
 			require.Equal(t, tt.expected, result, "Result is %t, expecting %t", result, tt.expected)
 		})
 	}

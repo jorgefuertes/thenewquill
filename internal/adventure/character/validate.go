@@ -3,12 +3,12 @@ package character
 import (
 	"fmt"
 
-	"github.com/jorgefuertes/thenewquill/internal/adventure/db"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/database"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 )
 
 func (c Character) Validate(allowNoID bool) error {
-	if err := c.ID.Validate(allowNoID); err != nil && !allowNoID {
+	if err := c.ID.ValidateID(allowNoID); err != nil && !allowNoID {
 		return err
 	}
 
@@ -16,29 +16,29 @@ func (c Character) Validate(allowNoID bool) error {
 		return ErrEmptyDescription
 	}
 
-	if err := c.NounID.Validate(false); err != nil {
+	if err := c.NounID.ValidateID(false); err != nil {
 		return fmt.Errorf("name ID %q: %w", c.NounID, err)
 	}
 
-	if err := c.AdjectiveID.Validate(true); err != nil {
+	if err := c.AdjectiveID.ValidateID(true); err != nil {
 		return fmt.Errorf("adjective ID %q: %w", c.AdjectiveID, err)
 	}
 
-	if err := c.LocationID.Validate(false); err != nil {
+	if err := c.LocationID.ValidateID(false); err != nil {
 		return fmt.Errorf("location ID %q: %w", c.LocationID, err)
 	}
 
 	return nil
 }
 
-func (s *Service) ValidateAll() error {
+func ValidateAll(db *database.DB) error {
 	humans := 0
 
-	chars := s.db.Query(db.FilterByKind(kind.Character))
+	chars := db.Query(database.FilterByKind(kind.Character))
 	defer chars.Close()
 
-	c := Character{}
-	for chars.Next(&c) {
+	c := &Character{}
+	for chars.Next(c) {
 		if err := c.Validate(false); err != nil {
 			return err
 		}

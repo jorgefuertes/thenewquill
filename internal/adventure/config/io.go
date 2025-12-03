@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/jorgefuertes/thenewquill/internal/adapter"
-	"github.com/jorgefuertes/thenewquill/internal/adventure/id"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/database/primitive"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 	"github.com/jorgefuertes/thenewquill/internal/util"
 )
@@ -18,7 +18,7 @@ const (
 )
 
 func (p Param) Export() string {
-	return fmt.Sprintf("%d|%d|%s\n", p.GetKind().Int(), p.ID, util.EscapeField(p.V))
+	return fmt.Sprintf("%d|%d|%s\n", kind.Param, p.ID, util.EscapeField(p.V))
 }
 
 func Import(s string) (Param, error) {
@@ -28,5 +28,5 @@ func Import(s string) (Param, error) {
 		return Param{}, fmt.Errorf("cannot import param %q: invalid kind %q", s, fields[KindFieldIndex])
 	}
 
-	return Param{ID: id.FromString(fields[IDFieldIndex]), V: fields[ValueFieldIndex]}, nil
+	return Param{ID: primitive.IDFromString(fields[IDFieldIndex]), V: fields[ValueFieldIndex]}, nil
 }

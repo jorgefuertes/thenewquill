@@ -1,4 +1,4 @@
-package db
+package database
 
 import (
 	"fmt"
@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/jorgefuertes/thenewquill/internal/adapter"
-	"github.com/jorgefuertes/thenewquill/internal/adventure/id"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/database/primitive"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
@@ -35,16 +35,39 @@ func FilterByKind(k kind.Kind) filter {
 	return filter{Equal, "kind", k}
 }
 
-func FilterByID(id id.ID) filter {
+func FilterByID(id primitive.ID) filter {
 	return filter{Equal, "id", id}
 }
 
-func matches(s adapter.Storeable, filters ...filter) bool {
+func FilterByLabelID(labelID primitive.ID) filter {
+	return filter{Equal, "labelid", labelID}
+}
+
+func FilterByLabel(labelOrString any) filter {
+	label, err := primitive.LabelFromLabelOrString(labelOrString)
+	if err != nil {
+		return filter{Equal, "label", "error: " + err.Error()}
+	}
+
+	return filter{Equal, "label", label}
+}
+
+func (db *DB) matches(s adapter.Storeable, filters ...filter) bool {
 	if len(filters) == 0 {
 		return false
 	}
 
 	for _, f := range filters {
+		if f.field == "label" {
+			id, _ := db.GetLabelID(f.value)
+
+			if s.GetLabelID() == id {
+				continue
+			}
+
+			return false
+		}
+
 		if f.field == "kind" {
 			if f.condition == Equal && f.value.(kind.Kind) == kind.KindOf(s) {
 				continue
