@@ -1,48 +1,40 @@
 package character
 
-import (
-	"github.com/jorgefuertes/thenewquill/internal/adapter"
-	"github.com/jorgefuertes/thenewquill/internal/adventure/database/primitive"
-)
-
 type Character struct {
-	ID          primitive.ID
-	LabelID     primitive.ID
-	NounID      primitive.ID
-	AdjectiveID primitive.ID
+	ID          uint32
+	LabelID     uint32
+	NounID      uint32
+	AdjectiveID uint32
 	Description string
-	LocationID  primitive.ID
+	LocationID  uint32
 	Created     bool
 	Human       bool
 }
 
-var _ adapter.Storeable = &Character{}
-
-func New(id, labelID, nounID, adjectiveID primitive.ID) *Character {
+func New(id, labelID, nounID, adjectiveID uint32) *Character {
 	return &Character{
 		ID:          id,
 		LabelID:     labelID,
 		NounID:      nounID,
 		AdjectiveID: adjectiveID,
 		Description: "",
-		LocationID:  primitive.UndefinedID,
 		Created:     false,
 		Human:       false,
 	}
 }
 
-func (c Character) GetID() primitive.ID {
+func (c Character) GetID() uint32 {
 	return c.ID
 }
 
-func (c *Character) SetID(id primitive.ID) {
+func (c *Character) SetID(id uint32) {
 	c.ID = id
 }
 
-func (c Character) GetLabelID() primitive.ID {
+func (c Character) GetLabelID() uint32 {
 	return c.LabelID
 }
 
-func (c *Character) SetLabelID(id primitive.ID) {
+func (c *Character) SetLabelID(id uint32) {
 	c.LabelID = id
 }

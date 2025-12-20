@@ -9,7 +9,7 @@ package io
 // 	"strings"
 
 // 	"github.com/fxamacker/cbor/v2"
-// 	"github.com/jorgefuertes/thenewquill/internal/adventure/database"
+// 	"github.com/jorgefuertes/thenewquill/internal/database"
 // 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 // 	"github.com/jorgefuertes/thenewquill/internal/util"
 // 	"github.com/jorgefuertes/thenewquill/pkg/log"

@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/jorgefuertes/thenewquill/internal/adventure/database"
-	"github.com/jorgefuertes/thenewquill/internal/adventure/database/primitive"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/location"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/word"
+	"github.com/jorgefuertes/thenewquill/internal/database"
+	"github.com/jorgefuertes/thenewquill/internal/database/primitive"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -31,8 +31,7 @@ func TestLocations(t *testing.T) {
 			labelID, err := db.CreateLabelIfNotExists(syns[0], false)
 			require.NoError(t, err)
 
-			w := word.New(word.Noun, syns...)
-			w.SetLabelID(labelID)
+			w := word.New(labelID, word.Noun, syns...)
 
 			id, err := wordStore.Create(w)
 			require.NoError(t, err, "cannot create word %q", syns[0])

@@ -6,17 +6,17 @@ import (
 	"slices"
 
 	"github.com/jorgefuertes/thenewquill/internal/adapter"
-	"github.com/jorgefuertes/thenewquill/internal/adventure/database"
-	"github.com/jorgefuertes/thenewquill/internal/adventure/database/primitive"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 	cerr "github.com/jorgefuertes/thenewquill/internal/compiler/compiler_error"
 	"github.com/jorgefuertes/thenewquill/internal/compiler/line"
+	"github.com/jorgefuertes/thenewquill/internal/database"
+	"github.com/jorgefuertes/thenewquill/internal/database/primitive"
 )
 
 const stackSize = 5
 
 type currentStoreable struct {
-	labelID   primitive.ID
+	labelID   uint32
 	storeable adapter.Storeable
 	line      line.Line
 	filename  string
@@ -123,7 +123,7 @@ func (s *Status) SetCurrentStoreable(storeable adapter.Storeable) error {
 	return nil
 }
 
-func (s *Status) SetCurrentLabelID(id primitive.ID) error {
+func (s *Status) SetCurrentLabelID(id uint32) error {
 	if s.current != nil {
 		return errors.New("unexpected: cannot set a new label, current storeable already set")
 	}
@@ -137,7 +137,7 @@ func (s *Status) SetCurrentLabelID(id primitive.ID) error {
 	return nil
 }
 
-func (s *Status) GetCurrentLabelID() primitive.ID {
+func (s *Status) GetCurrentLabelID() uint32 {
 	if s.current == nil {
 		return primitive.UndefinedID
 	}

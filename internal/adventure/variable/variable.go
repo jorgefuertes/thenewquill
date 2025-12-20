@@ -6,7 +6,6 @@ import (
 	"strconv"
 
 	"github.com/jorgefuertes/thenewquill/internal/adapter"
-	"github.com/jorgefuertes/thenewquill/internal/adventure/database/primitive"
 	"github.com/jorgefuertes/thenewquill/pkg/log"
 )
 
@@ -23,33 +22,33 @@ var (
 )
 
 type Variable struct {
-	ID      primitive.ID
-	LabelID primitive.ID
+	ID      uint32
+	LabelID uint32
 	Value   string
 }
 
 var _ adapter.Storeable = &Variable{}
 
-func New(id, labelID primitive.ID, value any) *Variable {
+func New(id, labelID uint32, value any) *Variable {
 	v := &Variable{ID: id, LabelID: labelID}
 	v.Set(value)
 
 	return v
 }
 
-func (v *Variable) SetID(id primitive.ID) {
+func (v *Variable) SetID(id uint32) {
 	v.ID = id
 }
 
-func (v Variable) GetID() primitive.ID {
+func (v Variable) GetID() uint32 {
 	return v.ID
 }
 
-func (v *Variable) SetLabelID(id primitive.ID) {
+func (v *Variable) SetLabelID(id uint32) {
 	v.ID = id
 }
 
-func (v Variable) GetLabelID() primitive.ID {
+func (v Variable) GetLabelID() uint32 {
 	return v.ID
 }
 

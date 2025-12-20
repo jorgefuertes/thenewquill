@@ -2,58 +2,34 @@ package config
 
 import (
 	"github.com/jorgefuertes/thenewquill/internal/adapter"
-	"github.com/jorgefuertes/thenewquill/internal/adventure/database/primitive"
+	"github.com/jorgefuertes/thenewquill/internal/database/primitive"
 )
 
-type allowed struct {
-	label    primitive.Label
-	required bool
-}
-
-var allowedFieldLabels = []allowed{
-	{"title", true},
-	{"author", true},
-	{"description", true},
-	{"version", true},
-	{"date", false},
-	{"language", true},
-}
-
-func AllowedFieldLabels() []primitive.Label {
-	fields := make([]primitive.Label, 0)
-
-	for _, allowed := range allowedFieldLabels {
-		fields = append(fields, allowed.label)
-	}
-
-	return fields
-}
-
 type Param struct {
-	ID      primitive.ID
-	LabelID primitive.ID
+	ID      uint32
+	LabelID uint32
 	V       string
 }
 
-func New(id, labelID primitive.ID, v string) *Param {
+func New(id, labelID uint32, v string) *Param {
 	return &Param{ID: id, V: v}
 }
 
 var _ adapter.Storeable = &Param{}
 
-func (v Param) GetID() primitive.ID {
+func (v Param) GetID() uint32 {
 	return v.ID
 }
 
-func (v *Param) SetID(id primitive.ID) {
+func (v *Param) SetID(id uint32) {
 	v.ID = id
 }
 
-func (v Param) GetLabelID() primitive.ID {
+func (v Param) GetLabelID() uint32 {
 	return v.LabelID
 }
 
-func (v *Param) SetLabelID(id primitive.ID) {
+func (v *Param) SetLabelID(id uint32) {
 	v.LabelID = id
 }
 

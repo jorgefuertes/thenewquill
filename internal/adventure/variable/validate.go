@@ -1,9 +1,9 @@
 package variable
 
 import (
-	"github.com/jorgefuertes/thenewquill/internal/adventure/database"
-	"github.com/jorgefuertes/thenewquill/internal/adventure/database/primitive"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
+	"github.com/jorgefuertes/thenewquill/internal/database"
+	"github.com/jorgefuertes/thenewquill/internal/database/primitive"
 )
 
 func (v Variable) Validate(allowNoID bool) error {

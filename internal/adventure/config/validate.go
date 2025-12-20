@@ -5,12 +5,49 @@ import (
 	"fmt"
 	"slices"
 
-	"github.com/jorgefuertes/thenewquill/internal/adventure/database"
-	"github.com/jorgefuertes/thenewquill/internal/adventure/database/primitive"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
+	"github.com/jorgefuertes/thenewquill/internal/database"
+	"github.com/jorgefuertes/thenewquill/internal/database/primitive"
 )
 
-var allowedLanguages = []string{"en", "es"}
+type allowed struct {
+	label    primitive.Label
+	required bool
+}
+
+type paramName string
+
+// TODO: Labels
+const (
+	ParamTitle       paramName = "title"
+	ParamAuthor      paramName = "author"
+	ParamDescription paramName = "description"
+	ParamVersion     paramName = "version"
+	ParamDate        paramName = "date"
+	ParamLanguage    paramName = "language"
+)
+
+var (
+	allowedLanguages   = []string{"en", "es"}
+	allowedFieldLabels = []allowed{
+		{"title", true},
+		{"author", true},
+		{"description", true},
+		{"version", true},
+		{"date", false},
+		{"language", true},
+	}
+)
+
+func AllowedFieldLabels() []primitive.Label {
+	fields := make([]primitive.Label, 0)
+
+	for _, allowed := range allowedFieldLabels {
+		fields = append(fields, allowed.label)
+	}
+
+	return fields
+}
 
 func (v Param) Validate(allowNoID bool) error {
 	if err := v.ID.ValidateID(false); err != nil && !allowNoID {
@@ -44,7 +81,7 @@ func ValidateAll(db *database.DB) error {
 			return ErrUnrecognizedConfigField
 		}
 
-		if l == "lang" && !slices.Contains(allowedLanguages, fmt.Sprintf("%v", p.V)) {
+		if l == "language" && !slices.Contains(allowedLanguages, fmt.Sprintf("%v", p.V)) {
 			return ErrUnrecognizedLanguage
 		}
 

@@ -1,9 +1,9 @@
 package word
 
 import (
-	"github.com/jorgefuertes/thenewquill/internal/adventure/database"
-	"github.com/jorgefuertes/thenewquill/internal/adventure/database/primitive"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
+	"github.com/jorgefuertes/thenewquill/internal/database"
+	"github.com/jorgefuertes/thenewquill/internal/database/primitive"
 )
 
 type Service struct {
@@ -14,7 +14,7 @@ func NewService(d *database.DB) *Service {
 	return &Service{db: d}
 }
 
-func (s *Service) Create(w *Word) (primitive.ID, error) {
+func (s *Service) Create(w *Word) (uint32, error) {
 	return s.db.Create(w)
 }
 
@@ -22,7 +22,7 @@ func (s *Service) Update(w *Word) error {
 	return s.db.Update(w)
 }
 
-func (s *Service) Get(id primitive.ID) (*Word, error) {
+func (s *Service) Get(id uint32) (*Word, error) {
 	w := &Word{}
 	err := s.db.Get(id, &w)
 

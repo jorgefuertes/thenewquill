@@ -44,19 +44,19 @@ func readLocation(l line.Line, st *status.Status, a *adventure.Adventure) error 
 		exitMap, ok := l.AsLocationConns()
 		if ok {
 			for action, dest := range exitMap {
-				actionLabel, err := a.DB.AddLabel(action)
+				actionLabelID, err := a.DB.CreateLabelIfNotExists(action, false)
 				if err != nil {
 					return cerr.ErrInvalidLabel.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
 						WithFilename(st.CurrentFilename()).AddErr(err)
 				}
 
-				destLabel, err := a.DB.AddLabel(dest)
+				destLabelID, err := a.DB.CreateLabelIfNotExists(dest, false)
 				if err != nil {
 					return cerr.ErrInvalidLabel.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
 						WithFilename(st.CurrentFilename()).AddErr(err)
 				}
 
-				loc.SetConn(actionLabel.ID, destLabel.ID)
+				loc.SetConn(actionLabelID, destLabelID)
 			}
 
 			if err := st.SetCurrentStoreable(loc); err != nil {
@@ -84,7 +84,7 @@ func readLocation(l line.Line, st *status.Status, a *adventure.Adventure) error 
 			return err
 		}
 
-		labelID, _, err := a.DB.CreateLabelIfNotExists(labelName, false)
+		labelID, err := a.DB.CreateLabelIfNotExists(labelName, false)
 		if err != nil {
 			return cerr.ErrInvalidLabel.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
 				WithFilename(st.CurrentFilename()).AddErr(err)

@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/jorgefuertes/thenewquill/internal/adapter"
-	"github.com/jorgefuertes/thenewquill/internal/adventure/database/primitive"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 	"github.com/jorgefuertes/thenewquill/internal/util"
 )
@@ -28,5 +27,5 @@ func Import(s string) (Param, error) {
 		return Param{}, fmt.Errorf("cannot import param %q: invalid kind %q", s, fields[KindFieldIndex])
 	}
 
-	return Param{ID: primitive.IDFromString(fields[IDFieldIndex]), V: fields[ValueFieldIndex]}, nil
+	return Param{ID: uint32FromString(fields[IDFieldIndex]), V: fields[ValueFieldIndex]}, nil
 }

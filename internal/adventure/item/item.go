@@ -2,27 +2,26 @@ package item
 
 import (
 	"github.com/jorgefuertes/thenewquill/internal/adapter"
-	"github.com/jorgefuertes/thenewquill/internal/adventure/database/primitive"
 )
 
 type Item struct {
-	ID          primitive.ID
-	LabelID     primitive.ID
-	NounID      primitive.ID
-	AdjectiveID primitive.ID
+	ID          uint32
+	LabelID     uint32
+	NounID      uint32
+	AdjectiveID uint32
 	Description string
 	Weight      int
 	MaxWeight   int
 	Container   bool
 	Wearable    bool
 	Created     bool
-	At          primitive.ID
+	At          uint32
 	Worn        bool
 }
 
 var _ adapter.Storeable = &Item{}
 
-func New(id, nounID, adjectiveID primitive.ID) *Item {
+func New(id, nounID, adjectiveID uint32) *Item {
 	return &Item{
 		ID:          id,
 		NounID:      nounID,
@@ -32,18 +31,18 @@ func New(id, nounID, adjectiveID primitive.ID) *Item {
 	}
 }
 
-func (i *Item) SetID(id primitive.ID) {
+func (i *Item) SetID(id uint32) {
 	i.ID = id
 }
 
-func (i Item) GetID() primitive.ID {
+func (i Item) GetID() uint32 {
 	return i.ID
 }
 
-func (i *Item) SetLabelID(id primitive.ID) {
+func (i *Item) SetLabelID(id uint32) {
 	i.LabelID = id
 }
 
-func (i Item) GetLabelID() primitive.ID {
+func (i Item) GetLabelID() uint32 {
 	return i.LabelID
 }

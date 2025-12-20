@@ -5,12 +5,11 @@ import (
 	"strings"
 
 	"github.com/jorgefuertes/thenewquill/internal/adapter"
-	"github.com/jorgefuertes/thenewquill/internal/adventure/database/primitive"
 )
 
 type Message struct {
-	ID      primitive.ID
-	LabelID primitive.ID
+	ID      uint32
+	LabelID uint32
 	Text    string
 	Plurals [2]string
 }
@@ -36,25 +35,25 @@ func PluralFromString(s string) Plural {
 	}
 }
 
-func New(id primitive.ID, text string) Message {
-	m := Message{ID: id, Text: text, Plurals: [2]string{}}
+func New(id uint32, text string) *Message {
+	m := &Message{ID: id, Text: text, Plurals: [2]string{}}
 
 	return m
 }
 
-func (m *Message) SetID(id primitive.ID) {
+func (m *Message) SetID(id uint32) {
 	m.ID = id
 }
 
-func (m Message) GetID() primitive.ID {
+func (m Message) GetID() uint32 {
 	return m.ID
 }
 
-func (m *Message) SetLabelID(id primitive.ID) {
+func (m *Message) SetLabelID(id uint32) {
 	m.LabelID = id
 }
 
-func (m Message) GetLabelID() primitive.ID {
+func (m Message) GetLabelID() uint32 {
 	return m.LabelID
 }
 

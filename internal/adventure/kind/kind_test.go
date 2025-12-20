@@ -3,7 +3,6 @@ package kind_test
 import (
 	"testing"
 
-	"github.com/jorgefuertes/thenewquill/internal/adapter"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/character"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/config"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/item"
@@ -30,15 +29,17 @@ func TestKindString(t *testing.T) {
 		expected string
 	}{
 		{"None", kind.None, "none"},
-		{"Config", kind.Param, "config"},
+		{"Label", kind.Label, "label"},
 		{"Param", kind.Param, "config"},
+		{"Config", kind.Param, "config"},
 		{"Variable", kind.Variable, "var"},
 		{"Word", kind.Word, "word"},
 		{"Message", kind.Message, "message"},
 		{"Item", kind.Item, "item"},
 		{"Location", kind.Location, "location"},
 		{"Process", kind.Process, "process table"},
-		{"Label", kind.Label, "label"},
+		{"Character", kind.Character, "character"},
+		{"Test", kind.Test, "testitem"},
 		{"Invalid", kind.Kind(254), "none"},
 	}
 
@@ -49,6 +50,7 @@ func TestKindString(t *testing.T) {
 	}
 }
 
+// None Label Param Variable Word Message Item Location Character Process Test
 func TestKindByte(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -56,8 +58,16 @@ func TestKindByte(t *testing.T) {
 		expected byte
 	}{
 		{"None", kind.None, 0},
+		{"Label", kind.Label, 1},
 		{"Config", kind.Param, 2},
 		{"Variable", kind.Variable, 3},
+		{"Word", kind.Word, 4},
+		{"Message", kind.Message, 5},
+		{"Item", kind.Item, 6},
+		{"Location", kind.Location, 7},
+		{"Character", kind.Character, 8},
+		{"Process", kind.Process, 9},
+		{"Test", kind.Test, 10},
 	}
 
 	for _, tt := range tests {
@@ -77,6 +87,7 @@ func TestFromByte(t *testing.T) {
 		{"Label", 1, kind.Label},
 		{"Config", 2, kind.Param},
 		{"Variables", 3, kind.Variable},
+		{"Test", 10, kind.Test},
 		{"Invalid High", 255, kind.None},
 	}
 
@@ -114,7 +125,7 @@ func TestFromString(t *testing.T) {
 func TestKindOf(t *testing.T) {
 	testCases := []struct {
 		name     string
-		input    adapter.Storeable
+		input    any
 		expected kind.Kind
 	}{
 		{"Item", &item.Item{}, kind.Item},

@@ -3,8 +3,8 @@ package character
 import (
 	"fmt"
 
-	"github.com/jorgefuertes/thenewquill/internal/adventure/database"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
+	"github.com/jorgefuertes/thenewquill/internal/database"
 )
 
 func (c Character) Validate(allowNoID bool) error {

@@ -7,13 +7,12 @@ import (
 
 	"github.com/jorgefuertes/thenewquill/internal/adventure/character"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/config"
-	"github.com/jorgefuertes/thenewquill/internal/adventure/database"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/item"
-	"github.com/jorgefuertes/thenewquill/internal/adventure/label"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/location"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/message"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/variable"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/word"
+	"github.com/jorgefuertes/thenewquill/internal/database"
 )
 
 const VERSION = 2
@@ -31,17 +30,16 @@ type Adventure struct {
 
 func New() *Adventure {
 	d := database.New()
-	labels := label.NewService(d)
 
 	return &Adventure{
 		DB:         d,
-		Config:     config.NewService(d, labels),
-		Characters: character.NewService(d, labels),
-		Items:      item.NewService(d, labels),
-		Messages:   message.NewService(d, labels),
-		Words:      word.NewService(d, labels),
-		Locations:  location.NewService(d, labels),
-		Variables:  variable.NewService(d, labels),
+		Config:     config.NewService(d),
+		Characters: character.NewService(d),
+		Items:      item.NewService(d),
+		Messages:   message.NewService(d),
+		Words:      word.NewService(d),
+		Locations:  location.NewService(d),
+		Variables:  variable.NewService(d),
 	}
 }
 

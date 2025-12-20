@@ -1,8 +1,8 @@
 package character
 
 import (
-	"github.com/jorgefuertes/thenewquill/internal/adventure/database"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
+	"github.com/jorgefuertes/thenewquill/internal/database"
 )
 
 type Service struct {

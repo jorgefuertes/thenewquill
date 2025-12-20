@@ -6,10 +6,11 @@ import (
 
 	"github.com/jorgefuertes/thenewquill/internal/adventure"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/character"
-	"github.com/jorgefuertes/thenewquill/internal/adventure/database/primitive"
 	cerr "github.com/jorgefuertes/thenewquill/internal/compiler/compiler_error"
 	"github.com/jorgefuertes/thenewquill/internal/compiler/line"
 	"github.com/jorgefuertes/thenewquill/internal/compiler/status"
+	"github.com/jorgefuertes/thenewquill/internal/database"
+	"github.com/jorgefuertes/thenewquill/internal/database/primitive"
 )
 
 func readCharacter(l line.Line, st *status.Status, a *adventure.Adventure) error {
@@ -60,7 +61,8 @@ func readCharacter(l line.Line, st *status.Status, a *adventure.Adventure) error
 
 		if strings.HasPrefix(o, "is at ") {
 			locName := strings.TrimPrefix(o, "is at ")
-			labelID, _, err := a.DB.CreateLabelFromString(locName, false)
+
+			labelID, err := a.DB.CreateLabelIfNotExists(locName, database.DenyCompositeLabel)
 			if err != nil {
 				return cerr.ErrInvalidLabel.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
 					WithFilename(st.CurrentFilename()).AddErr(err)
@@ -92,18 +94,18 @@ func readCharacter(l line.Line, st *status.Status, a *adventure.Adventure) error
 			return err
 		}
 
-		labelID, _, err := a.DB.CreateLabelFromString(labelName, false)
+		labelID, err := a.DB.CreateLabelIfNotExists(labelName, database.DenyCompositeLabel)
 		if err := st.SetCurrentLabelID(labelID); err != nil {
 			return err
 		}
 
-		nounLabelID, _, err := a.DB.CreateLabelFromString(nounName, false)
+		nounLabelID, err := a.DB.CreateLabelIfNotExists(nounName, database.DenyCompositeLabel)
 		if err != nil {
 			return cerr.ErrInvalidLabel.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
 				WithFilename(st.CurrentFilename()).AddErr(err)
 		}
 
-		adjLabelID, _, err := a.DB.CreateLabelFromString(adjName, false)
+		adjLabelID, err := a.DB.CreateLabelIfNotExists(adjName, database.DenyCompositeLabel)
 		if err != nil {
 			return cerr.ErrInvalidLabel.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
 				WithFilename(st.CurrentFilename()).AddErr(err)

@@ -2,9 +2,9 @@ package item
 
 import (
 	"github.com/jorgefuertes/thenewquill/internal/adapter"
-	"github.com/jorgefuertes/thenewquill/internal/adventure/database"
-	"github.com/jorgefuertes/thenewquill/internal/adventure/database/primitive"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
+	"github.com/jorgefuertes/thenewquill/internal/database"
+	"github.com/jorgefuertes/thenewquill/internal/database/primitive"
 )
 
 type Service struct {
@@ -19,7 +19,7 @@ func (s *Service) DB() *database.DB {
 	return s.db
 }
 
-func (s *Service) Create(i *Item) (primitive.ID, error) {
+func (s *Service) Create(i *Item) (uint32, error) {
 	return s.db.Create(i)
 }
 
@@ -27,7 +27,7 @@ func (s *Service) Update(i *Item) error {
 	return s.db.Update(i)
 }
 
-func (s *Service) Get(id primitive.ID) (*Item, error) {
+func (s *Service) Get(id uint32) (*Item, error) {
 	i := &Item{}
 	err := s.db.Get(id, &i)
 

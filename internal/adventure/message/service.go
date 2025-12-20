@@ -1,9 +1,9 @@
 package message
 
 import (
-	"github.com/jorgefuertes/thenewquill/internal/adventure/database"
-	"github.com/jorgefuertes/thenewquill/internal/adventure/database/primitive"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
+	"github.com/jorgefuertes/thenewquill/internal/database"
+	"github.com/jorgefuertes/thenewquill/internal/database/primitive"
 )
 
 type Service struct {
@@ -14,7 +14,7 @@ func NewService(db *database.DB) *Service {
 	return &Service{db: db}
 }
 
-func (s *Service) Create(msg *Message) (primitive.ID, error) {
+func (s *Service) Create(msg *Message) (uint32, error) {
 	return s.db.Create(msg)
 }
 
@@ -22,7 +22,7 @@ func (s *Service) Update(msg *Message) error {
 	return s.db.Update(msg)
 }
 
-func (s *Service) Get(id primitive.ID) (*Message, error) {
+func (s *Service) Get(id uint32) (*Message, error) {
 	msg := &Message{}
 	err := s.db.Get(id, &msg)
 

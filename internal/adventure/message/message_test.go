@@ -3,9 +3,9 @@ package message_test
 import (
 	"testing"
 
-	"github.com/jorgefuertes/thenewquill/internal/adventure/database/primitive"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/message"
+	"github.com/jorgefuertes/thenewquill/internal/database/primitive"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -110,11 +110,11 @@ func TestStoreable(t *testing.T) {
 	assert.Equal(t, "One coin.", m.Stringf(1))
 	assert.Equal(t, "Many coins.", m.Stringf(2))
 
-	m.ID = primitive.ID(5)
-	assert.Equal(t, primitive.ID(5), m.GetID())
+	m.ID = uint32(5)
+	assert.Equal(t, uint32(5), m.GetID())
 
-	m.SetID(primitive.ID(10))
-	assert.Equal(t, primitive.ID(10), m.GetID())
+	m.SetID(uint32(10))
+	assert.Equal(t, uint32(10), m.GetID())
 
 	assert.Equal(t, kind.Message, kind.KindOf(m))
 
@@ -131,11 +131,11 @@ func TestValidate(t *testing.T) {
 	require.Error(t, m.Validate(false))
 	assert.ErrorIs(t, primitive.ErrUndefinedID, m.Validate(false))
 
-	m.ID = primitive.ID(3)
+	m.ID = uint32(3)
 	require.Error(t, m.Validate(false))
 	assert.ErrorIs(t, primitive.ErrInvalidID, m.Validate(false))
 
-	m.ID = primitive.ID(4)
+	m.ID = uint32(4)
 	require.NoError(t, m.Validate(false))
 
 	m.Text = ""

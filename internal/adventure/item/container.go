@@ -2,9 +2,9 @@ package item
 
 import (
 	"github.com/jorgefuertes/thenewquill/internal/adapter"
-	"github.com/jorgefuertes/thenewquill/internal/adventure/database"
-	"github.com/jorgefuertes/thenewquill/internal/adventure/database/primitive"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
+	"github.com/jorgefuertes/thenewquill/internal/database"
+	"github.com/jorgefuertes/thenewquill/internal/database/primitive"
 )
 
 func (s *Service) Weight(i Item) int {
@@ -69,7 +69,7 @@ func (s *Service) IsContained(item Item) bool {
 	return err != nil
 }
 
-func (s *Service) Contents(id primitive.ID) []Item {
+func (s *Service) Contents(id uint32) []Item {
 	items := make([]Item, 0)
 
 	var item Item

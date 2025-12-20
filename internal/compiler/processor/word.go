@@ -6,6 +6,7 @@ import (
 	cerr "github.com/jorgefuertes/thenewquill/internal/compiler/compiler_error"
 	"github.com/jorgefuertes/thenewquill/internal/compiler/line"
 	"github.com/jorgefuertes/thenewquill/internal/compiler/status"
+	"github.com/jorgefuertes/thenewquill/internal/database"
 )
 
 func readWord(l line.Line, st *status.Status, a *adventure.Adventure) error {
@@ -26,16 +27,15 @@ func readWord(l line.Line, st *status.Status, a *adventure.Adventure) error {
 			WithFilename(st.CurrentFilename())
 	}
 
-	label, err := a.DB.AddLabel(syns[0])
+	labelID, err := a.DB.CreateLabelIfNotExists(syns[0], database.DenyCompositeLabel)
 	if err != nil {
 		return cerr.ErrInvalidLabel.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
 			WithFilename(st.CurrentFilename()).AddErr(err)
 	}
 
-	w := word.New(wordType, syns...)
-	w.ID = label.ID
+	w := word.New(labelID, wordType, syns...)
 
-	if err := a.Words.Create(w); err != nil {
+	if _, err := a.Words.Create(w); err != nil {
 		return cerr.ErrDBCreate.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
 			WithFilename(st.CurrentFilename()).AddErr(err)
 	}

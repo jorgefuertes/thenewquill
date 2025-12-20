@@ -4,8 +4,8 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/jorgefuertes/thenewquill/internal/adventure/database/primitive"
 	"github.com/jorgefuertes/thenewquill/internal/compiler/rg"
+	"github.com/jorgefuertes/thenewquill/internal/database/primitive"
 )
 
 type Line struct {

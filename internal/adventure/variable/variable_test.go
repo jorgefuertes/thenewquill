@@ -3,9 +3,9 @@ package variable_test
 import (
 	"testing"
 
-	"github.com/jorgefuertes/thenewquill/internal/adventure/database/primitive"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/variable"
+	"github.com/jorgefuertes/thenewquill/internal/database/primitive"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -13,10 +13,10 @@ const nonConvertible = "non-convertible"
 
 func TestVariable(t *testing.T) {
 	t.Run("SetID", func(t *testing.T) {
-		v := variable.New(primitive.ID(5), primitive.UndefinedID, 2)
-		assert.Equal(t, primitive.ID(5), v.GetID())
+		v := variable.New(uint32(5), primitive.UndefinedID, 2)
+		assert.Equal(t, uint32(5), v.GetID())
 		v.SetID(6)
-		assert.Equal(t, primitive.ID(6), v.GetID())
+		assert.Equal(t, uint32(6), v.GetID())
 	})
 
 	t.Run("int", func(t *testing.T) {

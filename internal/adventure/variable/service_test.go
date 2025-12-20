@@ -3,9 +3,9 @@ package variable_test
 import (
 	"testing"
 
-	"github.com/jorgefuertes/thenewquill/internal/adventure/database"
-	"github.com/jorgefuertes/thenewquill/internal/adventure/database/primitive"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/variable"
+	"github.com/jorgefuertes/thenewquill/internal/database"
+	"github.com/jorgefuertes/thenewquill/internal/database/primitive"
 	"github.com/stretchr/testify/require"
 )
 
@@ -47,7 +47,7 @@ func TestService(t *testing.T) {
 
 	for _, tc := range setCases {
 		t.Run(tc.name, func(t *testing.T) {
-			var id primitive.ID
+			var id uint32
 			var err error
 
 			t.Run("set", func(t *testing.T) {

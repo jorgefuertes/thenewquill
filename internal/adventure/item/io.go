@@ -3,7 +3,6 @@ package item
 import (
 	"fmt"
 
-	"github.com/jorgefuertes/thenewquill/internal/adventure/database/primitive"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 	"github.com/jorgefuertes/thenewquill/internal/util"
 )
@@ -42,9 +41,9 @@ func Import(s string) (Item, error) {
 	fields := util.SplitIntoFields(s)
 
 	i := Item{}
-	i.ID = primitive.IDFromString(fields[IDFieldIndex])
-	i.NounID = primitive.IDFromString(fields[NounFieldIndex])
-	i.AdjectiveID = primitive.IDFromString(fields[AdjFieldIndex])
+	i.ID = uint32FromString(fields[IDFieldIndex])
+	i.NounID = uint32FromString(fields[NounFieldIndex])
+	i.AdjectiveID = uint32FromString(fields[AdjFieldIndex])
 	i.Description = fields[DescFieldIndex]
 	i.Weight = util.StringToInt(fields[WeightFieldIndex])
 	i.MaxWeight = util.StringToInt(fields[MaxWeightFieldIndex])

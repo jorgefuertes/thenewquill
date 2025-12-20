@@ -5,12 +5,12 @@ import (
 	"strings"
 
 	"github.com/jorgefuertes/thenewquill/internal/adventure"
-	"github.com/jorgefuertes/thenewquill/internal/adventure/database/primitive"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/item"
 	cerr "github.com/jorgefuertes/thenewquill/internal/compiler/compiler_error"
 	"github.com/jorgefuertes/thenewquill/internal/compiler/line"
 	"github.com/jorgefuertes/thenewquill/internal/compiler/rg"
 	"github.com/jorgefuertes/thenewquill/internal/compiler/status"
+	"github.com/jorgefuertes/thenewquill/internal/database/primitive"
 )
 
 func readItem(l line.Line, st *status.Status, a *adventure.Adventure) error {
@@ -69,7 +69,7 @@ func readItem(l line.Line, st *status.Status, a *adventure.Adventure) error {
 		if rg.ItemAt.MatchString(o) {
 			parts := rg.ItemAt.FindStringSubmatch(o)
 
-			atLabelID, _, err := a.DB.CreateLabelFromString(parts[2], false)
+			atLabelID, err := a.DB.CreateLabelIfNotExists(parts[2], false)
 			if err != nil {
 				return cerr.ErrInvalidLabel.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
 					WithFilename(st.CurrentFilename()).AddErr(err)
@@ -139,7 +139,7 @@ func readItem(l line.Line, st *status.Status, a *adventure.Adventure) error {
 			return err
 		}
 
-		labelID, _, err := a.DB.CreateLabelFromString(labelName, false)
+		labelID, err := a.DB.CreateLabelIfNotExists(labelName, false)
 		if err != nil {
 			return cerr.ErrInvalidLabel.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
 				WithFilename(st.CurrentFilename()).AddErr(err)
@@ -149,7 +149,7 @@ func readItem(l line.Line, st *status.Status, a *adventure.Adventure) error {
 			return err
 		}
 
-		nounLabelID, _, err := a.DB.CreateLabelFromString(nounName, false)
+		nounLabelID, err := a.DB.CreateLabelIfNotExists(nounName, false)
 		if err != nil {
 			return cerr.ErrInvalidLabel.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
 				WithFilename(st.CurrentFilename()).AddErr(err)
@@ -157,7 +157,7 @@ func readItem(l line.Line, st *status.Status, a *adventure.Adventure) error {
 
 		i.NounID = nounLabelID
 
-		adjLabelID, _, err := a.DB.CreateLabelFromString(adjName, false)
+		adjLabelID, err := a.DB.CreateLabelIfNotExists(adjName, false)
 		if err != nil {
 			return cerr.ErrInvalidLabel.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
 				WithFilename(st.CurrentFilename()).AddErr(err)

@@ -10,16 +10,17 @@ import (
 type Kind byte
 
 const (
-	None      Kind = 0
-	Label     Kind = 1
-	Param     Kind = 2
-	Variable  Kind = 3
-	Word      Kind = 4
-	Message   Kind = 5
-	Item      Kind = 6
-	Location  Kind = 7
-	Process   Kind = 8
-	Character Kind = 9
+	None Kind = iota
+	Label
+	Param
+	Variable
+	Word
+	Message
+	Item
+	Location
+	Character
+	Process
+	Test
 )
 
 func Kinds() []Kind {
@@ -35,6 +36,7 @@ func Kinds() []Kind {
 func kindNamesAndAliases() map[Kind][]string {
 	return map[Kind][]string{
 		None:      {"none", "unknown"},
+		Label:     {"label", "labels"},
 		Param:     {"config", "cfg", "configuration", "param", "params"},
 		Variable:  {"var", "variable", "vars", "variables"},
 		Word:      {"word", "vocabulary", "voc", "words"},
@@ -43,7 +45,7 @@ func kindNamesAndAliases() map[Kind][]string {
 		Location:  {"location", "room", "loc", "locations", "rooms"},
 		Character: {"character", "char", "player", "players", "characters", "chars"},
 		Process:   {"process table", "proc", "proc table", "process tables", "proc tables", "procs"},
-		Label:     {"label", "labels"},
+		Test:      {"test", "testitem"},
 	}
 }
 

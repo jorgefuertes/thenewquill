@@ -1,9 +1,9 @@
 package variable
 
 import (
-	"github.com/jorgefuertes/thenewquill/internal/adventure/database"
-	"github.com/jorgefuertes/thenewquill/internal/adventure/database/primitive"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
+	"github.com/jorgefuertes/thenewquill/internal/database"
+	"github.com/jorgefuertes/thenewquill/internal/database/primitive"
 )
 
 type Service struct {
@@ -14,11 +14,11 @@ func NewService(db *database.DB) *Service {
 	return &Service{db: db}
 }
 
-func (s *Service) Create(v *Variable) (primitive.ID, error) {
+func (s *Service) Create(v *Variable) (uint32, error) {
 	return s.db.Create(v)
 }
 
-func (s *Service) CreateWithLabel(labelOrString any, value any) (primitive.ID, error) {
+func (s *Service) CreateWithLabel(labelOrString any, value any) (uint32, error) {
 	labelID, err := s.db.CreateLabelIfNotExists(labelOrString, true)
 	if err != nil {
 		return primitive.UndefinedID, err
@@ -33,7 +33,7 @@ func (s *Service) Update(v *Variable) error {
 	return s.db.Update(v)
 }
 
-func (s *Service) Get(id primitive.ID) (*Variable, error) {
+func (s *Service) Get(id uint32) (*Variable, error) {
 	v := &Variable{}
 	err := s.db.Get(id, v)
 

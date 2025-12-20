@@ -5,10 +5,10 @@ import (
 	"strings"
 
 	"github.com/jorgefuertes/thenewquill/internal/adventure/config"
-	"github.com/jorgefuertes/thenewquill/internal/adventure/database/primitive"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/message"
 	"github.com/jorgefuertes/thenewquill/internal/compiler/rg"
+	"github.com/jorgefuertes/thenewquill/internal/database/primitive"
 )
 
 // AsInclude returns the include filename string and true if it was found
