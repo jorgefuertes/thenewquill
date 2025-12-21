@@ -20,4 +20,6 @@ var (
 	ErrDatabaseIsFrozen           = errors.New("database is frozen, can't create new records")
 	ErrMissingIDToUpdate          = errors.New("missing ID to update")
 	ErrWrongUpdateKind            = errors.New("cannot update record with different kind entity")
+	ErrNothingToSave              = errors.New("nothing to save")
+	ErrInvalidFormatHeader        = errors.New("invalid format header")
 )

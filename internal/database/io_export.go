@@ -7,18 +7,26 @@ import (
 )
 
 const (
-	version     = "1.0"
-	labelBegin  = "L:"
-	recordBegin = "R:"
+	version      = "1.0"
+	databaseType = "db"
+	saveType     = "save"
+	labelBegin   = "L:"
+	recordBegin  = "R:"
 )
 
 func (db *DB) Export(filename string) (int, int, error) {
+	params := db.getParams()
+
 	f, err := createFile(filename,
 		"The New Quill Adventure Database",
-		fmt.Sprintf("Format version: %s", version),
+		fmt.Sprintf("Format version: %s, type: %s", version, databaseType),
 		fmt.Sprintf("Labels: %d", db.CountLabels()),
 		fmt.Sprintf("Records: %d", db.CountRecords()),
 		fmt.Sprintf("Timestamp: %d", time.Now().Unix()),
+		"",
+		fmt.Sprintf("Title: %s", params["title"]),
+		fmt.Sprintf("Author: %s", params["author"]),
+		fmt.Sprintf("Version: %s Lang: %s", params["version"], params["language"]),
 	)
 	if err != nil {
 		return 0, 0, err
