@@ -23,7 +23,7 @@ func TestMatches(t *testing.T) {
 	type testCase struct {
 		name     string
 		sut      *TestItem
-		filters  []filter
+		filters  []Filter
 		expected bool
 	}
 
@@ -50,31 +50,31 @@ func TestMatches(t *testing.T) {
 		{
 			name:     "Equal ID",
 			sut:      testItem1,
-			filters:  []filter{FilterByID(7)},
+			filters:  []Filter{FilterByID(7)},
 			expected: true,
 		},
 		{
 			name:     "Equal LabelID",
 			sut:      testItem1,
-			filters:  []filter{FilterByLabelID(3)},
+			filters:  []Filter{FilterByLabelID(3)},
 			expected: true,
 		},
 		{
 			name:     "Equal ID false",
 			sut:      testItem1,
-			filters:  []filter{FilterByID(23)},
+			filters:  []Filter{FilterByID(23)},
 			expected: false,
 		},
 		{
 			name:     "NotEqual ID",
 			sut:      testItem1,
-			filters:  []filter{{NotEqual, "ID", 23}},
+			filters:  []Filter{{NotEqual, "ID", 23}},
 			expected: true,
 		},
 		{
 			name: "Equal weight",
 			sut:  testItem1,
-			filters: []filter{
+			filters: []Filter{
 				{Equal, "weight", 10},
 			},
 			expected: true,
@@ -82,7 +82,7 @@ func TestMatches(t *testing.T) {
 		{
 			name: "Equal weight false",
 			sut:  testItem1,
-			filters: []filter{
+			filters: []Filter{
 				{Equal, "Weight", 15},
 			},
 			expected: false,
@@ -90,7 +90,7 @@ func TestMatches(t *testing.T) {
 		{
 			name: "NotEqual weight",
 			sut:  testItem1,
-			filters: []filter{
+			filters: []Filter{
 				{NotEqual, "Weight", 15},
 			},
 			expected: true,
@@ -98,7 +98,7 @@ func TestMatches(t *testing.T) {
 		{
 			name: "Equal OK",
 			sut:  testItem1,
-			filters: []filter{
+			filters: []Filter{
 				{Equal, "ok", true},
 			},
 			expected: true,
@@ -106,7 +106,7 @@ func TestMatches(t *testing.T) {
 		{
 			name: "Equal NOOK",
 			sut:  testItem1,
-			filters: []filter{
+			filters: []Filter{
 				{Equal, "NOok", false},
 			},
 			expected: true,
@@ -114,7 +114,7 @@ func TestMatches(t *testing.T) {
 		{
 			name: "Equal Title",
 			sut:  testItem1,
-			filters: []filter{
+			filters: []Filter{
 				{Equal, "Title", "This is just a Test Title"},
 			},
 			expected: true,
@@ -122,7 +122,7 @@ func TestMatches(t *testing.T) {
 		{
 			name: "Contains in Title",
 			sut:  testItem1,
-			filters: []filter{
+			filters: []Filter{
 				{Contains, "Title", "Test Title"},
 			},
 			expected: true,
@@ -130,7 +130,7 @@ func TestMatches(t *testing.T) {
 		{
 			name: "Contains in Title false",
 			sut:  testItem1,
-			filters: []filter{
+			filters: []Filter{
 				{Contains, "Title", "Nothing"},
 			},
 			expected: false,
@@ -138,7 +138,7 @@ func TestMatches(t *testing.T) {
 		{
 			name: "NotContains in Title",
 			sut:  testItem1,
-			filters: []filter{
+			filters: []Filter{
 				{NotContains, "Title", "Nothing"},
 			},
 			expected: true,
@@ -146,7 +146,7 @@ func TestMatches(t *testing.T) {
 		{
 			name: "Contains in Names",
 			sut:  testItem1,
-			filters: []filter{
+			filters: []Filter{
 				{Contains, "Names", "one"},
 			},
 			expected: true,
@@ -154,7 +154,7 @@ func TestMatches(t *testing.T) {
 		{
 			name: "Contains in Names false",
 			sut:  testItem1,
-			filters: []filter{
+			filters: []Filter{
 				{Contains, "Names", "four"},
 			},
 			expected: false,
@@ -162,7 +162,7 @@ func TestMatches(t *testing.T) {
 		{
 			name: "NotContains in Names",
 			sut:  testItem1,
-			filters: []filter{
+			filters: []Filter{
 				{NotContains, "Names", "five"},
 			},
 			expected: true,
@@ -170,7 +170,7 @@ func TestMatches(t *testing.T) {
 		{
 			name: "NotContains in Names false",
 			sut:  testItem1,
-			filters: []filter{
+			filters: []Filter{
 				{NotContains, "Names", "two"},
 			},
 			expected: false,
@@ -178,7 +178,7 @@ func TestMatches(t *testing.T) {
 		{
 			name: "Contains in Numbers",
 			sut:  testItem1,
-			filters: []filter{
+			filters: []Filter{
 				{Contains, "nUmbers", 2},
 			},
 			expected: true,
@@ -186,7 +186,7 @@ func TestMatches(t *testing.T) {
 		{
 			name: "Contains in Numbers false",
 			sut:  testItem1,
-			filters: []filter{
+			filters: []Filter{
 				{Contains, "numbers", 4},
 			},
 			expected: false,
@@ -194,7 +194,7 @@ func TestMatches(t *testing.T) {
 		{
 			name: "NotContains in Numbers",
 			sut:  testItem1,
-			filters: []filter{
+			filters: []Filter{
 				{NotContains, "Numbers", 5},
 			},
 			expected: true,
@@ -202,7 +202,7 @@ func TestMatches(t *testing.T) {
 		{
 			name:     "By Label",
 			sut:      testItem1,
-			filters:  []filter{FilterByLabel("test-label")},
+			filters:  []Filter{FilterByLabel("test-label")},
 			expected: true,
 		},
 	}

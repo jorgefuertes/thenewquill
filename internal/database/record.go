@@ -12,20 +12,15 @@ type Record struct {
 }
 
 func (r *Record) Unmarshal(dest any) error {
-	_, _, err := checkEntity(dest)
-	if err != nil {
-		return err
-	}
+	_, _ = checkEntity(dest)
 
 	return cbor.Unmarshal(r.Data, dest)
 }
 
 func (r *Record) Marshal(entity any) error {
-	_, _, err := checkEntity(entity)
-	if err != nil {
-		return err
-	}
+	_, _ = checkEntity(entity)
 
+	var err error
 	r.Data, err = cbor.Marshal(entity)
 
 	return err

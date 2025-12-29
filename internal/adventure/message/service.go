@@ -3,7 +3,6 @@ package message
 import (
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 	"github.com/jorgefuertes/thenewquill/internal/database"
-	"github.com/jorgefuertes/thenewquill/internal/database/primitive"
 )
 
 type Service struct {
@@ -29,7 +28,7 @@ func (s *Service) Get(id uint32) (*Message, error) {
 	return msg, err
 }
 
-func (s *Service) GetByLabel(label primitive.Label) (*Message, error) {
+func (s *Service) GetByLabel(label string) (*Message, error) {
 	msg := &Message{}
 	err := s.db.GetByLabel(label, msg)
 
@@ -37,11 +36,11 @@ func (s *Service) GetByLabel(label primitive.Label) (*Message, error) {
 }
 
 func (s *Service) Count() int {
-	return s.db.Count(database.FilterByKind(kind.Message))
+	return s.db.CountRecordsByKind(kind.Message)
 }
 
 func (s *Service) GetHuman() (*Message, error) {
-	chars := s.db.Query(database.FilterByKind(kind.Message), database.Filter("Human", database.Equal, true))
+	chars := s.db.Query(database.FilterByKind(kind.Message), database.NewFilter("Human", database.Equal, true))
 	defer chars.Close()
 
 	var loc *Message

@@ -6,11 +6,10 @@ import (
 	cerr "github.com/jorgefuertes/thenewquill/internal/compiler/compiler_error"
 	"github.com/jorgefuertes/thenewquill/internal/compiler/line"
 	"github.com/jorgefuertes/thenewquill/internal/compiler/status"
-	"github.com/jorgefuertes/thenewquill/internal/database/primitive"
 )
 
 func readMessage(l line.Line, st *status.Status, a *adventure.Adventure) error {
-	m := message.New(primitive.UndefinedID, "")
+	m := message.New()
 
 	labelName, text, plural, ok := l.AsMsg()
 	if ok {
@@ -18,21 +17,15 @@ func readMessage(l line.Line, st *status.Status, a *adventure.Adventure) error {
 			return err
 		}
 
-		labelID, err := a.DB.CreateLabelIfNotExists(labelName, false)
+		labelID, err := a.DB.CreateLabel(labelName)
 		if err != nil {
 			return cerr.ErrInvalidLabel.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
 				WithFilename(st.CurrentFilename()).AddErr(err)
 		}
 
-		if err := st.SetCurrentLabelID(labelID); err != nil {
-			return err
-		}
-
+		m.LabelID = labelID
 		m.SetPlural(plural, text)
-
-		if err := st.SetCurrentStoreable(m); err != nil {
-			return err
-		}
+		st.SetCurrentStoreable(m)
 
 		return nil
 	}

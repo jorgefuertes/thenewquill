@@ -13,12 +13,15 @@ func NewService(db *database.DB) *Service {
 	return &Service{db: db}
 }
 
-func (s *Service) DB() *database.DB {
-	return s.db
+func (s *Service) GetByLabel(label string) (*Character, error) {
+	c := &Character{}
+	err := s.db.GetByLabel(label, c)
+
+	return c, err
 }
 
 func (s *Service) GetHuman() (*Character, error) {
-	chars := s.db.Query(database.FilterByKind(kind.Character), database.Filter("Human", database.Equal, true))
+	chars := s.db.Query(database.FilterByKind(kind.Character), database.NewFilter("Human", database.Equal, true))
 	defer chars.Close()
 
 	c := &Character{}
@@ -36,5 +39,5 @@ func (s *Service) HasHuman() bool {
 }
 
 func (s *Service) Count() int {
-	return s.db.Count(database.FilterByKind(kind.Character))
+	return s.db.CountRecordsByKind(kind.Character)
 }

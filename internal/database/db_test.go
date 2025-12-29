@@ -75,7 +75,7 @@ func TestDatabase(t *testing.T) {
 
 	t.Run("IO", func(t *testing.T) {
 		t.Cleanup(func() {
-			os.Remove("/tmp/test.db")
+			assert.NoError(t, os.Remove("/tmp/test.db"))
 			db.ResetDB()
 		})
 

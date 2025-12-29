@@ -3,7 +3,6 @@ package location
 import (
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 	"github.com/jorgefuertes/thenewquill/internal/database"
-	"github.com/jorgefuertes/thenewquill/internal/database/primitive"
 )
 
 type Service struct {
@@ -22,25 +21,57 @@ func (s *Service) Update(loc *Location) error {
 	return s.db.Update(loc)
 }
 
-func (s *Service) Get(id uint32) (*Location, error) {
-	loc := &Location{}
-	err := s.db.Get(id, &loc)
-
-	return loc, err
+func (s *Service) Count() int {
+	return s.db.CountRecordsByKind(kind.Location)
 }
 
-func (s *Service) GetByLabel(labelOrString any) (*Location, error) {
-	label, err := primitive.LabelFromLabelOrString(labelOrString)
-	if err != nil {
-		return nil, err
+type query struct {
+	db      *database.DB
+	id      uint32
+	label   string
+	labelID uint32
+}
+
+func (s *Service) Get() *query {
+	return &query{db: s.db}
+}
+
+func (q *query) WithID(id uint32) *query {
+	q.id = id
+
+	return q
+}
+
+func (q *query) WithLabel(label string) *query {
+	q.label = label
+
+	return q
+}
+
+func (q *query) WithLabelID(id uint32) *query {
+	q.labelID = id
+
+	return q
+}
+
+func (q *query) First() (*Location, error) {
+	w := &Location{}
+
+	filters := []database.Filter{database.FilterByKind(kind.Location)}
+
+	if q.id != 0 {
+		filters = append(filters, database.FilterByID(q.id))
 	}
 
-	loc := &Location{}
-	err = s.db.GetByLabel(label, loc)
+	if q.label != "" {
+		filters = append(filters, database.FilterByLabel(q.label))
+	}
 
-	return loc, err
-}
+	if q.labelID != 0 {
+		filters = append(filters, database.NewFilter("LabelID", database.Equal, q.labelID))
+	}
 
-func (s *Service) Count() int {
-	return s.db.Count(database.FilterByKind(kind.Location))
+	err := q.db.Query(filters...).First(w)
+
+	return w, err
 }

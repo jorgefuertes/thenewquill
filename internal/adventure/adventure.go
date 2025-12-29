@@ -1,7 +1,6 @@
 package adventure
 
 import (
-	"errors"
 	"fmt"
 	"time"
 
@@ -29,7 +28,7 @@ type Adventure struct {
 }
 
 func New() *Adventure {
-	d := database.New()
+	d := database.NewDB()
 
 	return &Adventure{
 		DB:         d,
@@ -43,45 +42,16 @@ func New() *Adventure {
 	}
 }
 
-func (a *Adventure) Reset() {
-	a.DB.Reset()
-}
-
-func (a *Adventure) Validate() error {
-	validators := []func() error{
-		a.Config.ValidateAll,
-		a.Words.ValidateAll,
-		a.Messages.ValidateAll,
-		a.Variables.ValidateAll,
-		a.Items.ValidateAll,
-		a.Characters.ValidateAll,
-		a.Locations.ValidateAll,
-	}
-
-	var err error
-
-	for _, v := range validators {
-		if er := v(); er != nil {
-			err = errors.Join(err, er)
-		}
-	}
-
-	return err
-}
-
 func (a *Adventure) Export(path string) (int, error) {
 	if _, err := a.Config.Set("date", fmt.Sprintf("%d", time.Now().Unix())); err != nil {
 		return 0, err
 	}
 
-	if err := a.Validate(); err != nil {
-		return 0, err
-	}
+	_, bFile, err := a.DB.Export(path)
 
-	// TODO: return a.DB.Export(path)
-	return 0, nil
+	return bFile, err
 }
 
 func (a *Adventure) Import(path string) error {
-	return nil
+	return a.DB.Import(path)
 }

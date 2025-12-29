@@ -3,7 +3,6 @@ package word
 import (
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 	"github.com/jorgefuertes/thenewquill/internal/database"
-	"github.com/jorgefuertes/thenewquill/internal/database/primitive"
 )
 
 type Service struct {
@@ -11,7 +10,27 @@ type Service struct {
 }
 
 func NewService(d *database.DB) *Service {
-	return &Service{db: d}
+	s := &Service{db: d}
+
+	labels := map[uint32]string{
+		1: database.LabelAsterisk,
+		2: database.LabelUnderscore,
+	}
+
+	for _, t := range WordTypes {
+		for id, label := range labels {
+			_, err := s.Create(&Word{
+				LabelID:  id,
+				Type:     t,
+				Synonyms: []string{label},
+			})
+			if err != nil {
+				panic(err)
+			}
+		}
+	}
+
+	return s
 }
 
 func (s *Service) Create(w *Word) (uint32, error) {
@@ -22,45 +41,68 @@ func (s *Service) Update(w *Word) error {
 	return s.db.Update(w)
 }
 
-func (s *Service) Get(id uint32) (*Word, error) {
-	w := &Word{}
-	err := s.db.Get(id, &w)
-
-	return w, err
-}
-
-func (s *Service) GetByLabel(label primitive.Label) (*Word, error) {
-	w := &Word{}
-	err := s.db.GetByLabel(label, w)
-
-	return w, err
-}
-
-func (s *Service) First(label primitive.Label) (*Word, error) {
-	cursor := s.db.Query(database.FilterByKind(kind.Word))
-	defer cursor.Close()
-
-	labelID, err := s.db.GetLabelID(label)
-	if err != nil {
-		return nil, err
-	}
-
-	w := &Word{}
-	for cursor.Next(w) {
-		if w.LabelID == labelID {
-			return w, nil
-		}
-
-		for _, syn := range w.Synonyms {
-			if syn == label.String() {
-				return w, nil
-			}
-		}
-	}
-
-	return nil, database.ErrNotFound
-}
-
 func (s *Service) Count() int {
-	return s.db.Count(database.FilterByKind(kind.Word))
+	return s.db.CountRecordsByKind(kind.Word)
+}
+
+type query struct {
+	db    *database.DB
+	id    uint32
+	label string
+	syn   string
+	t     WordType
+}
+
+func (s *Service) Get() *query {
+	return &query{db: s.db}
+}
+
+func (q *query) WithID(id uint32) *query {
+	q.id = id
+
+	return q
+}
+
+func (q *query) WithLabel(label string) *query {
+	q.label = label
+
+	return q
+}
+
+func (q *query) WithSynonym(syn string) *query {
+	q.syn = syn
+
+	return q
+}
+
+func (q *query) WithType(t WordType) *query {
+	q.t = t
+
+	return q
+}
+
+func (q *query) First() (*Word, error) {
+	w := &Word{}
+
+	filters := []database.Filter{database.FilterByKind(kind.Word)}
+
+	if q.id != 0 {
+		filters = append(filters, database.FilterByID(q.id))
+	}
+
+	if q.t != None {
+		filters = append(filters, database.NewFilter("Type", database.Equal, q.t))
+	}
+
+	if q.label != "" {
+		filters = append(filters, database.FilterByLabel(q.label))
+	}
+
+	if q.syn != "" {
+		filters = append(filters, database.NewFilter("Synonyms", database.Contains, q.syn))
+	}
+
+	err := q.db.Query(filters...).First(w)
+
+	return w, err
 }

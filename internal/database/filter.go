@@ -29,33 +29,33 @@ const (
 	kindFieldName    = "Kind"
 )
 
-type filter struct {
+type Filter struct {
 	condition condition
 	field     string
 	value     any
 }
 
-func Filter(field string, condition condition, value any) filter {
-	return filter{condition, field, value}
+func NewFilter(field string, condition condition, value any) Filter {
+	return Filter{condition, field, value}
 }
 
-func FilterByKind(k kind.Kind) filter {
-	return filter{Equal, kindFieldName, k}
+func FilterByKind(k kind.Kind) Filter {
+	return Filter{Equal, kindFieldName, k}
 }
 
-func FilterByID(id uint32) filter {
-	return filter{Equal, idFieldName, id}
+func FilterByID(id uint32) Filter {
+	return Filter{Equal, idFieldName, id}
 }
 
-func FilterByLabelID(labelID uint32) filter {
-	return filter{Equal, labelIDFieldName, labelID}
+func FilterByLabelID(labelID uint32) Filter {
+	return Filter{Equal, labelIDFieldName, labelID}
 }
 
-func FilterByLabel(label string) filter {
-	return filter{Equal, labelFieldName, label}
+func FilterByLabel(label string) Filter {
+	return Filter{Equal, labelFieldName, label}
 }
 
-func (db *DB) matchesAllFilters(r Record, filters ...filter) bool {
+func (db *DB) matchesAllFilters(r Record, filters ...Filter) bool {
 	if len(filters) == 0 {
 		return false
 	}
@@ -120,7 +120,7 @@ func getField(recordMap map[string]any, fieldName string) (any, bool) {
 	return nil, false
 }
 
-func checkCondition(recordMap map[string]any, f filter) bool {
+func checkCondition(recordMap map[string]any, f Filter) bool {
 	v, ok := getField(recordMap, f.field)
 	if !ok {
 		return false

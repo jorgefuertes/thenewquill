@@ -7,91 +7,75 @@ import (
 
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 	"github.com/jorgefuertes/thenewquill/internal/database"
-	"github.com/jorgefuertes/thenewquill/internal/database/primitive"
+	"github.com/jorgefuertes/thenewquill/pkg/log"
+	"github.com/jorgefuertes/thenewquill/pkg/validator"
 )
 
-type allowed struct {
-	label    primitive.Label
-	required bool
-}
-
-type paramName string
-
-// TODO: Labels
 const (
-	ParamTitle       paramName = "title"
-	ParamAuthor      paramName = "author"
-	ParamDescription paramName = "description"
-	ParamVersion     paramName = "version"
-	ParamDate        paramName = "date"
-	ParamLanguage    paramName = "language"
+	TitleParamLabel       = "title"
+	AuthorParamLabel      = "author"
+	DescriptionParamLabel = "description"
+	VersionParamLabel     = "version"
+	DateParamLabel        = "date"
+	LanguageParamLabel    = "language"
 )
 
 var (
 	allowedLanguages   = []string{"en", "es"}
-	allowedFieldLabels = []allowed{
-		{"title", true},
-		{"author", true},
-		{"description", true},
-		{"version", true},
-		{"date", false},
-		{"language", true},
+	allowedParamLabels = []string{
+		TitleParamLabel,
+		AuthorParamLabel,
+		DescriptionParamLabel,
+		VersionParamLabel,
+		DateParamLabel,
+		LanguageParamLabel,
 	}
+	requiredParamLabels = []string{TitleParamLabel, AuthorParamLabel, VersionParamLabel, LanguageParamLabel}
 )
 
-func AllowedFieldLabels() []primitive.Label {
-	fields := make([]primitive.Label, 0)
-
-	for _, allowed := range allowedFieldLabels {
-		fields = append(fields, allowed.label)
-	}
-
-	return fields
+func IsValidLabel(label string) bool {
+	return slices.Contains(allowedParamLabels, label)
 }
 
-func (v Param) Validate(allowNoID bool) error {
-	if err := v.ID.ValidateID(false); err != nil && !allowNoID {
-		return err
-	}
-
-	if fmt.Sprintf("%v", v.V) == "" {
-		return ErrValueIsEmpty
-	}
-
-	return nil
+func GetAllowedParamLabels() []string {
+	return allowedParamLabels
 }
 
-func ValidateAll(db *database.DB) error {
-	seen := []primitive.Label{}
+func (s *Service) ValidateAll() error {
+	seen := []string{}
 
-	res := db.Query(database.FilterByKind(kind.Param))
+	res := s.db.Query(database.FilterByKind(kind.Param))
+	defer res.Close()
 
-	p := Param{}
+	p := &Param{}
 	for res.Next(p) {
-		if err := p.Validate(false); err != nil {
+		log.Debug("[CONFIG:VALIDATION:ALL] Validating %q->%v", s.db.GetLabelOrBlank(p.LabelID), p)
+
+		if err := validator.Validate(p); err != nil {
 			return err
 		}
 
-		l, err := db.GetLabel(p.LabelID)
+		label, err := s.db.GetLabel(p.LabelID)
 		if err != nil {
 			return err
 		}
 
-		if !isLabelAllowed(l) {
+		if !IsValidLabel(label) {
 			return ErrUnrecognizedConfigField
 		}
 
-		if l == "language" && !slices.Contains(allowedLanguages, fmt.Sprintf("%v", p.V)) {
+		if label == "language" && !slices.Contains(allowedLanguages, fmt.Sprintf("%v", p.V)) {
 			return ErrUnrecognizedLanguage
 		}
 
-		seen = append(seen, l)
+		seen = append(seen, label)
+		log.Debug("[CONFIG:VALIDATION:ALL] Found config field %q", label)
 	}
 
 	// check required
-	for _, allowed := range allowedFieldLabels {
-		if !slices.Contains(seen, allowed.label) && allowed.required {
-			return errors.Join(ErrMissingConfigField, fmt.Errorf("label %q not found", allowed.label))
+	for _, l := range requiredParamLabels {
+		if !slices.Contains(seen, l) {
+			return errors.Join(ErrMissingConfigField, fmt.Errorf("label %q not found", l))
 		}
 	}
 

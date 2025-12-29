@@ -3,16 +3,12 @@ package variable
 import (
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 	"github.com/jorgefuertes/thenewquill/internal/database"
-	"github.com/jorgefuertes/thenewquill/internal/database/primitive"
+	"github.com/jorgefuertes/thenewquill/pkg/validator"
 )
 
-func (v Variable) Validate(allowNoID bool) error {
-	if err := v.ID.ValidateID(false); err != nil && !allowNoID {
+func (v Variable) Validate() error {
+	if err := validator.Validate(v); err != nil {
 		return err
-	}
-
-	if v.ID < primitive.MinID && !allowNoID {
-		return primitive.ErrInvalidID
 	}
 
 	return nil
@@ -24,7 +20,7 @@ func (s Service) ValidateAll() error {
 
 	var v Variable
 	for res.Next(&v) {
-		if err := v.Validate(false); err != nil {
+		if err := v.Validate(); err != nil {
 			return err
 		}
 	}

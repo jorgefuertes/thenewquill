@@ -5,20 +5,25 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/jorgefuertes/thenewquill/internal/adventure/label"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/character"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/variable"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/word"
 	"github.com/jorgefuertes/thenewquill/internal/compiler"
+	"github.com/jorgefuertes/thenewquill/internal/database"
+	"github.com/jorgefuertes/thenewquill/pkg/log"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func TestCompilerHappyPath(t *testing.T) {
+	log.SetLevel(log.InfoLevel)
+
 	a, err := compiler.Compile("src/happy/test.adv")
 	require.NoError(t, err)
 
 	t.Run("vars", func(t *testing.T) {
-		// vars
 		assert.Equal(t, 15, a.Variables.Count())
 
 		testCases := []struct {
@@ -44,7 +49,7 @@ func TestCompilerHappyPath(t *testing.T) {
 
 		for _, tc := range testCases {
 			t.Run(tc.key, func(t *testing.T) {
-				actual, err := a.Variables.FindByLabel(tc.key)
+				actual, err := a.Variables.Get().WithLabel(tc.key).First()
 				require.NoError(t, err)
 
 				switch reflect.TypeOf(tc.expected).Kind() {
@@ -60,26 +65,31 @@ func TestCompilerHappyPath(t *testing.T) {
 			})
 		}
 
-		vars := a.Variables.All()
-		for _, v := range vars {
+		c := a.DB.Query(database.FilterByKind(kind.Variable))
+		var v variable.Variable
+		for c.Next(&v) {
 			exists := false
 
 			for _, tc := range testCases {
-				if a.DB.GetLabelName(v.ID) == tc.key {
+				labeID, err := a.DB.GetLabelID(tc.key)
+				require.NoError(t, err)
+
+				if v.LabelID == labeID {
 					exists = true
 				}
 			}
 
 			if !exists {
-				t.Errorf("extra variable '%s = %v'", a.DB.GetLabelName(v.ID), v.Value)
+				t.Errorf("extra variable '%s = %v'", a.DB.GetLabelOrBlank(v.LabelID), v.Value)
 			}
 		}
 	})
 
 	t.Run("Vocabulary", func(t *testing.T) {
 		t.Run("Not Found", func(t *testing.T) {
-			_, err := a.Words.FindByLabel("foo")
+			w, err := a.Words.Get().WithLabel("foo").First()
 			require.Error(t, err)
+			require.Zero(t, w.ID)
 		})
 
 		testCases := []struct {
@@ -138,13 +148,13 @@ func TestCompilerHappyPath(t *testing.T) {
 			labelName := tc.syns[0]
 
 			t.Run(labelName, func(t *testing.T) {
-				w, err := a.Words.FindByLabel(labelName)
+				w, err := a.Words.Get().WithLabel(labelName).First()
 				require.NoError(t, err, "error finding word by label %q", labelName)
 				require.NotNil(t, w)
-				assert.Equal(t, tc.kind, w.Type)
+				assert.Equal(t, tc.kind.String(), w.Type.String(), "word type doesn't match")
 				assert.Equal(t, tc.syns, w.Synonyms, "synonyms for %s doesn't match", labelName)
 				for _, syn := range tc.syns {
-					wFromSyn, err := a.Words.FirstOfAny(syn)
+					wFromSyn, err := a.Words.Get().WithSynonym(syn).First()
 					require.NoError(t, err, "cannot find word %q from synonym %q", labelName, syn)
 					assert.Equal(t, w, wFromSyn)
 					assert.True(t, w.Is(w.Type, syn))
@@ -152,19 +162,32 @@ func TestCompilerHappyPath(t *testing.T) {
 			})
 		}
 
-		for _, w := range a.Words.All() {
+		c := a.DB.Query(database.FilterByKind(kind.Word))
+		var w word.Word
+		for c.Next(&w) {
+			if w.Synonyms[0] == database.LabelUnderscore || w.Synonyms[0] == database.LabelAsterisk {
+				continue
+			}
+
 			existsHere := false
 			for _, tc := range testCases {
-				label, err := a.DB.GetLabel(w.ID)
+				label, err := a.DB.GetLabel(w.LabelID)
 				require.NoError(t, err)
 
-				if label.ID == w.ID && tc.kind == w.Type {
+				if tc.kind == w.Type && tc.syns[0] == label {
 					existsHere = true
 					break
 				}
 			}
 
-			assert.True(t, existsHere, "%s with ID %s doesn't exist in the test cases", w.Type.String(), w.ID)
+			assert.True(
+				t,
+				existsHere,
+				"%s %d %q doesn't exist in the test cases",
+				w.Type.String(),
+				w.ID,
+				a.DB.GetLabelOrBlank(w.LabelID),
+			)
 		}
 	})
 
@@ -195,7 +218,7 @@ func TestCompilerHappyPath(t *testing.T) {
 
 		for _, tc := range testCases {
 			t.Run(tc.label, func(t *testing.T) {
-				m, err := a.Messages.FindByLabel(tc.label)
+				m, err := a.Messages.GetByLabel(tc.label)
 				if tc.shouldExists {
 					require.NoError(t, err)
 					require.NotNil(t, m)
@@ -234,33 +257,34 @@ func TestCompilerHappyPath(t *testing.T) {
 
 		for _, tc := range testCases {
 			t.Run(tc.label, func(t *testing.T) {
-				c, err := a.Characters.FindByLabel(tc.label)
+				var c character.Character
+				err := a.DB.GetByLabel(tc.label, &c)
 				require.NoError(t, err, "cannot find character %q", tc.label)
 				require.NotNil(t, c)
 
 				assert.Equal(t, tc.desc, c.Description)
 
-				noun, err := a.Words.FindByLabel(tc.noun)
+				noun, err := a.Words.Get().WithLabel(tc.noun).First()
 				require.NoError(t, err, "cannot find noun %q", tc.noun)
 				assert.Equal(t, c.NounID, noun.ID)
 				assert.Equal(t, word.Noun, noun.Type)
 
-				if tc.adj != label.Underscore.Name {
-					adj, err := a.Words.FindByLabel(tc.adj)
+				if tc.adj != database.LabelUnderscore {
+					adj, err := a.Words.Get().WithLabel(tc.adj).First()
 					require.NoError(t, err, "cannot find adjective %q", tc.adj)
 					assert.Equal(t, c.AdjectiveID, adj.ID)
 					assert.Equal(t, word.Adjective, adj.Type)
 				}
 
-				loc, err := a.Locations.FindByLabel(tc.locationLabel)
+				loc, err := a.Locations.Get().WithLabel(tc.locationLabel).First()
 				require.NoError(t, err)
 				assert.Equal(t, loc.ID, c.LocationID)
 
 				assert.Equal(t, tc.created, c.Created)
 				assert.Equal(t, tc.human, c.Human)
 
-				for k, v := range tc.vars {
-					actual, err := a.Variables.FindByLabel(tc.label, k)
+				for label, v := range tc.vars {
+					actual, err := a.Variables.Get().WithLabel(tc.label + "." + label).First()
 					require.NoError(t, err)
 
 					switch val := v.(type) {

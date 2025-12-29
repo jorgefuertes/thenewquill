@@ -1,11 +1,13 @@
 package database
 
-import "sync"
+import (
+	"sync"
+)
 
 type cursor struct {
 	mut  sync.Mutex
 	i    int
-	data data
+	data []Record
 }
 
 func newCursor() *cursor {
@@ -18,11 +20,18 @@ func newCursor() *cursor {
 func (c *cursor) Reset() {
 	c.mut = sync.Mutex{}
 	c.i = 0
-	c.data = make(data, 0)
+	c.data = make([]Record, 0)
 }
 
-func (c *cursor) addOrReplace(id uint32, r Record) {
-	c.data[id] = r
+func (c *cursor) addOrReplace(r Record) {
+	c.mut.Lock()
+	defer c.mut.Unlock()
+
+	c.data = append(c.data, r)
+}
+
+func (c *cursor) Exists() bool {
+	return c.Count() > 0
 }
 
 func (c *cursor) Count() int {
@@ -38,26 +47,26 @@ func (c *cursor) Close() {
 }
 
 func (c *cursor) Next(dst any) bool {
-	checkDst(dst)
+	_, _ = checkEntity(dst)
 
-	_, r, ok := c.getByIndex(c.i)
+	r, ok := c.getByIndex(c.i)
 	if !ok {
 		return false
 	}
-
-	c.i++
 
 	if err := r.Unmarshal(dst); err != nil {
 		return false
 	}
 
+	c.positionIncrement()
+
 	return true
 }
 
 func (c *cursor) First(dst any) error {
-	checkDst(dst)
+	_, _ = checkEntity(dst)
 
-	_, r, ok := c.getByIndex(0)
+	r, ok := c.getByIndex(0)
 	if !ok {
 		return ErrRecordNotFound
 	}
@@ -65,51 +74,41 @@ func (c *cursor) First(dst any) error {
 	return r.Unmarshal(dst)
 }
 
-func (c *cursor) getFirstRecord() (uint32, Record, bool) {
-	for id, r := range c.data {
-		return id, r, true
-	}
+func (c *cursor) positionIncrement() {
+	c.mut.Lock()
+	defer c.mut.Unlock()
 
-	return 0, Record{}, false
+	c.i++
 }
 
-func (c *cursor) getByIndex(i int) (uint32, Record, bool) {
-	if i >= len(c.data) {
-		return 0, Record{}, false
+func (c *cursor) getByIndex(i int) (Record, bool) {
+	c.mut.Lock()
+	defer c.mut.Unlock()
+
+	if i < 0 || i >= len(c.data) {
+		return Record{}, false
 	}
 
-	var cur int
-	for id, r := range c.data {
-		if cur == i {
-			return id, r, true
-		}
-
-		cur++
-		if cur > i {
-			break
-		}
-	}
-
-	return 0, Record{}, false
+	return c.data[i], true
 }
 
-func (db *DB) Query(filters ...filter) *cursor {
+func (db *DB) Query(filters ...Filter) *cursor {
 	c := newCursor()
 
 	db.lock()
 	defer db.unlock()
 
-	for id, r := range db.data {
+	for _, r := range db.data {
 		if db.matchesAllFilters(r, filters...) {
-			c.addOrReplace(id, r)
+			c.addOrReplace(r)
 		}
 	}
 
 	if db.IsFrozen() {
 		for _, snap := range db.snapshots {
-			for id, r := range snap {
+			for _, r := range snap {
 				if db.matchesAllFilters(r, filters...) {
-					c.addOrReplace(id, r)
+					c.addOrReplace(r)
 				}
 			}
 		}

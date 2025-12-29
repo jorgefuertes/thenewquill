@@ -1,15 +1,13 @@
 package item
 
-import (
-	"github.com/jorgefuertes/thenewquill/internal/adapter"
-)
+import "github.com/jorgefuertes/thenewquill/internal/database/adapter"
 
 type Item struct {
 	ID          uint32
-	LabelID     uint32
-	NounID      uint32
+	LabelID     uint32 `valid:"required"`
+	NounID      uint32 `valid:"required"`
 	AdjectiveID uint32
-	Description string
+	Description string `valid:"required"`
 	Weight      int
 	MaxWeight   int
 	Container   bool
@@ -21,21 +19,17 @@ type Item struct {
 
 var _ adapter.Storeable = &Item{}
 
-func New(id, nounID, adjectiveID uint32) *Item {
-	return &Item{
-		ID:          id,
-		NounID:      nounID,
-		AdjectiveID: adjectiveID,
-		Weight:      0,
-		MaxWeight:   100,
-	}
+const defaultMaxWeight = 100
+
+func New() *Item {
+	return &Item{MaxWeight: defaultMaxWeight}
 }
 
 func (i *Item) SetID(id uint32) {
 	i.ID = id
 }
 
-func (i Item) GetID() uint32 {
+func (i *Item) GetID() uint32 {
 	return i.ID
 }
 
@@ -43,6 +37,6 @@ func (i *Item) SetLabelID(id uint32) {
 	i.LabelID = id
 }
 
-func (i Item) GetLabelID() uint32 {
+func (i *Item) GetLabelID() uint32 {
 	return i.LabelID
 }

@@ -1,22 +1,21 @@
 package status
 
 import (
-	"errors"
+	"encoding/json"
 	"reflect"
 	"slices"
 
-	"github.com/jorgefuertes/thenewquill/internal/adapter"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 	cerr "github.com/jorgefuertes/thenewquill/internal/compiler/compiler_error"
 	"github.com/jorgefuertes/thenewquill/internal/compiler/line"
 	"github.com/jorgefuertes/thenewquill/internal/database"
-	"github.com/jorgefuertes/thenewquill/internal/database/primitive"
+	"github.com/jorgefuertes/thenewquill/internal/database/adapter"
+	"github.com/jorgefuertes/thenewquill/pkg/log"
 )
 
 const stackSize = 5
 
 type currentStoreable struct {
-	labelID   uint32
 	storeable adapter.Storeable
 	line      line.Line
 	filename  string
@@ -88,7 +87,8 @@ func (s *Status) SaveCurrentStoreable() cerr.CompilerError {
 		return cerr.OK
 	}
 
-	s.current.storeable.SetLabelID(s.current.labelID)
+	j, _ := json.Marshal(s.current.storeable)
+	log.Debug("💾 [STATUS] SaveCurrentStoreable: %T:%s", s.current.storeable, j)
 
 	_, err := s.db.Create(s.current.storeable)
 	if err != nil {
@@ -117,35 +117,41 @@ func (s *Status) GetCurrentStoreable(dst any) bool {
 	return true
 }
 
-func (s *Status) SetCurrentStoreable(storeable adapter.Storeable) error {
+func (s *Status) SetCurrentStoreable(storeable adapter.Storeable) {
+	if storeable != nil {
+		j, _ := json.Marshal(storeable)
+		log.Debug("📎 [STATUS] SetCurrentStoreable WITH %T:%s", storeable, j)
+	} else {
+		log.Debug("📎 [STATUS] SetCurrentStoreable WITH nil 💨")
+	}
+
+	if s.current == nil {
+		log.Debug("📎 [STATUS] SetCurrentStoreable NIL PARENT")
+		s.current = &currentStoreable{
+			storeable: storeable,
+			line:      s.Stack[len(s.Stack)-1],
+			filename:  s.filenames[len(s.filenames)-1],
+		}
+
+		return
+	}
+
+	j, _ := json.Marshal(s.current.storeable)
+	log.Debug("📎 [STATUS] SetCurrentStoreable EXISTING %T:%s", s.current.storeable, j)
 	s.current.storeable = storeable
-
-	return nil
-}
-
-func (s *Status) SetCurrentLabelID(id uint32) error {
-	if s.current != nil {
-		return errors.New("unexpected: cannot set a new label, current storeable already set")
-	}
-
-	s.current = &currentStoreable{
-		labelID:  id,
-		line:     s.Stack[len(s.Stack)-1],
-		filename: s.CurrentFilename(),
-	}
-
-	return nil
 }
 
 func (s *Status) GetCurrentLabelID() uint32 {
-	if s.current == nil {
-		return primitive.UndefinedID
+	if s.current == nil || s.current.storeable == nil {
+		return 0
 	}
 
-	return s.current.labelID
+	return s.current.storeable.GetLabelID()
 }
 
 func (s *Status) ClearCurrent() {
+	log.Debug("📎 [STATUS] ClearCurrent")
+
 	s.current = nil
 }
 

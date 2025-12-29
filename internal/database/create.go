@@ -1,8 +1,11 @@
 package database
 
 import (
+	"encoding/json"
+
 	"github.com/fxamacker/cbor/v2"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
+	"github.com/jorgefuertes/thenewquill/pkg/log"
 )
 
 func (db *DB) Create(entity any) (uint32, error) {
@@ -14,10 +17,10 @@ func (db *DB) Create(entity any) (uint32, error) {
 		return 0, ErrDatabaseIsFull
 	}
 
-	id, labelID, err := checkEntity(entity)
-	if err != nil {
-		return id, err
-	}
+	id, labelID := checkEntity(entity)
+
+	j, _ := json.Marshal(entity)
+	log.Debug("🗄️ [DB] Create: %T:%s", entity, j)
 
 	if id != 0 {
 		return id, ErrIDFieldIsNotZero
@@ -36,7 +39,7 @@ func (db *DB) Create(entity any) (uint32, error) {
 		Data:    []byte{},
 	}
 
-	id, err = db.getNewDataID()
+	id, err := db.getNewDataID()
 	if err != nil {
 		return 0, err
 	}

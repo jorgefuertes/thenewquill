@@ -3,20 +3,12 @@ package message
 import (
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 	"github.com/jorgefuertes/thenewquill/internal/database"
-	"github.com/jorgefuertes/thenewquill/internal/database/primitive"
+	"github.com/jorgefuertes/thenewquill/pkg/validator"
 )
 
-func (m Message) Validate(allowNoID bool) error {
-	if err := m.ID.ValidateID(false); err != nil && !allowNoID {
+func (m Message) Validate() error {
+	if err := validator.Validate(m); err != nil {
 		return err
-	}
-
-	if m.ID < primitive.MinID && !allowNoID {
-		return primitive.ErrInvalidID
-	}
-
-	if m.Text == "" {
-		return ErrUndefinedText
 	}
 
 	if m.Plurals[One] != "" || m.Plurals[Many] != "" {
@@ -34,7 +26,7 @@ func (s *Service) ValidateAll() error {
 
 	var m Message
 	for msgs.Next(&m) {
-		if err := m.Validate(false); err != nil {
+		if err := m.Validate(); err != nil {
 			return err
 		}
 	}

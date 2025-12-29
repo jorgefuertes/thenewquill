@@ -1,9 +1,10 @@
 package config
 
 import (
+	"slices"
+
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 	"github.com/jorgefuertes/thenewquill/internal/database"
-	"github.com/jorgefuertes/thenewquill/internal/database/primitive"
 )
 
 type Service struct {
@@ -14,25 +15,15 @@ func NewService(db *database.DB) *Service {
 	return &Service{db: db}
 }
 
-func (s *Service) Set(labelOrString any, v string) (uint32, error) {
-	label, err := primitive.LabelFromLabelOrString(labelOrString)
-	if err != nil {
-		return primitive.UndefinedID, err
+func (s *Service) Set(label, v string) (uint32, error) {
+	if !slices.Contains(allowedParamLabels, label) {
+		return 0, ErrUnrecognizedConfigField
 	}
 
-	if !isLabelAllowed(label) {
-		return primitive.UndefinedID, ErrUnrecognizedConfigField
-	}
-
-	labelID, err := s.db.CreateLabelIfNotExists(label, database.DenyCompositeLabel)
-	if err != nil {
-		return primitive.UndefinedID, err
-	}
-
-	if s.db.Exists(database.FilterByKind(kind.Param), database.FilterByLabelID(labelID)) {
+	if s.Exists(label) {
 		p, err := s.GetByLabel(label)
 		if err != nil {
-			return primitive.UndefinedID, err
+			return 0, err
 		}
 
 		p.V = v
@@ -40,7 +31,12 @@ func (s *Service) Set(labelOrString any, v string) (uint32, error) {
 		return p.ID, s.db.Update(p)
 	}
 
-	p := New(primitive.UndefinedID, labelID, v)
+	labelID, err := s.db.CreateLabel(label)
+	if err != nil {
+		return 0, err
+	}
+
+	p := &Param{LabelID: labelID, V: v}
 
 	return s.db.Create(p)
 }
@@ -52,42 +48,27 @@ func (s *Service) Get(id uint32) (*Param, error) {
 	return p, err
 }
 
-func (s *Service) GetByLabel(labelOrString any) (*Param, error) {
-	label, err := primitive.LabelFromLabelOrString(labelOrString)
-	if err != nil {
-		return nil, err
-	}
-
+func (s *Service) GetByLabel(label string) (*Param, error) {
 	p := &Param{}
-	err = s.db.GetByLabel(label, p)
+	err := s.db.GetByLabel(label, p)
 
 	return p, err
 }
 
-func (s *Service) Exists(labelOrString any) bool {
-	label, err := primitive.LabelFromLabelOrString(labelOrString)
-	if err != nil {
-		return false
-	}
-
+func (s *Service) Exists(label string) bool {
 	labelID, err := s.db.GetLabelID(label)
 	if err != nil {
 		return false
 	}
 
-	return s.db.Exists(database.FilterByLabelID(labelID), database.FilterByKind(kind.Param))
+	return s.db.Query(database.FilterByLabelID(labelID), database.FilterByKind(kind.Param)).Exists()
 }
 
 func (s *Service) Count() int {
-	return s.db.Count(database.FilterByKind(kind.Param))
+	return s.db.CountRecordsByKind(kind.Param)
 }
 
-func (s *Service) GetField(labelOrString any) string {
-	label, err := primitive.LabelFromLabelOrString(labelOrString)
-	if err != nil {
-		return ""
-	}
-
+func (s *Service) GetParam(label string) string {
 	c, err := s.GetByLabel(label)
 	if err != nil {
 		return ""

@@ -5,6 +5,7 @@ import (
 	cerr "github.com/jorgefuertes/thenewquill/internal/compiler/compiler_error"
 	"github.com/jorgefuertes/thenewquill/internal/compiler/line"
 	"github.com/jorgefuertes/thenewquill/internal/compiler/status"
+	"github.com/jorgefuertes/thenewquill/pkg/log"
 )
 
 func readConfig(l line.Line, st *status.Status, a *adventure.Adventure) error {
@@ -14,7 +15,12 @@ func readConfig(l line.Line, st *status.Status, a *adventure.Adventure) error {
 			WithFilename(st.CurrentFilename())
 	}
 
-	_, err := a.Config.Set(field, value)
+	log.Debug("💾 [readConfig] SetConfig: %s = %s", field, value)
+
+	id, err := a.Config.Set(field, value)
+	if err == nil {
+		log.Debug("🗄️ [DB] Created param %q with ID %d", field, id)
+	}
 
 	return err
 }

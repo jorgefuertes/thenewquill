@@ -8,7 +8,6 @@ import (
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/message"
 	"github.com/jorgefuertes/thenewquill/internal/compiler/rg"
-	"github.com/jorgefuertes/thenewquill/internal/database/primitive"
 )
 
 // AsInclude returns the include filename string and true if it was found
@@ -168,8 +167,8 @@ func (l Line) AsLabelNounAdjDeclaration() (labelName, nounName, adjetiveName str
 }
 
 // AsConfig returns the config field name and value and true if it was found
-func (l Line) AsConfig() (primitive.Label, string, bool) {
-	for _, label := range config.AllowedFieldLabels() {
+func (l Line) AsConfig() (string, string, bool) {
+	for _, label := range config.GetAllowedParamLabels() {
 		v, ok := l.GetTextForLabel(label)
 
 		if ok {

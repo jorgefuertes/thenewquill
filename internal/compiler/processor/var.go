@@ -16,19 +16,8 @@ func tryReadEntityVar(l line.Line, st *status.Status, a *adventure.Adventure) (b
 				WithFilename(st.CurrentFilename()).AddErr(err)
 		}
 
-		composedLabel, err := currentLabel.WithChild(name)
-		if err != nil {
-			return true, cerr.ErrInvalidLabel.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
-				WithFilename(st.CurrentFilename()).AddErr(err)
-		}
-
-		composedLabelID, err := a.DB.CreateLabelIfNotExists(composedLabel.String(), true)
-		if err != nil {
-			return true, cerr.ErrInvalidLabel.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
-				WithFilename(st.CurrentFilename()).AddErr(err)
-		}
-
-		if _, err := a.Variables.CreateWithLabel(composedLabelID, value); err != nil {
+		composedLabel := currentLabel + "." + name
+		if _, err := a.Variables.SetByLabel(composedLabel, value); err != nil {
 			return true, cerr.ErrWrongVariableDeclaration.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
 				WithFilename(st.CurrentFilename()).AddErr(err)
 		}
@@ -46,13 +35,7 @@ func readVar(l line.Line, st *status.Status, a *adventure.Adventure) error {
 			WithFilename(st.CurrentFilename())
 	}
 
-	labelID, err := a.DB.CreateLabelIfNotExists(label, true)
-	if err != nil {
-		return cerr.ErrInvalidLabel.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
-			WithFilename(st.CurrentFilename()).AddErr(err)
-	}
-
-	if _, err := a.Variables.CreateWithLabel(labelID, value); err != nil {
+	if _, err := a.Variables.SetByLabel(label, value); err != nil {
 		return cerr.ErrWrongVariableDeclaration.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
 			WithFilename(st.CurrentFilename()).AddErr(err)
 	}

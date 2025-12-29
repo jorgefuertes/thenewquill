@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"github.com/jorgefuertes/thenewquill/internal/compiler/line"
-	"github.com/jorgefuertes/thenewquill/internal/database/primitive"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -16,7 +15,7 @@ func TestGetTextForLabel(t *testing.T) {
 	tests := []struct {
 		name        string
 		lineText    string
-		label       primitive.Label
+		label       string
 		expected    string
 		shouldMatch bool
 	}{

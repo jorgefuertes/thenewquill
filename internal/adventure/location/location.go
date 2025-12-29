@@ -1,37 +1,28 @@
 package location
 
-import (
-	"github.com/jorgefuertes/thenewquill/internal/adapter"
-	"github.com/jorgefuertes/thenewquill/internal/database/primitive"
-)
+import "github.com/jorgefuertes/thenewquill/internal/database/adapter"
 
 const Undefined = `undefined`
 
 type Location struct {
 	ID          uint32
-	LabelID     uint32
-	Title       string
-	Description string
+	LabelID     uint32 `valid:"required"`
+	Title       string `valid:"required"`
+	Description string `valid:"required"`
 	Conns       []Connection
 }
 
 var _ adapter.Storeable = &Location{}
 
-func New(title, desc string) *Location {
-	return &Location{
-		ID:          primitive.UndefinedID,
-		LabelID:     primitive.UndefinedID,
-		Title:       title,
-		Description: desc,
-		Conns:       make([]Connection, 0),
-	}
+func New() *Location {
+	return &Location{Conns: make([]Connection, 0)}
 }
 
 func (l *Location) SetID(id uint32) {
 	l.ID = id
 }
 
-func (l Location) GetID() uint32 {
+func (l *Location) GetID() uint32 {
 	return l.ID
 }
 
@@ -39,7 +30,7 @@ func (l *Location) SetLabelID(id uint32) {
 	l.LabelID = id
 }
 
-func (l Location) GetLabelID() uint32 {
+func (l *Location) GetLabelID() uint32 {
 	return l.LabelID
 }
 
@@ -70,7 +61,7 @@ func (l *Location) GetConn(wordID uint32) uint32 {
 		return l.Conns[idx].LocationID
 	}
 
-	return primitive.UndefinedID
+	return 0
 }
 
 func (l *Location) HasConn(wordID uint32) bool {

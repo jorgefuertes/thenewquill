@@ -20,7 +20,7 @@ const (
 )
 
 var (
-	defaultLevel = DebugLevel
+	defaultLevel = WarningLevel
 	output       io.Writer
 )
 

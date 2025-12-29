@@ -11,6 +11,8 @@ import (
 	"os"
 	"time"
 
+	"github.com/jorgefuertes/thenewquill/internal/adventure/config"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 	"github.com/jorgefuertes/thenewquill/internal/compiler"
 	"github.com/jorgefuertes/thenewquill/pkg/log"
 
@@ -77,21 +79,23 @@ func compileAction(c *cli.Context) error {
 	t.SetOutputMirror(os.Stdout)
 	t.AppendHeader(table.Row{"Section", "Entries"})
 	t.AppendRows([]table.Row{
-		{"vars", fmt.Sprintf("%d", a.Variables.Count())},
-		{"vocabulary", fmt.Sprintf("%d", a.Words.Count())},
-		{"messages", fmt.Sprintf("%d", a.Messages.Count())},
-		{"locations", fmt.Sprintf("%d", a.Locations.Count())},
-		{"items", fmt.Sprintf("%d", a.Items.Count())},
-		{"characters", fmt.Sprintf("%d", a.Characters.Count())},
+		{"vars", fmt.Sprintf("%d", a.DB.CountRecordsByKind(kind.Variable))},
+		{"vocabulary", fmt.Sprintf("%d", a.DB.CountRecordsByKind(kind.Word))},
+		{"messages", fmt.Sprintf("%d", a.DB.CountRecordsByKind(kind.Message))},
+		{"locations", fmt.Sprintf("%d", a.DB.CountRecordsByKind(kind.Location))},
+		{"items", fmt.Sprintf("%d", a.DB.CountRecordsByKind(kind.Item))},
+		{"characters", fmt.Sprintf("%d", a.DB.CountRecordsByKind(kind.Character))},
 	})
-	t.AppendFooter(table.Row{"Total", fmt.Sprintf("%d entries", a.DB.Count())})
+	t.AppendFooter(
+		table.Row{"Total", fmt.Sprintf("%d entries with %d labels", a.DB.CountRecords(), a.DB.CountLabels())},
+	)
 	t.SetStyle(table.StyleColoredCyanWhiteOnBlack)
 	fmt.Println()
 	fmt.Printf(
 		"> %s v%s\n> %s\n",
-		a.Config.GetField("title"),
-		a.Config.GetField("version"),
-		a.Config.GetField("author"),
+		a.Config.GetParam(config.TitleParamLabel),
+		a.Config.GetParam(config.VersionParamLabel),
+		a.Config.GetParam(config.AuthorParamLabel),
 	)
 	fmt.Printf("> Compiled in %dms\n", elapsed.Milliseconds())
 	fmt.Println("> Compiler: v" + compiler.VERSION)

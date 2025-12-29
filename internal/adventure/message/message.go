@@ -4,17 +4,15 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/jorgefuertes/thenewquill/internal/adapter"
+	"github.com/jorgefuertes/thenewquill/internal/database/adapter"
 )
 
 type Message struct {
 	ID      uint32
-	LabelID uint32
-	Text    string
+	LabelID uint32 `valid:"required"`
+	Text    string `valid:"required"`
 	Plurals [2]string
 }
-
-var _ adapter.Storeable = &Message{}
 
 type Plural int
 
@@ -35,8 +33,10 @@ func PluralFromString(s string) Plural {
 	}
 }
 
-func New(id uint32, text string) *Message {
-	m := &Message{ID: id, Text: text, Plurals: [2]string{}}
+var _ adapter.Storeable = &Message{}
+
+func New() *Message {
+	m := &Message{Plurals: [2]string{}}
 
 	return m
 }
@@ -45,7 +45,7 @@ func (m *Message) SetID(id uint32) {
 	m.ID = id
 }
 
-func (m Message) GetID() uint32 {
+func (m *Message) GetID() uint32 {
 	return m.ID
 }
 
@@ -53,7 +53,7 @@ func (m *Message) SetLabelID(id uint32) {
 	m.LabelID = id
 }
 
-func (m Message) GetLabelID() uint32 {
+func (m *Message) GetLabelID() uint32 {
 	return m.LabelID
 }
 

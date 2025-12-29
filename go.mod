@@ -4,6 +4,7 @@ go 1.25.3
 
 require (
 	github.com/drhodes/golorem v0.0.0-20220328165741-da82e5b29246
+	github.com/fxamacker/cbor/v2 v2.9.0
 	github.com/gdamore/tcell/v2 v2.9.0
 	github.com/jedib0t/go-pretty/v6 v6.7.0
 	github.com/mitchellh/go-wordwrap v1.0.1
@@ -14,7 +15,6 @@ require (
 require (
 	github.com/clipperhouse/stringish v0.1.1 // indirect
 	github.com/clipperhouse/uax29/v2 v2.3.0 // indirect
-	github.com/fxamacker/cbor/v2 v2.9.0 // indirect
 	github.com/x448/float16 v0.8.4 // indirect
 )
 
@@ -224,7 +224,7 @@ require (
 	golang.org/x/exp/typeparams v0.0.0-20250210185358-939b2ce775ac // indirect
 	golang.org/x/mod v0.29.0 // indirect
 	golang.org/x/sync v0.17.0 // indirect
-	golang.org/x/sys v0.38.0 // indirect
+	golang.org/x/sys v0.39.0 // indirect
 	golang.org/x/telemetry v0.0.0-20251008203120-078029d740a8 // indirect
 	golang.org/x/term v0.36.0 // indirect
 	golang.org/x/text v0.30.0

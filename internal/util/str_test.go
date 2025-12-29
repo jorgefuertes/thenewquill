@@ -12,7 +12,7 @@ import (
 func TestStrHelpers(t *testing.T) {
 	const maxLen = 40
 
-	text :=  []string{
+	text := []string{
 		`123456789|123456789|123456789|123456789|`,
 		`Lorem ipsum dolor sit amet, consectetur `,
 		`adipiscing elit, sed do eiusmod tempor  `,
@@ -27,14 +27,14 @@ func TestStrHelpers(t *testing.T) {
 		`in culpa qui officia deserunt mollit    `,
 		`anim id est laborum.         		     `,
 	}
-	
+
 	oneLineText := strings.Join(text, " ")
 	oneLineText = regexp.MustCompile(`\s+`).ReplaceAllString(oneLineText, " ")
 	oneLineText = strings.TrimSpace(oneLineText)
 
 	t.Run("SplitIntoLines", func(t *testing.T) {
 		lines := util.SplitIntoLines(oneLineText, maxLen)
-		
+
 		for i, line := range lines {
 			t.Logf("%04d [%-40s] (%02d)", i, line, len(line))
 			assert.NotEmpty(t, line, "line %d is empty", i)
@@ -45,5 +45,4 @@ func TestStrHelpers(t *testing.T) {
 
 		assert.Len(t, lines, len(text), "should have %d lines and I have %d", len(text), len(lines))
 	})
-	
 }

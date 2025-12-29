@@ -7,4 +7,6 @@ var (
 	ErrNoHuman          = errors.New("no human character defined")
 	ErrEmptyDescription = errors.New("character has empty description")
 	ErrCannotImport     = errors.New("cannot import character")
+	ErrMissingNoun      = errors.New("missing noun")
+	ErrMissingAdjective = errors.New("missing adjective")
 )

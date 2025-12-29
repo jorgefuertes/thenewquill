@@ -30,8 +30,9 @@ test-input: test-clean
 
 lint:
 	@echo "Linting..."
-	@go tool gofumpt -l -d .
+	@go tool gofumpt -l -w .
 	@go tool staticcheck ./...
+	@golangci-lint cache clean
 	@go tool golangci-lint run ./...
 
 clean: test-clean

@@ -5,7 +5,6 @@ import (
 
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/message"
-	"github.com/jorgefuertes/thenewquill/internal/database/primitive"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -100,25 +99,27 @@ func TestMessages(t *testing.T) {
 }
 
 func TestStoreable(t *testing.T) {
-	m := message.New(primitive.UndefinedID, helloWorld)
+	m := message.New()
+	m.Text = helloWorld
 	require.NotEmpty(t, m)
 	assert.Equal(t, helloWorld, m.String())
 
-	m = message.New(primitive.UndefinedID, "No coins.")
+	m.Text = "No coins."
 	m.SetPlurals([2]string{"One coin.", "Many coins."})
 	assert.Equal(t, "No coins.", m.String())
 	assert.Equal(t, "One coin.", m.Stringf(1))
 	assert.Equal(t, "Many coins.", m.Stringf(2))
 
-	m.ID = uint32(5)
-	assert.Equal(t, uint32(5), m.GetID())
+	m.ID = 5
+	assert.Equal(t, uint32(5), m.ID)
 
-	m.SetID(uint32(10))
-	assert.Equal(t, uint32(10), m.GetID())
+	m.ID = 10
+	assert.Equal(t, uint32(10), m.ID)
 
 	assert.Equal(t, kind.Message, kind.KindOf(m))
 
-	m = message.New(primitive.UndefinedID, "No one")
+	m = message.New()
+	m.Text = "No one"
 	m.SetPlural(message.One, "Only one")
 	m.SetPlural(message.Many, "Many")
 	assert.Equal(t, "No one", m.String())
@@ -127,25 +128,16 @@ func TestStoreable(t *testing.T) {
 }
 
 func TestValidate(t *testing.T) {
-	m := message.New(primitive.UndefinedID, helloWorld)
-	require.Error(t, m.Validate(false))
-	assert.ErrorIs(t, primitive.ErrUndefinedID, m.Validate(false))
-
-	m.ID = uint32(3)
-	require.Error(t, m.Validate(false))
-	assert.ErrorIs(t, primitive.ErrInvalidID, m.Validate(false))
-
-	m.ID = uint32(4)
-	require.NoError(t, m.Validate(false))
-
-	m.Text = ""
-	require.Error(t, m.Validate(false))
-	assert.ErrorIs(t, message.ErrUndefinedText, m.Validate(false))
+	m := message.New()
+	require.Error(t, m.Validate())
+	assert.ErrorContains(t, m.Validate(), "LabelID is required")
+	m.LabelID = 7
+	assert.ErrorContains(t, m.Validate(), "Text is required")
 
 	m.Text = helloWorld
 	m.Plurals[message.One] = "One"
-	require.Error(t, m.Validate(false))
-	assert.ErrorIs(t, message.ErrUndefinedPlural, m.Validate(false))
+	require.Error(t, m.Validate())
+	assert.ErrorIs(t, message.ErrUndefinedPlural, m.Validate())
 	m.Plurals[message.Many] = "Many"
-	require.NoError(t, m.Validate(false))
+	require.NoError(t, m.Validate())
 }

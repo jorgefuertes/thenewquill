@@ -6,11 +6,12 @@ import (
 
 	"github.com/jorgefuertes/thenewquill/internal/adventure"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/character"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/word"
 	cerr "github.com/jorgefuertes/thenewquill/internal/compiler/compiler_error"
 	"github.com/jorgefuertes/thenewquill/internal/compiler/line"
 	"github.com/jorgefuertes/thenewquill/internal/compiler/status"
 	"github.com/jorgefuertes/thenewquill/internal/database"
-	"github.com/jorgefuertes/thenewquill/internal/database/primitive"
 )
 
 func readCharacter(l line.Line, st *status.Status, a *adventure.Adventure) error {
@@ -24,10 +25,7 @@ func readCharacter(l line.Line, st *status.Status, a *adventure.Adventure) error
 		desc, ok := l.GetTextForFirstFoundLabel("description", "desc")
 		if ok {
 			c.Description = desc
-
-			if err := st.SetCurrentStoreable(c); err != nil {
-				return err
-			}
+			st.SetCurrentStoreable(c)
 
 			return nil
 		}
@@ -36,43 +34,34 @@ func readCharacter(l line.Line, st *status.Status, a *adventure.Adventure) error
 
 		if o == "is created" {
 			c.Created = true
-
-			if err := st.SetCurrentStoreable(c); err != nil {
-				return err
-			}
+			st.SetCurrentStoreable(c)
 
 			return nil
 		}
 
 		if o == "is human" {
-			if a.Characters.HasHuman() {
+			if a.DB.Query(database.FilterByKind(kind.Character), database.NewFilter("Human", database.Equal, true)).
+				Exists() {
 				return cerr.ErrOnlyOneHuman.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
 					WithFilename(st.CurrentFilename())
 			}
 
 			c.Human = true
-
-			if err := st.SetCurrentStoreable(c); err != nil {
-				return err
-			}
+			st.SetCurrentStoreable(c)
 
 			return nil
 		}
 
 		if strings.HasPrefix(o, "is at ") {
-			locName := strings.TrimPrefix(o, "is at ")
-
-			labelID, err := a.DB.CreateLabelIfNotExists(locName, database.DenyCompositeLabel)
+			locLabel := strings.TrimPrefix(o, "is at ")
+			loc, err := a.Locations.Get().WithLabel(locLabel).First()
 			if err != nil {
-				return cerr.ErrInvalidLabel.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
+				return cerr.ErrLocationNotFound.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
 					WithFilename(st.CurrentFilename()).AddErr(err)
 			}
 
-			c.LocationID = labelID
-
-			if err := st.SetCurrentStoreable(c); err != nil {
-				return err
-			}
+			c.LocationID = loc.ID
+			st.SetCurrentStoreable(c)
 
 			return nil
 		}
@@ -88,33 +77,32 @@ func readCharacter(l line.Line, st *status.Status, a *adventure.Adventure) error
 		}
 	}
 
-	labelName, nounName, adjName, ok := l.AsLabelNounAdjDeclaration()
+	label, nounLabel, adjLabel, ok := l.AsLabelNounAdjDeclaration()
 	if ok {
+		// close and save current character if any
 		if err := st.SaveCurrentStoreable(); !err.IsOK() {
 			return err
 		}
 
-		labelID, err := a.DB.CreateLabelIfNotExists(labelName, database.DenyCompositeLabel)
-		if err := st.SetCurrentLabelID(labelID); err != nil {
-			return err
-		}
-
-		nounLabelID, err := a.DB.CreateLabelIfNotExists(nounName, database.DenyCompositeLabel)
+		labelID, err := a.DB.CreateLabel(label)
 		if err != nil {
 			return cerr.ErrInvalidLabel.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
 				WithFilename(st.CurrentFilename()).AddErr(err)
 		}
 
-		adjLabelID, err := a.DB.CreateLabelIfNotExists(adjName, database.DenyCompositeLabel)
+		noun, err := a.Words.Get().WithLabel(nounLabel).WithType(word.Noun).First()
 		if err != nil {
-			return cerr.ErrInvalidLabel.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
+			return cerr.ErrWordNotFound.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
 				WithFilename(st.CurrentFilename()).AddErr(err)
 		}
 
-		c := character.New(primitive.UndefinedID, labelID, nounLabelID, adjLabelID)
-		if err := st.SetCurrentStoreable(c); err != nil {
-			return err
+		adj, err := a.Words.Get().WithLabel(adjLabel).WithType(word.Adjective).First()
+		if err != nil {
+			return cerr.ErrWordNotFound.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
+				WithFilename(st.CurrentFilename()).AddErr(err)
 		}
+
+		st.SetCurrentStoreable(&character.Character{LabelID: labelID, NounID: noun.ID, AdjectiveID: adj.ID})
 
 		return nil
 	}

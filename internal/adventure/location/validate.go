@@ -6,31 +6,17 @@ import (
 
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 	"github.com/jorgefuertes/thenewquill/internal/database"
-	"github.com/jorgefuertes/thenewquill/internal/database/primitive"
+	"github.com/jorgefuertes/thenewquill/pkg/validator"
 )
 
-func (l Location) Validate(allowNoID bool) error {
-	if err := l.ID.ValidateID(false); err != nil && !allowNoID {
-		if err == primitive.ErrInvalidID && !allowNoID {
-			return err
-		}
-	}
-
-	if l.ID < primitive.MinID && !allowNoID {
-		return ErrWrongLabel
-	}
-
-	if l.Description == "" || l.Description == Undefined {
-		return ErrUndefDesc
+func (l Location) Validate() error {
+	if err := validator.Validate(l); err != nil {
+		return err
 	}
 
 	for _, conn := range l.Conns {
-		if conn.WordID == primitive.UndefinedID {
-			return ErrConnWordUndefinedID
-		}
-
-		if conn.LocationID == primitive.UndefinedID {
-			return ErrConnLocationUndefinedID
+		if err := validator.Validate(conn); err != nil {
+			return err
 		}
 	}
 
@@ -43,30 +29,29 @@ func (s *Service) ValidateAll() error {
 
 	var loc Location
 	for locations.Next(&loc) {
-		if err := loc.Validate(false); err != nil {
+		if err := loc.Validate(); err != nil {
 			return errors.Join(err, fmt.Errorf("location %d: %s", loc.ID, s.db.GetLabelOrBlank(loc.LabelID)))
 		}
 
 		for i, conn := range loc.Conns {
-			wordLabel, _ := s.db.GetLabelForStoreable(conn.WordID)
-			dstLocLabel, _ := s.db.GetLabelForStoreable(conn.LocationID)
 			connErr := fmt.Errorf(
-				"conn %02d: %s(%d):%s(%d)->%s(%d)",
-				i,
+				"location %q, connection #%d: %q-->%q",
 				s.db.GetLabelOrBlank(loc.LabelID),
-				loc.ID,
-				wordLabel,
-				conn.WordID,
-				dstLocLabel,
-				conn.LocationID,
+				i,
+				s.db.GetLabelFromRecordOrBlank(conn.WordID),
+				s.db.GetLabelFromRecordOrBlank(conn.LocationID),
 			)
 
-			if !s.db.Exists(database.FilterByID(conn.WordID), database.FilterByKind(kind.Word)) {
-				return errors.Join(ErrConnWordNotFound, connErr)
+			wordExists := s.db.Query(database.FilterByID(conn.WordID), database.FilterByKind(kind.Word)).Exists()
+			locationExists := s.db.Query(database.FilterByID(conn.LocationID), database.FilterByKind(kind.Location)).
+				Exists()
+
+			if !wordExists {
+				return fmt.Errorf("%w: %w", ErrConnWordNotFound, connErr)
 			}
 
-			if !s.db.Exists(database.FilterByID(conn.LocationID), database.FilterByKind(kind.Location)) {
-				return errors.Join(ErrConnLocationNotFound, connErr)
+			if !locationExists {
+				return fmt.Errorf("%w: %w", ErrConnLocationNotFound, connErr)
 			}
 		}
 	}

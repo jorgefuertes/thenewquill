@@ -25,6 +25,10 @@ var validators = []validator{
 
 func Validate(input any) error {
 	v := reflect.ValueOf(input)
+	if v.Kind() == reflect.Ptr {
+		v = v.Elem()
+	}
+
 	t := v.Type()
 
 	for i := 0; i < v.NumField(); i++ {

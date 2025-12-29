@@ -6,23 +6,11 @@ import (
 
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 	"github.com/jorgefuertes/thenewquill/internal/database"
-	"github.com/jorgefuertes/thenewquill/internal/database/primitive"
+	"github.com/jorgefuertes/thenewquill/pkg/validator"
 )
 
-func (w Word) Validate(allowNoID bool) error {
-	if w.ID == primitive.UndefinedID && !allowNoID {
-		return nil
-	}
-
-	if err := w.ID.ValidateID(false); err != nil && !allowNoID {
-		return fmt.Errorf("ID %q: %w", w.ID, err)
-	}
-
-	if len(w.Synonyms) == 0 {
-		return ErrEmptyWord
-	}
-
-	return nil
+func (w Word) Validate() error {
+	return validator.Validate(w)
 }
 
 func (s *Service) ValidateAll() error {
@@ -31,11 +19,11 @@ func (s *Service) ValidateAll() error {
 
 	var w Word
 	for words.Next(&w) {
-		if err := w.Validate(false); err != nil {
+		if err := w.Validate(); err != nil {
 			return err
 		}
 
-		words2 := s.db.Query(database.FilterByKind(kind.Word), database.Filter("type", database.Equal, w.Type))
+		words2 := s.db.Query(database.FilterByKind(kind.Word), database.NewFilter("type", database.Equal, w.Type))
 		defer words2.Close()
 
 		var w2 Word

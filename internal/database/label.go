@@ -19,6 +19,12 @@ func (db *DB) GetLabel(id uint32) (string, error) {
 	return db.getLabel(id)
 }
 
+func (db *DB) GetLabelOrBlank(id uint32) string {
+	l, _ := db.GetLabel(id)
+
+	return l
+}
+
 // getLabel returns the label if it exists, or ErrLabelNotFound, without locking
 func (db *DB) getLabel(id uint32) (string, error) {
 	label, ok := db.labels[id]
@@ -91,4 +97,21 @@ func (db *DB) CountLabels() uint32 {
 
 func (db *DB) ExistsLabelID(id uint32) bool {
 	return id <= db.CountLabels()
+}
+
+func (db *DB) GetLabelFromRecordOrBlank(id uint32) string {
+	db.lock()
+	defer db.unlock()
+
+	r, ok := db.data[id]
+	if !ok {
+		return ""
+	}
+
+	label, ok := db.labels[r.LabelID]
+	if !ok {
+		return ""
+	}
+
+	return label
 }

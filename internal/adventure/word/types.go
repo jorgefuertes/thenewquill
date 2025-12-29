@@ -13,6 +13,16 @@ const (
 	Conjunction
 )
 
+var WordTypes = []WordType{
+	Verb,
+	Noun,
+	Pronoun,
+	Adjective,
+	Adverb,
+	Preposition,
+	Conjunction,
+}
+
 func (w WordType) String() string {
 	switch w {
 	case None:

@@ -4,16 +4,15 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/jorgefuertes/thenewquill/internal/adapter"
-	"github.com/jorgefuertes/thenewquill/internal/database/primitive"
+	"github.com/jorgefuertes/thenewquill/internal/database/adapter"
 	"github.com/jorgefuertes/thenewquill/internal/util"
 )
 
 type Word struct {
 	ID       uint32
-	LabelID  uint32
-	Type     WordType
-	Synonyms []string
+	LabelID  uint32   `valid:"required"`
+	Type     WordType `valid:"required"`
+	Synonyms []string `valid:"count(1|25)"`
 }
 
 var _ adapter.Storeable = &Word{}
@@ -23,7 +22,7 @@ func New(labelID uint32, t WordType, synonyms ...string) *Word {
 		synonyms[i] = strings.ToLower(s)
 	}
 
-	return &Word{ID: primitive.UndefinedID, LabelID: labelID, Type: t, Synonyms: synonyms}
+	return &Word{ID: 0, LabelID: labelID, Type: t, Synonyms: synonyms}
 }
 
 func (w *Word) SetID(id uint32) {

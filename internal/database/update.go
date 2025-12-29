@@ -6,24 +6,17 @@ import (
 )
 
 func (db *DB) Update(entity any) error {
-	id, labelID, err := checkEntity(entity)
-	if err != nil {
-		return err
-	}
+	id, labelID := checkEntity(entity)
 
 	if id == 0 {
 		return ErrMissingIDToUpdate
-	}
-
-	if !db.Exists(id) {
-		return ErrRecordNotFound
 	}
 
 	if !db.ExistsLabelID(labelID) {
 		return ErrLabelNotFound
 	}
 
-	_, r, ok := db.Query(FilterByID(id), FilterByKind(kind.KindOf(entity))).getFirstRecord()
+	r, ok := db.data[id]
 	if !ok {
 		return ErrRecordNotFound
 	}
@@ -32,12 +25,13 @@ func (db *DB) Update(entity any) error {
 		return ErrWrongUpdateKind
 	}
 
-	r.LabelID = labelID
-
+	var err error
 	r.Data, err = cbor.Marshal(entity)
 	if err != nil {
 		return err
 	}
+
+	r.LabelID = labelID
 
 	if db.IsFrozen() {
 		// add to last snapshot

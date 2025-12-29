@@ -21,4 +21,8 @@ var (
 	ErrNoCurrentEntity          = newCompilerError("no current entity in compiler status")
 	ErrInvalidNumberDeclaration = newCompilerError("invalid number declaration")
 	ErrGenericCompilerError     = newCompilerError("compiler error")
+	ErrValidation               = newCompilerError("validation error")
+	ErrWordNotFound             = newCompilerError("word not found")
+	ErrAdjectiveNotFound        = newCompilerError("adjective not found")
+	ErrLocationNotFound         = newCompilerError("location not found")
 )

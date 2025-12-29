@@ -39,7 +39,7 @@ func TestKindString(t *testing.T) {
 		{"Location", kind.Location, "location"},
 		{"Process", kind.Process, "process table"},
 		{"Character", kind.Character, "character"},
-		{"Test", kind.Test, "testitem"},
+		{"Test", kind.Test, "test"},
 		{"Invalid", kind.Kind(254), "none"},
 	}
 

@@ -1,10 +1,8 @@
 package item
 
 import (
-	"github.com/jorgefuertes/thenewquill/internal/adapter"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 	"github.com/jorgefuertes/thenewquill/internal/database"
-	"github.com/jorgefuertes/thenewquill/internal/database/primitive"
 )
 
 type Service struct {
@@ -13,10 +11,6 @@ type Service struct {
 
 func NewService(d *database.DB) *Service {
 	return &Service{db: d}
-}
-
-func (s *Service) DB() *database.DB {
-	return s.db
 }
 
 func (s *Service) Create(i *Item) (uint32, error) {
@@ -34,28 +28,19 @@ func (s *Service) Get(id uint32) (*Item, error) {
 	return i, err
 }
 
-func (s *Service) GetByLabel(labelOrString any) (*Item, error) {
-	label, err := primitive.LabelFromLabelOrString(labelOrString)
-	if err != nil {
-		return nil, err
-	}
-
+func (s *Service) GetByLabel(label string) (*Item, error) {
 	i := &Item{}
-	err = s.db.GetByLabel(label, i)
+	err := s.db.GetByLabel(label, &i)
 
 	return i, err
 }
 
 func (s *Service) Count() int {
-	return s.db.Count(database.FilterByKind(kind.Item))
+	return s.db.CountRecordsByKind(kind.Item)
 }
 
 func (s *Service) SetCreated(i *Item, created bool) error {
 	i.Created = created
 
 	return s.Update(i)
-}
-
-func (s *Service) IsAt(i Item, at adapter.Storeable) bool {
-	return i.At == at.GetID()
 }

@@ -1,11 +1,11 @@
 package variable
 
 import (
-	"fmt"
 	"regexp"
 	"strconv"
 
-	"github.com/jorgefuertes/thenewquill/internal/adapter"
+	"github.com/jorgefuertes/thenewquill/internal/database/adapter"
+	"github.com/jorgefuertes/thenewquill/internal/util"
 	"github.com/jorgefuertes/thenewquill/pkg/log"
 )
 
@@ -29,47 +29,24 @@ type Variable struct {
 
 var _ adapter.Storeable = &Variable{}
 
-func New(id, labelID uint32, value any) *Variable {
-	v := &Variable{ID: id, LabelID: labelID}
-	v.Set(value)
-
-	return v
-}
-
 func (v *Variable) SetID(id uint32) {
 	v.ID = id
 }
 
-func (v Variable) GetID() uint32 {
+func (v *Variable) GetID() uint32 {
 	return v.ID
 }
 
 func (v *Variable) SetLabelID(id uint32) {
-	v.ID = id
+	v.LabelID = id
 }
 
-func (v Variable) GetLabelID() uint32 {
-	return v.ID
+func (v *Variable) GetLabelID() uint32 {
+	return v.LabelID
 }
 
-func (v *Variable) Set(value any) {
-	switch val := value.(type) {
-	case bool:
-		if val {
-			v.Value = TrueValue
-		} else {
-			v.Value = FalseValue
-		}
-	case int, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64, uintptr:
-		v.Value = fmt.Sprintf("%d", val)
-	case float32, float64:
-		v.Value = fmt.Sprintf("%.4f", val)
-	case string:
-		v.Value = val
-	default:
-		log.Warning("storing unknown value type %+v into var %d", val, v.ID)
-		v.Value = fmt.Sprint(value)
-	}
+func (v *Variable) SetValue(value any) {
+	v.Value = util.ValueToString(value)
 }
 
 func (v Variable) String() string {

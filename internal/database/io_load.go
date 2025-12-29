@@ -13,7 +13,11 @@ func (db *DB) Load(filename string) error {
 		return err
 	}
 
-	defer f.close()
+	defer func() {
+		if err := f.close(); err != nil {
+			log.Error("Error closing %q: %s", filename, err)
+		}
+	}()
 
 	if f.version != version {
 		log.Fatal("Invalid database header %q, expected version %q", f.version, version)

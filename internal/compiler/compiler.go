@@ -34,8 +34,7 @@ func Compile(filename string) (*adventure.Adventure, error) {
 		return a, cErr
 	}
 
-	// validate
-	return a, a.Validate()
+	return a, nil
 }
 
 func compileFile(st *status.Status, filename string, a *adventure.Adventure) error {
@@ -130,6 +129,14 @@ func compileFile(st *status.Status, filename string, a *adventure.Adventure) err
 			if s == kind.None {
 				return cerr.ErrUnknownSection.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
 					WithFilename(st.CurrentFilename())
+			}
+
+			if st.Section == kind.Location {
+				replaceLocationConnectionsIDs(a)
+			}
+
+			if st.Section != kind.None {
+				validateSection(a, st, st.Section)
 			}
 
 			st.Section = s

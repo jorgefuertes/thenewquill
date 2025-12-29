@@ -1,31 +1,29 @@
 package processor
 
 import (
-	"errors"
+	"fmt"
 
 	"github.com/jorgefuertes/thenewquill/internal/adventure"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/location"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/word"
 	cerr "github.com/jorgefuertes/thenewquill/internal/compiler/compiler_error"
 	"github.com/jorgefuertes/thenewquill/internal/compiler/line"
 	"github.com/jorgefuertes/thenewquill/internal/compiler/status"
 )
 
 func readLocation(l line.Line, st *status.Status, a *adventure.Adventure) error {
-	loc := location.New("", "")
-
-	// continue reading location definition
+	// continue reading location definition if one present
 	if st.HasCurrent() {
+		loc := location.New()
+
 		if !st.GetCurrentStoreable(&loc) {
-			return errors.New("unexpected: cannot get current location")
+			panic("unexpected: cannot get current location")
 		}
 
 		desc, ok := l.AsLocationDescription()
 		if ok {
 			loc.Description = desc
-
-			if err := st.SetCurrentStoreable(loc); err != nil {
-				return err
-			}
+			st.SetCurrentStoreable(loc)
 
 			return nil
 		}
@@ -33,35 +31,31 @@ func readLocation(l line.Line, st *status.Status, a *adventure.Adventure) error 
 		title, ok := l.AsLocationTitle()
 		if ok {
 			loc.Title = title
-
-			if err := st.SetCurrentStoreable(loc); err != nil {
-				return err
-			}
+			st.SetCurrentStoreable(loc)
 
 			return nil
 		}
 
 		exitMap, ok := l.AsLocationConns()
 		if ok {
-			for action, dest := range exitMap {
-				actionLabelID, err := a.DB.CreateLabelIfNotExists(action, false)
+			for actionLabel, destLabel := range exitMap {
+				var actionWord word.Word
+				if err := a.DB.GetByLabel(actionLabel, &actionWord); err != nil {
+					return cerr.ErrWordNotFound.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
+						WithFilename(st.CurrentFilename()).
+						AddErr(err).AddErr(fmt.Errorf("missing word with label %q", actionLabel))
+				}
+
+				destLabelID, err := a.DB.CreateLabel(destLabel)
 				if err != nil {
 					return cerr.ErrInvalidLabel.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
 						WithFilename(st.CurrentFilename()).AddErr(err)
 				}
 
-				destLabelID, err := a.DB.CreateLabelIfNotExists(dest, false)
-				if err != nil {
-					return cerr.ErrInvalidLabel.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
-						WithFilename(st.CurrentFilename()).AddErr(err)
-				}
-
-				loc.SetConn(actionLabelID, destLabelID)
+				loc.SetConn(actionWord.ID, destLabelID)
 			}
 
-			if err := st.SetCurrentStoreable(loc); err != nil {
-				return err
-			}
+			st.SetCurrentStoreable(loc)
 
 			return nil
 		}
@@ -80,23 +74,19 @@ func readLocation(l line.Line, st *status.Status, a *adventure.Adventure) error 
 	// new location
 	labelName, ok := l.AsLocationLabel()
 	if ok {
-		if err := st.SaveCurrentStoreable(); !err.IsOK() {
-			return err
+		if st.HasCurrent() {
+			if err := st.SaveCurrentStoreable(); !err.IsOK() {
+				return err
+			}
 		}
 
-		labelID, err := a.DB.CreateLabelIfNotExists(labelName, false)
+		labelID, err := a.DB.CreateLabel(labelName)
 		if err != nil {
 			return cerr.ErrInvalidLabel.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
 				WithFilename(st.CurrentFilename()).AddErr(err)
 		}
 
-		if err := st.SetCurrentLabelID(labelID); err != nil {
-			return err
-		}
-
-		if err := st.SetCurrentStoreable(loc); err != nil {
-			return err
-		}
+		st.SetCurrentStoreable(&location.Location{LabelID: labelID})
 
 		return nil
 	}

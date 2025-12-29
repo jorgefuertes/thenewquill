@@ -14,6 +14,8 @@ const (
 	recordBegin  = "R:"
 )
 
+// Export exports the database to a file
+// returns the number of bytes sent (before compression) and the final number of bytes in the file
 func (db *DB) Export(filename string) (int, int, error) {
 	params := db.getParams()
 

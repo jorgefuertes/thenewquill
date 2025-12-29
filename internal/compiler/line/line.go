@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/jorgefuertes/thenewquill/internal/compiler/rg"
-	"github.com/jorgefuertes/thenewquill/internal/database/primitive"
 )
 
 type Line struct {
@@ -34,8 +33,8 @@ func (l Line) Number() int {
 }
 
 // GetTextForLabelName returns the text for the given label and true if it was found
-func (l Line) GetTextForLabel(label primitive.Label) (string, bool) {
-	re := regexp.MustCompile(`(?s)^\s*` + label.String() + `:\s+["^(\\")]{1}(.+)["^(\\")]{1}`)
+func (l Line) GetTextForLabel(label string) (string, bool) {
+	re := regexp.MustCompile(`(?s)^\s*` + label + `:\s+["^(\\")]{1}(.+)["^(\\")]{1}`)
 
 	if !re.MatchString(l.text) {
 		return "", false
@@ -50,7 +49,7 @@ func (l Line) GetTextForLabel(label primitive.Label) (string, bool) {
 	return text, true
 }
 
-func (l Line) GetTextForFirstFoundLabel(labels ...primitive.Label) (string, bool) {
+func (l Line) GetTextForFirstFoundLabel(labels ...string) (string, bool) {
 	for _, label := range labels {
 		text, ok := l.GetTextForLabel(label)
 		if ok {

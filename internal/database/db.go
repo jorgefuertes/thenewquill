@@ -23,6 +23,7 @@ type DB struct {
 	data        data
 	frozen      bool
 	snapshots   snapshots
+	ram         data
 }
 
 func NewDB() *DB {
@@ -39,7 +40,7 @@ func (db *DB) ResetDB() {
 
 	db.lastLabelID = 2
 	db.lastDataID = 0
-	db.labels = labels{0: "#undefined", 1: LabelUnderscore, 2: LabelAsterisk}
+	db.labels = labels{0: "#undefined", 1: LabelAsterisk, 2: LabelUnderscore}
 	db.data = make(data, 0)
 	db.frozen = false
 	db.snapshots = make(snapshots, 0)
@@ -80,6 +81,9 @@ func (db *DB) CountRecords() int {
 }
 
 func (db *DB) CountRecordsByKind(kind kind.Kind) int {
+	db.lock()
+	defer db.unlock()
+
 	count := 0
 
 	for _, r := range db.data {

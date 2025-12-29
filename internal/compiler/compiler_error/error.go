@@ -47,7 +47,10 @@ func (e CompilerError) Error() string {
 }
 
 func newCompilerError(msg string) CompilerError {
-	return CompilerError{msgs: []string{msg}, section: kind.None}
+	return CompilerError{
+		msgs:    []string{msg},
+		section: kind.None,
+	}
 }
 
 func (e CompilerError) WithSection(k kind.Kind) CompilerError {
