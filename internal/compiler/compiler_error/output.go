@@ -55,7 +55,7 @@ func (o *output) Print() {
 			c += fmt.Sprintf("%05d ", l.Num)
 		}
 
-		c += decorateLine(c+l.Text) + "\n"
+		c = decorateLine(c+l.Text) + "\n"
 
 		content += c
 	}
