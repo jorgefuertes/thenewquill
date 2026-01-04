@@ -21,36 +21,6 @@ func (s *Service) Update(msg *Message) error {
 	return s.db.Update(msg)
 }
 
-func (s *Service) Get(id uint32) (*Message, error) {
-	msg := &Message{}
-	err := s.db.Get(id, &msg)
-
-	return msg, err
-}
-
-func (s *Service) GetByLabel(label string) (*Message, error) {
-	msg := &Message{}
-	err := s.db.GetByLabel(label, msg)
-
-	return msg, err
-}
-
 func (s *Service) Count() int {
 	return s.db.CountRecordsByKind(kind.Message)
-}
-
-func (s *Service) GetHuman() (*Message, error) {
-	chars := s.db.Query(database.FilterByKind(kind.Message), database.NewFilter("Human", database.Equal, true))
-	defer chars.Close()
-
-	var loc *Message
-	err := chars.First(loc)
-
-	return loc, err
-}
-
-func (s *Service) HasHuman() bool {
-	_, err := s.GetHuman()
-
-	return err == nil
 }

@@ -22,22 +22,27 @@ type currentStoreable struct {
 }
 
 type Status struct {
-	db        *database.DB
-	Section   kind.Kind
-	Comment   line.Multi
-	MultiLine line.Multi
-	Stack     []line.Line
-	current   *currentStoreable
-	filenames []string
+	db               *database.DB
+	Section          kind.Kind
+	Comment          line.Multi
+	MultiLine        line.Multi
+	Stack            []line.Line
+	current          *currentStoreable
+	filenames        []string
+	runnedValidators []kind.Kind
+	runnedReplacers  []kind.Kind
 }
 
 func New(d *database.DB) *Status {
 	return &Status{
-		db:        d,
-		Section:   kind.None,
-		Comment:   line.NewMulti(),
-		MultiLine: line.NewMulti(),
-		Stack:     []line.Line{},
+		db:               d,
+		Section:          kind.None,
+		Comment:          line.NewMulti(),
+		MultiLine:        line.NewMulti(),
+		Stack:            []line.Line{},
+		filenames:        make([]string, 0),
+		runnedValidators: make([]kind.Kind, 0),
+		runnedReplacers:  make([]kind.Kind, 0),
 	}
 }
 
@@ -60,6 +65,14 @@ func (s *Status) CurrentFilename() string {
 	}
 
 	return s.filenames[len(s.filenames)-1]
+}
+
+func (s *Status) CurrentLine() line.Line {
+	if len(s.Stack) == 0 {
+		return line.Line{}
+	}
+
+	return s.Stack[len(s.Stack)-1]
 }
 
 func (s *Status) AppendStack(l line.Line) {
@@ -129,8 +142,8 @@ func (s *Status) SetCurrentStoreable(storeable adapter.Storeable) {
 		log.Debug("📎 [STATUS] SetCurrentStoreable NIL PARENT")
 		s.current = &currentStoreable{
 			storeable: storeable,
-			line:      s.Stack[len(s.Stack)-1],
-			filename:  s.filenames[len(s.filenames)-1],
+			line:      s.CurrentLine(),
+			filename:  s.CurrentFilename(),
 		}
 
 		return

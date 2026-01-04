@@ -12,7 +12,7 @@ type Word struct {
 	ID       uint32
 	LabelID  uint32   `valid:"required"`
 	Type     WordType `valid:"required"`
-	Synonyms []string `valid:"count(1|25)"`
+	Synonyms []string `valid:"count(1|50),len(1|25)"`
 }
 
 var _ adapter.Storeable = &Word{}

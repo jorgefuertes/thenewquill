@@ -58,6 +58,29 @@ func (s Kind) String() string {
 	return names[0]
 }
 
+func (s Kind) TitleString() string {
+	titles := map[Kind]string{
+		None:      "NONE",
+		Label:     "LABELS",
+		Param:     "CONFIG",
+		Variable:  "VARIABLES",
+		Word:      "WORDS",
+		Message:   "MESSAGES",
+		Item:      "ITEMS",
+		Location:  "LOCATIONS",
+		Character: "CHARACTERS",
+		Process:   "PROCESS TABLES",
+		Test:      "TEST",
+	}
+
+	title, ok := titles[s]
+	if !ok {
+		return titles[None]
+	}
+
+	return title
+}
+
 func (s Kind) Byte() byte {
 	return byte(s)
 }

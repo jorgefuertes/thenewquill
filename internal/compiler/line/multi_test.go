@@ -82,7 +82,7 @@ func TestJoin(t *testing.T) {
 			m := line.NewMulti()
 			for i, text := range tt.lineText {
 				l := line.New(text, i)
-				if l.Text() == `"""` {
+				if l.Text == `"""` {
 					require.True(t, l.IsMultilineEnd(m.IsHeredoc()))
 				}
 
@@ -91,7 +91,7 @@ func TestJoin(t *testing.T) {
 
 			joinedLine := m.Join()
 
-			assert.Equal(t, tt.expected, joinedLine.Text())
+			assert.Equal(t, tt.expected, joinedLine.Text)
 		})
 	}
 }
@@ -114,7 +114,7 @@ func TestJoinBackslashed(t *testing.T) {
 	expectedText := "multi: \"This is a test line that continues with no indent at all and ends here.\""
 
 	assert.True(t, m.IsOn())
-	assert.Equal(t, expectedText, joinedLine.Text())
+	assert.Equal(t, expectedText, joinedLine.Text)
 
 	m.Clear()
 	assert.False(t, m.IsOn())

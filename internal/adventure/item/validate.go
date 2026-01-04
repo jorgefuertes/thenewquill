@@ -1,7 +1,6 @@
 package item
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
@@ -25,18 +24,33 @@ func (i Item) Validate() error {
 	return nil
 }
 
-func (s *Service) ValidateAll() error {
+func (s *Service) ValidateAll() []error {
+	validationErrors := []error{}
+
 	res := s.db.Query(database.FilterByKind(kind.Item))
 	defer res.Close()
 
 	i := Item{}
 	for res.Next(&i) {
 		if err := i.Validate(); err != nil {
-			return errors.Join(fmt.Errorf("item %q", s.db.GetLabelOrBlank(i.ID)), err)
+			validationErrors = append(
+				validationErrors,
+				fmt.Errorf("%w: item #%d:%q", err, i.ID, s.db.GetLabelOrBlank(i.LabelID)),
+			)
 		}
 
 		if s.TotalWeight(i) > i.MaxWeight {
-			return ErrContainerCantCarrySoMuch
+			validationErrors = append(
+				validationErrors,
+				fmt.Errorf(
+					"%w: item #%d:%q, weight %d/%d",
+					ErrContainerCantCarrySoMuch,
+					i.ID,
+					s.db.GetLabelOrBlank(i.LabelID),
+					s.TotalWeight(i),
+					i.MaxWeight,
+				),
+			)
 		}
 
 		if s.db.Query(
@@ -45,9 +59,21 @@ func (s *Service) ValidateAll() error {
 			database.NewFilter("NounID", database.Equal, i.NounID),
 			database.NewFilter("AdjectiveID", database.Equal, i.AdjectiveID),
 		).Exists() {
-			return ErrDuplicatedNounAdj
+			validationErrors = append(
+				validationErrors,
+				fmt.Errorf(
+					"%w: item #%d:%q noun: #%d:%q adj: #%d:%q",
+					ErrDuplicatedNounAdj,
+					i.ID,
+					s.db.GetLabelOrBlank(i.LabelID),
+					i.NounID,
+					s.db.GetLabelFromRecordOrBlank(i.NounID),
+					i.AdjectiveID,
+					s.db.GetLabelFromRecordOrBlank(i.AdjectiveID),
+				),
+			)
 		}
 	}
 
-	return nil
+	return validationErrors
 }

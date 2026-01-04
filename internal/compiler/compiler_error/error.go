@@ -1,4 +1,4 @@
-package compiler
+package compiler_error
 
 import (
 	"fmt"
@@ -15,8 +15,24 @@ type CompilerError struct {
 	msgs     []string
 }
 
-func (e CompilerError) Dump() string {
-	output := ""
+func (e CompilerError) Dump() {
+	o := NewOutput("COMPILATION ERROR")
+
+	if e.Is(ErrValidation) {
+		o = NewOutput("VALIDATION ERROR")
+		for _, m := range e.msgs {
+			if m == "validation error" {
+				continue
+			}
+
+			o.addLine(-1, m)
+			o.addNL()
+		}
+
+		o.Print()
+
+		return
+	}
 
 	if len(e.stack) > 0 {
 		for _, l := range e.stack {
@@ -24,22 +40,27 @@ func (e CompilerError) Dump() string {
 				break
 			}
 
-			output += fmt.Sprintf("[%05d] %s\n", l.Number(), l.Text())
+			o.addLine(l.Num, l.Text)
 		}
 	}
 
-	output += fmt.Sprintf(
-		"[COMPILER ERROR] 🔻 FILE \"%s\" ❗ SECTION \"%s\"\n[%05d] %s",
-		e.filename,
-		e.section.String(),
-		e.l.Number(),
-		e.l.Text(),
-	)
-	for _, msg := range e.msgs {
-		output += fmt.Sprintf("\n[ERROR] 🔺 %s", msg)
+	if e.filename != "" {
+		o.addLine(-1, downArrowHead+" FILE "+e.filename)
 	}
 
-	return output
+	if e.section != kind.None {
+		o.addLine(-1, downArrowHead+" SECTION "+e.section.TitleString())
+	}
+
+	o.addNL()
+	o.addLine(e.l.Num, e.l.Text)
+	o.addNL()
+
+	for _, msg := range e.msgs {
+		o.addLine(-1, upArrowHead+" ERROR "+msg)
+	}
+
+	o.Print()
 }
 
 func (e CompilerError) Error() string {
@@ -67,6 +88,10 @@ func (e CompilerError) WithLine(l line.Line) CompilerError {
 
 func (e CompilerError) WithStack(s []line.Line) CompilerError {
 	e.stack = s
+
+	if len(s) > 0 {
+		e.l = s[len(s)-1]
+	}
 
 	return e
 }

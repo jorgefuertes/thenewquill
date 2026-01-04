@@ -218,7 +218,7 @@ func TestCompilerHappyPath(t *testing.T) {
 
 		for _, tc := range testCases {
 			t.Run(tc.label, func(t *testing.T) {
-				m, err := a.Messages.GetByLabel(tc.label)
+				m, err := a.Messages.Get().WithLabel(tc.label).First()
 				if tc.shouldExists {
 					require.NoError(t, err)
 					require.NotNil(t, m)

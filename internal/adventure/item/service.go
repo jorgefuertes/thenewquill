@@ -21,20 +21,6 @@ func (s *Service) Update(i *Item) error {
 	return s.db.Update(i)
 }
 
-func (s *Service) Get(id uint32) (*Item, error) {
-	i := &Item{}
-	err := s.db.Get(id, &i)
-
-	return i, err
-}
-
-func (s *Service) GetByLabel(label string) (*Item, error) {
-	i := &Item{}
-	err := s.db.GetByLabel(label, &i)
-
-	return i, err
-}
-
 func (s *Service) Count() int {
 	return s.db.CountRecordsByKind(kind.Item)
 }

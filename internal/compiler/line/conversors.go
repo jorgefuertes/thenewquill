@@ -89,13 +89,13 @@ func (l Line) AsWord() (string, []string, bool) {
 
 // AsMsg returns the label name, text, plural name and result
 func (l Line) AsMsg() (string, string, message.Plural, bool) {
-	if !rg.Msg.MatchString(l.text) {
+	if !rg.Msg.MatchString(l.Text) {
 		return "", "", message.Zero, false
 	}
 
 	// is a plural?
-	if rg.MsgPlural.MatchString(l.text) {
-		parts := rg.MsgPlural.FindStringSubmatch(l.text)
+	if rg.MsgPlural.MatchString(l.Text) {
+		parts := rg.MsgPlural.FindStringSubmatch(l.Text)
 		if len(parts) != 4 {
 			return "", "", message.Zero, false
 		}
@@ -103,7 +103,7 @@ func (l Line) AsMsg() (string, string, message.Plural, bool) {
 		return parts[2], parts[3], message.PluralFromString(parts[1]), true
 	}
 
-	parts := rg.Msg.FindStringSubmatch(l.text)
+	parts := rg.Msg.FindStringSubmatch(l.Text)
 	if len(parts) != 3 {
 		return "", "", message.Zero, false
 	}
@@ -134,7 +134,7 @@ func (l Line) AsLocationTitle() (string, bool) {
 func (l Line) AsLocationConns() (map[string]string, bool) {
 	exits := make(map[string]string, 0)
 
-	if !rg.LocConns.MatchString(l.text) {
+	if !rg.LocConns.MatchString(l.Text) {
 		return exits, false
 	}
 

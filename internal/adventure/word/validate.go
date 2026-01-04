@@ -1,8 +1,8 @@
 package word
 
 import (
-	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 	"github.com/jorgefuertes/thenewquill/internal/database"
@@ -13,42 +13,58 @@ func (w Word) Validate() error {
 	return validator.Validate(w)
 }
 
-func (s *Service) ValidateAll() error {
+func (s *Service) ValidateAll() []error {
+	validationErrors := []error{}
+
 	words := s.db.Query(database.FilterByKind(kind.Word))
 	defer words.Close()
 
 	var w Word
 	for words.Next(&w) {
-		if err := w.Validate(); err != nil {
-			return err
+		label := s.db.GetLabelOrBlank(w.LabelID)
+
+		// ignore underscore and asterisk
+		if label == database.LabelUnderscore || label == database.LabelAsterisk {
+			continue
 		}
 
-		words2 := s.db.Query(database.FilterByKind(kind.Word), database.NewFilter("type", database.Equal, w.Type))
-		defer words2.Close()
+		if err := w.Validate(); err != nil {
+			validationErrors = append(
+				validationErrors,
+				err,
+				fmt.Errorf("ID #%d LABEL #%d:%s", w.ID, w.LabelID, s.db.GetLabelOrBlank(w.LabelID)),
+				fmt.Errorf("synonyms: %s", strings.Join(w.Synonyms, ", ")),
+			)
+		}
 
-		var w2 Word
-		for words2.Next(&w2) {
-			if w.ID == w2.ID {
-				continue
-			}
+		// duplicated label and type
+		if s.Get().WithNoID(w.ID).WithType(w.Type).WithLabelID(w.LabelID).Exists() {
+			validationErrors = append(
+				validationErrors,
+				fmt.Errorf("%w: duplicated label %q and type %q", ErrDuplicatedLabel, label, w.Type),
+			)
+		}
 
-			for _, syn := range w.Synonyms {
-				if w2.HasSynonym(syn) {
-					return errors.Join(
-						ErrDuplicatedWord,
-						fmt.Errorf(
-							"duplicated synonym %q between %s %q and %s %q",
-							syn,
-							w.Type,
-							w.Synonyms[0],
-							w2.Type,
-							w2.Synonyms[0],
-						),
-					)
-				}
+		// duplicated synonym in the same type
+		for _, syn := range w.Synonyms {
+			if s.Get().WithNoID(w.ID).WithType(w.Type).WithSynonym(syn).Exists() {
+				w2, _ := s.Get().WithNoID(w.ID).WithType(w.Type).WithSynonym(syn).First()
+
+				validationErrors = append(
+					validationErrors,
+					fmt.Errorf(
+						"%w: %q between %s %q and %s %q",
+						ErrDuplicatedSyn,
+						syn,
+						w.Type,
+						label,
+						w2.Type,
+						s.db.GetLabelOrBlank(w2.LabelID),
+					),
+				)
 			}
 		}
 	}
 
-	return nil
+	return validationErrors
 }

@@ -9,7 +9,7 @@ import (
 )
 
 func ProcessLine(l line.Line, st *status.Status, a *adventure.Adventure) error {
-	log.Debug("⚙︎ Processing line %q for section %q", l.Text(), st.Section.String())
+	log.Debug("⚙︎ Processing line %q for section %q", l.Text, st.Section.String())
 
 	switch st.Section {
 	case kind.Param:

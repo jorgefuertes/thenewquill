@@ -3,6 +3,6 @@ package word
 import "errors"
 
 var (
-	ErrDuplicatedWord = errors.New("duplicated type and synonym")
-	ErrEmptyWord      = errors.New("empty word")
+	ErrDuplicatedLabel = errors.New("duplicated label for type")
+	ErrDuplicatedSyn   = errors.New("duplicated synonym for type")
 )

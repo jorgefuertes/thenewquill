@@ -29,7 +29,7 @@ func Compile(filename string) (*adventure.Adventure, error) {
 				WithFilename(st.CurrentFilename())
 		}
 
-		log.WithoutFormat(log.NoLevel, cErr.Dump())
+		cErr.Dump()
 
 		return a, cErr
 	}
@@ -126,17 +126,22 @@ func compileFile(st *status.Status, filename string, a *adventure.Adventure) err
 		// section declaration
 		s, ok := l.AsSection()
 		if ok {
+			log.Debug("🟩 SECTION %s", s.String())
 			if s == kind.None {
 				return cerr.ErrUnknownSection.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
 					WithFilename(st.CurrentFilename())
 			}
 
-			if st.Section == kind.Location {
-				replaceLocationConnectionsIDs(a)
-			}
-
 			if st.Section != kind.None {
-				validateSection(a, st, st.Section)
+				log.Debug("🟩 POST-REPLACE SECTION %s", st.Section.String())
+				if err := postReplaceSection(a, st, st.Section); err != nil {
+					return err
+				}
+
+				log.Debug("🟩 VALIDATING SECTION %s", st.Section.String())
+				if err := validateSection(a, st, st.Section); err != nil {
+					return err
+				}
 			}
 
 			st.Section = s
@@ -174,6 +179,16 @@ func compileFile(st *status.Status, filename string, a *adventure.Adventure) err
 		l, _ := st.MultiLine.GetByIndex(0)
 		return cerr.ErrUnclosedMultiline.WithSection(st.Section).WithStack(st.Stack).WithLine(l).
 			WithFilename(st.CurrentFilename())
+	}
+
+	log.Debug("🟩 POST-REPLACE SECTION %s", st.Section.String())
+	if err := postReplaceSection(a, st, st.Section); err != nil {
+		return err
+	}
+
+	log.Debug("🟩 VALIDATING SECTION %s", st.Section.String())
+	if err := validateSection(a, st, st.Section); err != nil {
+		return err
 	}
 
 	st.PopFilename()

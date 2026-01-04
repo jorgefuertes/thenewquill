@@ -47,7 +47,7 @@ func (m Multi) IsHeredoc() bool {
 		return true
 	}
 
-	return rg.MultilineBegin.MatchString(m.lines[0].text)
+	return rg.MultilineBegin.MatchString(m.lines[0].Text)
 }
 
 // GetIndent returns the indentation text of the first line
@@ -56,14 +56,14 @@ func (m Multi) GetIndent() string {
 		return ""
 	}
 
-	return rg.Indent.FindStringSubmatch(m.lines[1].text)[1]
+	return rg.Indent.FindStringSubmatch(m.lines[1].Text)[1]
 }
 
 func (m Multi) Join() Line {
 	var output string
 
 	for i, l := range m.lines {
-		current := l.text
+		current := l.Text
 		cont := false
 
 		if i == 0 {
@@ -86,10 +86,10 @@ func (m Multi) Join() Line {
 
 		output += current
 
-		if !cont && i != m.Len()-1 && m.lines[i+1].text != `"""` {
+		if !cont && i != m.Len()-1 && m.lines[i+1].Text != `"""` {
 			output += "\n"
 		}
 	}
 
-	return Line{text: output, n: m.lines[0].Number()}
+	return Line{Text: output, Num: m.lines[0].Number()}
 }

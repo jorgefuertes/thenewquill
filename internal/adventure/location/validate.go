@@ -1,7 +1,6 @@
 package location
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
@@ -23,22 +22,30 @@ func (l Location) Validate() error {
 	return nil
 }
 
-func (s *Service) ValidateAll() error {
+func (s *Service) ValidateAll() []error {
+	validationErrors := []error{}
+
 	locations := s.db.Query(database.FilterByKind(kind.Location))
 	defer locations.Close()
 
 	var loc Location
 	for locations.Next(&loc) {
 		if err := loc.Validate(); err != nil {
-			return errors.Join(err, fmt.Errorf("location %d: %s", loc.ID, s.db.GetLabelOrBlank(loc.LabelID)))
+			validationErrors = append(
+				validationErrors,
+				fmt.Errorf("%w: location %d %q", err, loc.ID, s.db.GetLabelOrBlank(loc.LabelID)),
+			)
 		}
 
 		for i, conn := range loc.Conns {
 			connErr := fmt.Errorf(
-				"location %q, connection #%d: %q-->%q",
+				"[LOC:%d:%s], [CONN#%d]: [WORD:%d:%s]->[LOC:%d:%s]",
+				loc.ID,
 				s.db.GetLabelOrBlank(loc.LabelID),
 				i,
+				conn.WordID,
 				s.db.GetLabelFromRecordOrBlank(conn.WordID),
+				conn.LocationID,
 				s.db.GetLabelFromRecordOrBlank(conn.LocationID),
 			)
 
@@ -47,14 +54,14 @@ func (s *Service) ValidateAll() error {
 				Exists()
 
 			if !wordExists {
-				return fmt.Errorf("%w: %w", ErrConnWordNotFound, connErr)
+				validationErrors = append(validationErrors, fmt.Errorf("%w: %w", ErrConnWordNotFound, connErr))
 			}
 
 			if !locationExists {
-				return fmt.Errorf("%w: %w", ErrConnLocationNotFound, connErr)
+				validationErrors = append(validationErrors, fmt.Errorf("%w: %w", ErrConnLocationNotFound, connErr))
 			}
 		}
 	}
 
-	return nil
+	return validationErrors
 }

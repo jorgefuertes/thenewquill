@@ -1,6 +1,7 @@
 package variable_test
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/jorgefuertes/thenewquill/internal/adventure/variable"
@@ -119,7 +120,7 @@ func TestService(t *testing.T) {
 	// VALIDATE
 	t.Run("Validate", func(t *testing.T) {
 		err := svc.ValidateAll()
-		require.NoError(t, err)
+		require.NoError(t, errors.Join(err...))
 	})
 }
 

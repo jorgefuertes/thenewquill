@@ -5,7 +5,6 @@ import (
 
 	"github.com/jorgefuertes/thenewquill/internal/adventure"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/location"
-	"github.com/jorgefuertes/thenewquill/internal/adventure/word"
 	cerr "github.com/jorgefuertes/thenewquill/internal/compiler/compiler_error"
 	"github.com/jorgefuertes/thenewquill/internal/compiler/line"
 	"github.com/jorgefuertes/thenewquill/internal/compiler/status"
@@ -39,13 +38,15 @@ func readLocation(l line.Line, st *status.Status, a *adventure.Adventure) error 
 		exitMap, ok := l.AsLocationConns()
 		if ok {
 			for actionLabel, destLabel := range exitMap {
-				var actionWord word.Word
-				if err := a.DB.GetByLabel(actionLabel, &actionWord); err != nil {
+				actionWord, err := a.Words.Get().WithLabel(actionLabel).First()
+				if err != nil {
 					return cerr.ErrWordNotFound.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
 						WithFilename(st.CurrentFilename()).
-						AddErr(err).AddErr(fmt.Errorf("missing word with label %q", actionLabel))
+						AddErr(err).AddErr(fmt.Errorf("missing actionWord with label %q", actionLabel))
 				}
 
+				// assign a label temporarily to the destination
+				// real ID will be assigned later
 				destLabelID, err := a.DB.CreateLabel(destLabel)
 				if err != nil {
 					return cerr.ErrInvalidLabel.WithStack(st.Stack).WithSection(st.Section).WithLine(l).

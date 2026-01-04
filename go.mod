@@ -13,6 +13,7 @@ require (
 )
 
 require (
+	github.com/clipperhouse/displaywidth v0.6.2 // indirect
 	github.com/clipperhouse/stringish v0.1.1 // indirect
 	github.com/clipperhouse/uax29/v2 v2.3.0 // indirect
 	github.com/x448/float16 v0.8.4 // indirect
@@ -54,11 +55,11 @@ require (
 	github.com/ccojocar/zxcvbn-go v1.0.2 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/charithe/durationcheck v0.0.10 // indirect
-	github.com/charmbracelet/colorprofile v0.2.3-0.20250311203215-f60798e515dc // indirect
-	github.com/charmbracelet/lipgloss v1.1.0 // indirect
-	github.com/charmbracelet/x/ansi v0.8.0 // indirect
-	github.com/charmbracelet/x/cellbuf v0.0.13-0.20250311204145-2c3ea96c31dd // indirect
-	github.com/charmbracelet/x/term v0.2.1 // indirect
+	github.com/charmbracelet/colorprofile v0.4.1 // indirect
+	github.com/charmbracelet/lipgloss v1.1.0
+	github.com/charmbracelet/x/ansi v0.11.3 // indirect
+	github.com/charmbracelet/x/cellbuf v0.0.14 // indirect
+	github.com/charmbracelet/x/term v0.2.2 // indirect
 	github.com/chavacava/garif v0.1.0 // indirect
 	github.com/cilium/ebpf v0.11.0 // indirect
 	github.com/ckaznocha/intrange v0.3.1 // indirect

@@ -93,9 +93,9 @@ func compileAction(c *cli.Context) error {
 	fmt.Println()
 	fmt.Printf(
 		"> %s v%s\n> %s\n",
-		a.Config.GetParam(config.TitleParamLabel),
-		a.Config.GetParam(config.VersionParamLabel),
-		a.Config.GetParam(config.AuthorParamLabel),
+		a.Config.GetValueOrBlank(config.TitleParamLabel),
+		a.Config.GetValueOrBlank(config.VersionParamLabel),
+		a.Config.GetValueOrBlank(config.AuthorParamLabel),
 	)
 	fmt.Printf("> Compiled in %dms\n", elapsed.Milliseconds())
 	fmt.Println("> Compiler: v" + compiler.VERSION)

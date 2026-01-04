@@ -1,6 +1,8 @@
 package message
 
 import (
+	"fmt"
+
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 	"github.com/jorgefuertes/thenewquill/internal/database"
 	"github.com/jorgefuertes/thenewquill/pkg/validator"
@@ -20,16 +22,21 @@ func (m Message) Validate() error {
 	return nil
 }
 
-func (s *Service) ValidateAll() error {
+func (s *Service) ValidateAll() []error {
+	validationErrors := []error{}
+
 	msgs := s.db.Query(database.FilterByKind(kind.Message))
 	defer msgs.Close()
 
 	var m Message
 	for msgs.Next(&m) {
 		if err := m.Validate(); err != nil {
-			return err
+			validationErrors = append(
+				validationErrors,
+				fmt.Errorf("%w: message %d %q", err, m.ID, s.db.GetLabelOrBlank(m.LabelID)),
+			)
 		}
 	}
 
-	return nil
+	return validationErrors
 }

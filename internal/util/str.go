@@ -10,8 +10,8 @@ import (
 func LimitStr(s string, max int) string {
 	runes := []rune(s)
 
-	if len(runes) >= max-3 && len(runes) > 15 {
-		return string(runes[:max-3]) + "..."
+	if len(runes) >= max-1 && len(runes) > 15 {
+		return string(runes[:max-1]) + "…"
 	}
 
 	if len(runes) > max {
@@ -46,69 +46,6 @@ func RemoveSymbols(s string) string {
 	return output
 }
 
-func SplitIntoLines(text string, maxLen int) []string {
-	lines := make([]string, 0)
-	words := regexp.MustCompile(`\s+`).Split(text, -1)
-
-	var line string
-	for _, w := range words {
-		line = strings.TrimSpace(line)
-
-		if len(w) > maxLen {
-			if line != "" {
-				lines = append(lines, line)
-				line = ""
-			}
-
-			lines = append(lines, SplitWithDashes(w, maxLen)...)
-
-			continue
-		}
-
-		if len(line)+len(w)+1 > maxLen {
-			if line != "" {
-				lines = append(lines, line)
-				line = ""
-			}
-		}
-
-		if line != "" {
-			line += " "
-		}
-
-		line += w
-	}
-
-	if line != "" {
-		lines = append(lines, line)
-	}
-
-	return lines
-}
-
-func SplitWithDashes(text string, maxLen int) []string {
-	lines := make([]string, 0)
-
-	var line string
-	for _, c := range text {
-		if len(line)+1 == maxLen {
-			lines = append(lines, strings.TrimSpace(line)+"-")
-			line = ""
-
-			continue
-		}
-
-		line += string(c)
-	}
-
-	line = strings.TrimSpace(line)
-	if line != "" {
-		lines = append(lines, line)
-	}
-
-	return lines
-}
-
 func SplitIntoFields(s string) []string {
 	fields := strings.Split(s, "|")
 
@@ -132,4 +69,87 @@ func StringToInt(s string) int {
 	i, _ := strconv.Atoi(s)
 
 	return i
+}
+
+func SplitIntoLines(text string, maxLen int) []string {
+	if maxLen <= 0 {
+		return []string{}
+	}
+
+	reader := strings.NewReader(text)
+	lines := make([]string, 0)
+	line := ""
+
+	b := make([]byte, 1)
+	for {
+		_, err := reader.Read(b)
+		if err != nil {
+			break
+		}
+
+		if string(b) == "\n" {
+			lines = append(lines, line)
+			line = ""
+
+			continue
+		}
+
+		if len(line) == 0 && string(b) == " " {
+			continue
+		}
+
+		if regexp.MustCompile(`[\.,;]+$`).MatchString(line) && !regexp.MustCompile(`\s+`).Match(b) {
+			line += " "
+			reader.UnreadByte()
+
+			continue
+		}
+
+		line += string(b)
+
+		if len(line) == maxLen {
+			_, err := reader.Read(b)
+			if err != nil {
+				break
+			}
+
+			if string(b) == " " {
+				lines = append(lines, line)
+				line = ""
+
+				continue
+			}
+
+			reader.UnreadByte()
+
+			for !regexp.MustCompile(`[^\p{L}\p{N}]{1}$`).MatchString(line) {
+				line = line[:len(line)-1]
+				reader.UnreadByte()
+
+				if len(line) == 0 {
+					b := make([]byte, maxLen-1)
+
+					_, err := reader.Read(b)
+					if err != nil {
+						panic(err)
+					}
+
+					break
+				}
+			}
+
+			lines = append(lines, line)
+			line = ""
+		}
+	}
+
+	if len(line) > 0 {
+		lines = append(lines, line)
+	}
+
+	for i, line := range lines {
+		lines[i] = strings.TrimSpace(line)
+	}
+
+	return lines
 }

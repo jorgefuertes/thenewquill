@@ -3,7 +3,6 @@ package config
 import (
 	"slices"
 
-	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 	"github.com/jorgefuertes/thenewquill/internal/database"
 )
 
@@ -20,8 +19,8 @@ func (s *Service) Set(label, v string) (uint32, error) {
 		return 0, ErrUnrecognizedConfigField
 	}
 
-	if s.Exists(label) {
-		p, err := s.GetByLabel(label)
+	if s.Get().WithLabel(label).Exists() {
+		p, err := s.Get().WithLabel(label).First()
 		if err != nil {
 			return 0, err
 		}
@@ -41,38 +40,11 @@ func (s *Service) Set(label, v string) (uint32, error) {
 	return s.db.Create(p)
 }
 
-func (s *Service) Get(id uint32) (*Param, error) {
-	p := &Param{}
-	err := s.db.Get(id, p)
-
-	return p, err
-}
-
-func (s *Service) GetByLabel(label string) (*Param, error) {
-	p := &Param{}
-	err := s.db.GetByLabel(label, p)
-
-	return p, err
-}
-
-func (s *Service) Exists(label string) bool {
-	labelID, err := s.db.GetLabelID(label)
-	if err != nil {
-		return false
-	}
-
-	return s.db.Query(database.FilterByLabelID(labelID), database.FilterByKind(kind.Param)).Exists()
-}
-
-func (s *Service) Count() int {
-	return s.db.CountRecordsByKind(kind.Param)
-}
-
-func (s *Service) GetParam(label string) string {
-	c, err := s.GetByLabel(label)
+func (s *Service) GetValueOrBlank(label string) string {
+	p, err := s.Get().WithLabel(label).First()
 	if err != nil {
 		return ""
 	}
 
-	return c.V
+	return p.V
 }

@@ -41,7 +41,7 @@ func (s *Service) PutInto(i *Item, in Item) error {
 }
 
 func (s *Service) GetItemContainer(item Item) (*Item, error) {
-	return s.Get(item.At)
+	return s.Get().WithID(item.At).First()
 }
 
 // IsContained returns true if the given item is contained in any container
