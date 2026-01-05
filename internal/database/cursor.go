@@ -2,6 +2,8 @@ package database
 
 import (
 	"sync"
+
+	"github.com/jorgefuertes/thenewquill/internal/database/adapter"
 )
 
 type cursor struct {
@@ -46,9 +48,7 @@ func (c *cursor) Close() {
 	c.data = nil
 }
 
-func (c *cursor) Next(dst any) bool {
-	_, _ = checkEntity(dst)
-
+func (c *cursor) Next(dst adapter.Storeable) bool {
 	r, ok := c.getByIndex(c.i)
 	if !ok {
 		return false
@@ -63,9 +63,7 @@ func (c *cursor) Next(dst any) bool {
 	return true
 }
 
-func (c *cursor) First(dst any) error {
-	_, _ = checkEntity(dst)
-
+func (c *cursor) First(dst adapter.Storeable) error {
 	r, ok := c.getByIndex(0)
 	if !ok {
 		return ErrRecordNotFound

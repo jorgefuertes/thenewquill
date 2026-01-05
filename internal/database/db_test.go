@@ -1,4 +1,4 @@
-package database_test
+package database
 
 import (
 	"fmt"
@@ -6,12 +6,13 @@ import (
 	"os"
 	"testing"
 
-	"github.com/jorgefuertes/thenewquill/internal/database"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
+	"github.com/jorgefuertes/thenewquill/internal/database/adapter"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-type TestItem struct {
+type testItem struct {
 	ID      uint32
 	LabelID uint32
 	Title   string
@@ -23,10 +24,32 @@ type TestItem struct {
 	Numbers []int
 }
 
+var _ adapter.Storeable = &testItem{}
+
+func (t testItem) GetKind() kind.Kind {
+	return kind.Test
+}
+
+func (t testItem) GetID() uint32 {
+	return t.ID
+}
+
+func (t *testItem) SetID(id uint32) {
+	t.ID = id
+}
+
+func (t *testItem) SetLabelID(id uint32) {
+	t.LabelID = id
+}
+
+func (t *testItem) GetLabelID() uint32 {
+	return t.LabelID
+}
+
 const numOfItems = 1000
 
 func TestDatabase(t *testing.T) {
-	db := database.NewDB()
+	db := NewDB()
 	require.NotEmpty(t, db)
 
 	t.Run("write", func(t *testing.T) {
@@ -46,7 +69,7 @@ func TestDatabase(t *testing.T) {
 		t.Run("get by ID", func(t *testing.T) {
 			for i := range numOfItems {
 				id := uint32(i + 1)
-				var item TestItem
+				var item testItem
 
 				err := db.Get(id, &item)
 				require.NoError(t, err)
@@ -66,7 +89,7 @@ func TestDatabase(t *testing.T) {
 			i := rand.Uint32N(numOfItems)
 			id := uint32(i + 3)
 
-			var item TestItem
+			var item testItem
 			err := db.GetByLabel(labelForIteration(i), &item)
 			require.NoError(t, err)
 			require.EqualValues(t, id, item.LabelID, "label ID %d is not equal to %d", i, item.LabelID)
@@ -96,7 +119,7 @@ func TestDatabase(t *testing.T) {
 	})
 }
 
-func fillDatabase(t *testing.T, db *database.DB) {
+func fillDatabase(t *testing.T, db *DB) {
 	t.Helper()
 
 	for i := range numOfItems {
@@ -105,7 +128,7 @@ func fillDatabase(t *testing.T, db *database.DB) {
 		require.NotZero(t, labelID)
 		require.EqualValues(t, i+3, labelID)
 
-		item := TestItem{
+		item := testItem{
 			ID:      0,
 			LabelID: labelID,
 			Title:   titleForIteration(uint32(i)),

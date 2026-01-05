@@ -1,6 +1,9 @@
 package item
 
-import "github.com/jorgefuertes/thenewquill/internal/database/adapter"
+import (
+	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
+	"github.com/jorgefuertes/thenewquill/internal/database/adapter"
+)
 
 type Item struct {
 	ID          uint32
@@ -23,6 +26,10 @@ const defaultMaxWeight = 100
 
 func New() *Item {
 	return &Item{MaxWeight: defaultMaxWeight}
+}
+
+func (i *Item) GetKind() kind.Kind {
+	return kind.Item
 }
 
 func (i *Item) SetID(id uint32) {

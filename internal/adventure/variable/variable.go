@@ -4,6 +4,7 @@ import (
 	"regexp"
 	"strconv"
 
+	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 	"github.com/jorgefuertes/thenewquill/internal/database/adapter"
 	"github.com/jorgefuertes/thenewquill/internal/util"
 	"github.com/jorgefuertes/thenewquill/pkg/log"
@@ -28,6 +29,10 @@ type Variable struct {
 }
 
 var _ adapter.Storeable = &Variable{}
+
+func (v *Variable) GetKind() kind.Kind {
+	return kind.Variable
+}
 
 func (v *Variable) SetID(id uint32) {
 	v.ID = id

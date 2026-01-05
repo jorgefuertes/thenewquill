@@ -3,10 +3,12 @@ package database
 import (
 	"github.com/fxamacker/cbor/v2"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
+	"github.com/jorgefuertes/thenewquill/internal/database/adapter"
 )
 
-func (db *DB) Update(entity any) error {
-	id, labelID := checkEntity(entity)
+func (db *DB) Update(entity adapter.Storeable) error {
+	id := entity.GetID()
+	labelID := entity.GetLabelID()
 
 	if id == 0 {
 		return ErrMissingIDToUpdate

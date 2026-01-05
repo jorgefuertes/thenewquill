@@ -70,3 +70,18 @@ func (q *query) First() (*Word, error) {
 func (q *query) Count() int {
 	return q.db.Query(q.filters...).Count()
 }
+
+// GetAnyWith tries to find a Word by its label or synonym for any of the provided word types.
+func (s *Service) GetAnyWith(labelOrSynonym string, wordTypes ...WordType) (*Word, error) {
+	for _, t := range wordTypes {
+		if w, err := s.Get().WithLabel(labelOrSynonym).WithType(t).First(); err == nil {
+			return w, nil
+		}
+
+		if w, err := s.Get().WithSynonym(labelOrSynonym).WithType(t).First(); err == nil {
+			return w, nil
+		}
+	}
+
+	return nil, ErrWordNotFound
+}

@@ -1,22 +1,25 @@
 package database
 
-import "github.com/jorgefuertes/thenewquill/internal/adventure/kind"
+import (
+	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
+	"github.com/jorgefuertes/thenewquill/internal/database/adapter"
+)
 
-func (db *DB) Get(id uint32, dest any) error {
+func (db *DB) Get(id uint32, dest adapter.Storeable) error {
 	k := kind.KindOf(dest)
 	c := db.Query(FilterByID(id), FilterByKind(k))
 
 	return c.First(dest)
 }
 
-func (db *DB) GetByLabel(label string, dest any) error {
+func (db *DB) GetByLabel(label string, dest adapter.Storeable) error {
 	k := kind.KindOf(dest)
 	c := db.Query(FilterByLabel(label), FilterByKind(k))
 
 	return c.First(dest)
 }
 
-func (db *DB) GetByLabelID(id uint32, dest any) error {
+func (db *DB) GetByLabelID(id uint32, dest adapter.Storeable) error {
 	k := kind.KindOf(dest)
 	c := db.Query(FilterByLabelID(id), FilterByKind(k))
 

@@ -90,13 +90,13 @@ func readCharacter(l line.Line, st *status.Status, a *adventure.Adventure) error
 				WithFilename(st.CurrentFilename()).AddErr(err)
 		}
 
-		noun, err := a.Words.Get().WithLabel(nounLabel).WithType(word.Noun).First()
+		noun, err := a.Words.GetAnyWith(nounLabel, word.Noun)
 		if err != nil {
 			return cerr.ErrWordNotFound.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
 				WithFilename(st.CurrentFilename()).AddErr(err)
 		}
 
-		adj, err := a.Words.Get().WithLabel(adjLabel).WithType(word.Adjective).First()
+		adj, err := a.Words.GetAnyWith(adjLabel, word.Adjective)
 		if err != nil {
 			return cerr.ErrWordNotFound.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
 				WithFilename(st.CurrentFilename()).AddErr(err)

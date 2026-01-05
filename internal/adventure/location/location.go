@@ -1,6 +1,9 @@
 package location
 
-import "github.com/jorgefuertes/thenewquill/internal/database/adapter"
+import (
+	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
+	"github.com/jorgefuertes/thenewquill/internal/database/adapter"
+)
 
 const Undefined = `undefined`
 
@@ -16,6 +19,10 @@ var _ adapter.Storeable = &Location{}
 
 func New() *Location {
 	return &Location{Conns: make([]Connection, 0)}
+}
+
+func (l *Location) GetKind() kind.Kind {
+	return kind.Location
 }
 
 func (l *Location) SetID(id uint32) {

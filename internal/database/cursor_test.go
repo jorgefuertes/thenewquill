@@ -6,23 +6,46 @@ import (
 
 	"github.com/fxamacker/cbor/v2"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
+	"github.com/jorgefuertes/thenewquill/internal/database/adapter"
 	"github.com/stretchr/testify/require"
 )
+
+type testValue struct {
+	ID      uint32
+	LabelID uint32
+	Value   string
+}
+
+var _ adapter.Storeable = &testValue{}
+
+func (t testValue) GetKind() kind.Kind {
+	return kind.Test
+}
+
+func (t testValue) GetID() uint32 {
+	return t.ID
+}
+
+func (t *testValue) SetID(id uint32) {
+	t.ID = id
+}
+
+func (t *testValue) SetLabelID(id uint32) {
+	t.LabelID = id
+}
+
+func (t *testValue) GetLabelID() uint32 {
+	return t.LabelID
+}
 
 func TestCursor(t *testing.T) {
 	const limit = 10
 
 	c := newCursor()
 
-	type testItem struct {
-		ID      uint32
-		LabelID uint32
-		Value   string
-	}
-
 	t.Run("addOrReplace", func(t *testing.T) {
 		for i := 1; i <= limit; i++ {
-			td := testItem{
+			td := testValue{
 				ID:      uint32(i),
 				LabelID: uint32(i + 2),
 				Value:   fmt.Sprintf("test-data-%d", i),
@@ -43,7 +66,7 @@ func TestCursor(t *testing.T) {
 		})
 
 		t.Run("First", func(t *testing.T) {
-			var td testItem
+			var td testValue
 			require.NoError(t, c.First(&td))
 			require.NotZero(t, td.ID)
 			require.NotZero(t, td.LabelID)
@@ -60,10 +83,10 @@ func TestCursor(t *testing.T) {
 		})
 
 		t.Run("Next", func(t *testing.T) {
-			items := make(map[uint32]testItem, 0)
+			items := make(map[uint32]testValue, 0)
 
 			for i := 1; i <= limit; i++ {
-				var td testItem
+				var td testValue
 
 				require.True(t, c.Next(&td))
 				t.Logf("item %d index %d", td.ID, c.i)

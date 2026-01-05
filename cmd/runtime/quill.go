@@ -44,7 +44,7 @@ func main() {
 	go o.Run()
 	defer o.Close()
 
-	var h *character.Character
+	var h character.Character
 	if err := a.DB.Query(database.NewFilter("Human", database.Equal, true)).First(&h); err != nil {
 		log.Fatal("Runtime Error: human character not found")
 	}

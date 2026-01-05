@@ -1,6 +1,7 @@
 package processor
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 
@@ -124,16 +125,17 @@ func readItem(l line.Line, st *status.Status, a *adventure.Adventure) error {
 				WithFilename(st.CurrentFilename()).AddErr(err)
 		}
 
-		var noun word.Word
-		if err := a.DB.GetByLabel(nounLabel, &noun); err != nil {
+		noun, err := a.Words.GetAnyWith(nounLabel, word.Noun)
+		if err != nil {
 			return cerr.ErrWordNotFound.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
-				WithFilename(st.CurrentFilename()).AddErr(err)
+				WithFilename(st.CurrentFilename()).AddErr(fmt.Errorf("%w while looking for noun %q", err, nounLabel))
 		}
 
-		var adj word.Word
-		if err := a.DB.GetByLabel(adjLabel, &adj); err != nil {
+		adj, err := a.Words.GetAnyWith(adjLabel, word.Adjective)
+		if err != nil {
 			return cerr.ErrAdjectiveNotFound.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
-				WithFilename(st.CurrentFilename()).AddErr(err)
+				WithFilename(st.CurrentFilename()).
+				AddErr(fmt.Errorf("%w while looking for adjective %q", err, adjLabel))
 		}
 
 		i := item.New()

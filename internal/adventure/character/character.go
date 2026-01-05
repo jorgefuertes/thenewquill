@@ -1,6 +1,9 @@
 package character
 
-import "github.com/jorgefuertes/thenewquill/internal/database/adapter"
+import (
+	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
+	"github.com/jorgefuertes/thenewquill/internal/database/adapter"
+)
 
 type Character struct {
 	ID          uint32
@@ -17,6 +20,10 @@ var _ adapter.Storeable = &Character{}
 
 func New() *Character {
 	return &Character{}
+}
+
+func (c *Character) GetKind() kind.Kind {
+	return kind.Character
 }
 
 func (c *Character) SetID(id uint32) {

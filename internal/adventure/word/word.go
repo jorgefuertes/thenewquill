@@ -4,6 +4,7 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 	"github.com/jorgefuertes/thenewquill/internal/database/adapter"
 	"github.com/jorgefuertes/thenewquill/internal/util"
 )
@@ -23,6 +24,10 @@ func New(labelID uint32, t WordType, synonyms ...string) *Word {
 	}
 
 	return &Word{ID: 0, LabelID: labelID, Type: t, Synonyms: synonyms}
+}
+
+func (w Word) GetKind() kind.Kind {
+	return kind.Word
 }
 
 func (w *Word) SetID(id uint32) {

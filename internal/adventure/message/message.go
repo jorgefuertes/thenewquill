@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 	"github.com/jorgefuertes/thenewquill/internal/database/adapter"
 )
 
@@ -39,6 +40,10 @@ func New() *Message {
 	m := &Message{Plurals: [2]string{}}
 
 	return m
+}
+
+func (m *Message) GetKind() kind.Kind {
+	return kind.Message
 }
 
 func (m *Message) SetID(id uint32) {

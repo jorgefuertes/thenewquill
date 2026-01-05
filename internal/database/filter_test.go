@@ -8,28 +8,16 @@ import (
 )
 
 func TestMatches(t *testing.T) {
-	type TestItem struct {
-		ID      uint32
-		LabelID uint32
-		Title   string
-		At      uint32
-		OK      bool
-		NOOK    bool
-		Weight  int
-		Names   []string
-		Numbers []int
-	}
-
 	type testCase struct {
 		name     string
-		sut      *TestItem
+		sut      *testItem
 		filters  []Filter
 		expected bool
 	}
 
 	const testItemTile = "This is just a Test Title"
 
-	testItem1 := &TestItem{
+	testItem1 := &testItem{
 		ID:      7,
 		LabelID: 3,
 		Title:   testItemTile,

@@ -1,6 +1,9 @@
 package config
 
-import "github.com/jorgefuertes/thenewquill/internal/database/adapter"
+import (
+	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
+	"github.com/jorgefuertes/thenewquill/internal/database/adapter"
+)
 
 type Param struct {
 	ID      uint32
@@ -14,18 +17,22 @@ func New(id, labelID uint32, v string) *Param {
 	return &Param{ID: id, V: v}
 }
 
-func (v Param) GetID() uint32 {
-	return v.ID
+func (p Param) GetKind() kind.Kind {
+	return kind.Param
 }
 
-func (v *Param) SetID(id uint32) {
-	v.ID = id
+func (p Param) GetID() uint32 {
+	return p.ID
 }
 
-func (v Param) GetLabelID() uint32 {
-	return v.LabelID
+func (p *Param) SetID(id uint32) {
+	p.ID = id
 }
 
-func (v *Param) SetLabelID(id uint32) {
-	v.LabelID = id
+func (p Param) GetLabelID() uint32 {
+	return p.LabelID
+}
+
+func (p *Param) SetLabelID(id uint32) {
+	p.LabelID = id
 }

@@ -5,6 +5,7 @@ import (
 
 	"github.com/jorgefuertes/thenewquill/internal/adventure"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/location"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/word"
 	cerr "github.com/jorgefuertes/thenewquill/internal/compiler/compiler_error"
 	"github.com/jorgefuertes/thenewquill/internal/compiler/line"
 	"github.com/jorgefuertes/thenewquill/internal/compiler/status"
@@ -38,7 +39,7 @@ func readLocation(l line.Line, st *status.Status, a *adventure.Adventure) error 
 		exitMap, ok := l.AsLocationConns()
 		if ok {
 			for actionLabel, destLabel := range exitMap {
-				actionWord, err := a.Words.Get().WithLabel(actionLabel).First()
+				actionWord, err := a.Words.GetAnyWith(actionLabel, word.Verb, word.Noun)
 				if err != nil {
 					return cerr.ErrWordNotFound.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
 						WithFilename(st.CurrentFilename()).
