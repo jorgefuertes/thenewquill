@@ -28,8 +28,8 @@ func TestDatabaseLabels(t *testing.T) {
 		{"light-on", 9, nil, nil},
 		{"#undefined", 0, database.ErrInvalidLabel, nil},
 		{"test!!!", 0, database.ErrInvalidLabel, database.ErrLabelNotFound},
-		{"_", 1, nil, nil},
-		{"*", 2, nil, nil},
+		{"*", 1, nil, nil},
+		{"_", 2, nil, nil},
 	}
 
 	for _, tc := range testCases {

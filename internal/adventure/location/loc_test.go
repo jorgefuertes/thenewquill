@@ -17,8 +17,11 @@ func TestLocations(t *testing.T) {
 	wordStore := word.NewService(db)
 	locationStore := location.NewService(db)
 	prevCount := wordStore.Count()
+	prevLabelCount := int(db.CountLabels())
 
-	t.Run("Words", func(t *testing.T) {
+	createActionWords := func() {
+		t.Helper()
+
 		wordsToCreate := [][]string{
 			{"north", "n"},
 			{"east", "e"},
@@ -30,18 +33,26 @@ func TestLocations(t *testing.T) {
 		for _, syns := range wordsToCreate {
 			labelID, err := db.CreateLabel(syns[0])
 			require.NoError(t, err)
+			require.NotZero(t, labelID)
 
 			w := word.New(labelID, word.Noun, syns...)
+			require.NotNil(t, w)
+			require.NotZero(t, w.LabelID, "word %q should have a label id", syns[0])
 
 			id, err := wordStore.Create(w)
 			require.NoError(t, err, "cannot create word %q", syns[0])
 			assert.NotZero(t, id, "word %q should have an id", syns[0])
+
+			assert.True(t, wordStore.Get().WithLabel(syns[0]).Exists(), "word %q should exist", syns[0])
 		}
 
-		require.Equal(t, len(wordsToCreate)+prevCount, wordStore.Count())
-	})
+		require.EqualValues(t, len(wordsToCreate)+prevLabelCount, db.CountLabels())
+		require.EqualValues(t, len(wordsToCreate)+prevCount, wordStore.Count())
+	}
 
 	t.Run("Locations", func(t *testing.T) {
+		createActionWords()
+
 		const (
 			loc1 = "loc-001"
 			loc2 = "loc-002"
@@ -92,15 +103,15 @@ func TestLocations(t *testing.T) {
 			loc, err := locationStore.Get().WithLabel(cur.label).First()
 			require.NoError(t, err, "cannot get location %q", cur.label)
 
-			for wordLabel, dstLabel := range cur.conns {
-				word, err := wordStore.Get().WithLabel(wordLabel).First()
-				require.NoError(t, err, "cannot get destination word %q", wordLabel)
+			for actionLabel, dstLabel := range cur.conns {
+				actionWord, err := wordStore.Get().WithLabel(actionLabel).First()
+				require.NoError(t, err, "cannot get action word %q", actionLabel)
 
 				dst, err := locationStore.Get().WithLabel(dstLabel).First()
 				require.NoError(t, err, "cannot get destination location %q", dstLabel)
 
-				loc.SetConn(word.ID, dst.ID)
-				require.NoError(t, err, "cannot set connection %q->%q", wordLabel, dstLabel)
+				loc.SetConn(actionWord.ID, dst.ID)
+				require.NoError(t, err, "cannot set connection %q->%q", actionLabel, dstLabel)
 			}
 
 			// update location

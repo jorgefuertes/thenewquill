@@ -39,11 +39,11 @@ func (w Word) GetID() uint32 {
 }
 
 func (w *Word) SetLabelID(id uint32) {
-	w.ID = id
+	w.LabelID = id
 }
 
 func (w Word) GetLabelID() uint32 {
-	return w.ID
+	return w.LabelID
 }
 
 func (w Word) HasSynonym(syn string) bool {

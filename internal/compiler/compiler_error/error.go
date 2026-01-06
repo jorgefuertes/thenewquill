@@ -2,6 +2,7 @@ package compiler_error
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 	"github.com/jorgefuertes/thenewquill/internal/compiler/line"
@@ -122,7 +123,7 @@ func (e CompilerError) AddErr(err error) CompilerError {
 
 func (e CompilerError) Is(err error) bool {
 	for _, msg := range e.msgs {
-		if msg == err.Error() {
+		if strings.Contains(msg, err.Error()) {
 			return true
 		}
 	}

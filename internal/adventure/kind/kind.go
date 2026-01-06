@@ -13,7 +13,6 @@ const (
 	None Kind = iota
 	Label
 	Param
-	Value
 	Variable
 	Word
 	Message
@@ -39,7 +38,6 @@ func kindNamesAndAliases() map[Kind][]string {
 		None:      {"none", "unknown"},
 		Label:     {"label", "labels"},
 		Param:     {"config", "cfg", "configuration", "param", "params"},
-		Value:     {"value"},
 		Variable:  {"var", "variable", "vars", "variables"},
 		Word:      {"word", "vocabulary", "voc", "words"},
 		Message:   {"message", "msg", "messages"},

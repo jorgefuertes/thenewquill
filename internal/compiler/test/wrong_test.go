@@ -37,7 +37,13 @@ func TestWrongFiles(t *testing.T) {
 				require.Error(t, err)
 				er, ok := err.(cerr.CompilerError)
 				require.True(t, ok, "error is not a CompilerError")
-				require.True(t, er.Is(tc.expectedError), "error is not the expected one: %s", er.Error())
+				require.True(
+					t,
+					er.Is(tc.expectedError),
+					"error is not the expected %q, actiual: %q",
+					tc.expectedError,
+					er.Error(),
+				)
 			})
 		}
 	})
