@@ -178,3 +178,17 @@ func (l Line) AsConfig() (string, string, bool) {
 
 	return "", "", false
 }
+
+// AsBlob returns the blob label, filename and true if it was found
+func (l Line) AsBlob() (string, string, bool) {
+	if !rg.Blob.MatchString(l.OptimizedText()) {
+		return "", "", false
+	}
+
+	parts := rg.Blob.FindStringSubmatch(l.OptimizedText())
+	if len(parts) != 3 {
+		return "", "", false
+	}
+
+	return parts[1], parts[2], true
+}

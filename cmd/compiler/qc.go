@@ -77,15 +77,16 @@ func compileAction(c *cli.Context) error {
 
 	t := table.NewWriter()
 	t.SetOutputMirror(os.Stdout)
-	t.AppendHeader(table.Row{"Section", "Entries"})
-	t.AppendRows([]table.Row{
-		{"vars", fmt.Sprintf("%d", a.DB.CountRecordsByKind(kind.Variable))},
-		{"vocabulary", fmt.Sprintf("%d", a.DB.CountRecordsByKind(kind.Word))},
-		{"messages", fmt.Sprintf("%d", a.DB.CountRecordsByKind(kind.Message))},
-		{"locations", fmt.Sprintf("%d", a.DB.CountRecordsByKind(kind.Location))},
-		{"items", fmt.Sprintf("%d", a.DB.CountRecordsByKind(kind.Item))},
-		{"characters", fmt.Sprintf("%d", a.DB.CountRecordsByKind(kind.Character))},
-	})
+	t.AppendHeader(table.Row{"Kind", "Records"})
+
+	for _, k := range kind.Kinds() {
+		if k == kind.None || k == kind.Test || k == kind.Label {
+			continue
+		}
+
+		t.AppendRow(table.Row{k.HumanName(), fmt.Sprintf("%d", a.DB.CountRecordsByKind(k))})
+	}
+
 	t.AppendFooter(
 		table.Row{"Total", fmt.Sprintf("%d entries with %d labels", a.DB.CountRecords(), a.DB.CountLabels())},
 	)

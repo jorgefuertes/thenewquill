@@ -16,6 +16,7 @@ func validateSection(a *adventure.Adventure, s *status.Status, k kind.Kind) erro
 		kind.Item:      a.Items.ValidateAll,
 		kind.Character: a.Characters.ValidateAll,
 		kind.Location:  a.Locations.ValidateAll,
+		kind.Blob:      a.Blobs.ValidateAll,
 	}
 
 	if s.HasRunValidator(k) {

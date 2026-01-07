@@ -3,7 +3,6 @@ package compiler
 import (
 	"bufio"
 	"os"
-	"path/filepath"
 
 	"github.com/jorgefuertes/thenewquill/internal/adventure"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
@@ -88,7 +87,7 @@ func compileFile(st *status.Status, filename string, a *adventure.Adventure) err
 		// follow includes
 		f, ok := l.AsInclude()
 		if ok {
-			err := compileFile(st, filepath.Dir(st.CurrentFilename())+"/"+f, a)
+			err := compileFile(st, st.CurrentPath(f), a)
 			if err != nil {
 				cErr, ok := err.(cerr.CompilerError)
 				if ok {
@@ -126,19 +125,16 @@ func compileFile(st *status.Status, filename string, a *adventure.Adventure) err
 		// section declaration
 		s, ok := l.AsSection()
 		if ok {
-			log.Debug("🟩 SECTION %s", s.String())
 			if s == kind.None {
 				return cerr.ErrUnknownSection.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
 					WithFilename(st.CurrentFilename())
 			}
 
 			if st.Section != kind.None {
-				log.Debug("🟩 POST-REPLACE SECTION %s", st.Section.String())
 				if err := postReplaceSection(a, st, st.Section); err != nil {
 					return err
 				}
 
-				log.Debug("🟩 VALIDATING SECTION %s", st.Section.String())
 				if err := validateSection(a, st, st.Section); err != nil {
 					return err
 				}
@@ -181,12 +177,10 @@ func compileFile(st *status.Status, filename string, a *adventure.Adventure) err
 			WithFilename(st.CurrentFilename())
 	}
 
-	log.Debug("🟩 POST-REPLACE SECTION %s", st.Section.String())
 	if err := postReplaceSection(a, st, st.Section); err != nil {
 		return err
 	}
 
-	log.Debug("🟩 VALIDATING SECTION %s", st.Section.String())
 	if err := validateSection(a, st, st.Section); err != nil {
 		return err
 	}

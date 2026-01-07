@@ -25,4 +25,7 @@ var (
 	ErrWordNotFound             = newCompilerError("word not found")
 	ErrAdjectiveNotFound        = newCompilerError("adjective not found")
 	ErrLocationNotFound         = newCompilerError("location not found")
+	ErrWrongBlobDeclaration     = newCompilerError("wrong blob declaration")
+	ErrCannotCreateBlob         = newCompilerError("cannot create blob")
+	ErrLoadingBlob              = newCompilerError("error loading blob")
 )

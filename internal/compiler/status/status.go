@@ -2,6 +2,7 @@ package status
 
 import (
 	"encoding/json"
+	"path"
 	"reflect"
 	"slices"
 
@@ -170,4 +171,8 @@ func (s *Status) ClearCurrent() {
 
 func (s *Status) HasCurrent() bool {
 	return s.current != nil
+}
+
+func (s *Status) CurrentPath(paths ...string) string {
+	return path.Join(path.Dir(s.CurrentFilename()), path.Join(paths...))
 }

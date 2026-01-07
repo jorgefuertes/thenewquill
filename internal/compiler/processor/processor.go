@@ -26,6 +26,8 @@ func ProcessLine(l line.Line, st *status.Status, a *adventure.Adventure) error {
 		return readLocation(l, st, a)
 	case kind.Character:
 		return readCharacter(l, st, a)
+	case kind.Blob:
+		return readBlob(l, st, a)
 	default:
 		return nil
 	}

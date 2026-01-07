@@ -80,14 +80,18 @@ func (db *DB) CountRecords() int {
 	return len(db.data)
 }
 
-func (db *DB) CountRecordsByKind(kind kind.Kind) int {
+func (db *DB) CountRecordsByKind(k kind.Kind) int {
 	db.lock()
 	defer db.unlock()
 
 	count := 0
 
+	if k == kind.Label {
+		return len(db.labels)
+	}
+
 	for _, r := range db.data {
-		if r.Kind == kind {
+		if r.Kind == k {
 			count++
 		}
 	}

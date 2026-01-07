@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/jorgefuertes/thenewquill/internal/adventure/blob"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/character"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/config"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/item"
@@ -25,6 +26,7 @@ type Adventure struct {
 	Words      *word.Service
 	Locations  *location.Service
 	Variables  *variable.Service
+	Blobs      *blob.Service
 }
 
 func New() *Adventure {
@@ -39,6 +41,7 @@ func New() *Adventure {
 		Words:      word.NewService(d),
 		Locations:  location.NewService(d),
 		Variables:  variable.NewService(d),
+		Blobs:      blob.NewService(d),
 	}
 }
 
