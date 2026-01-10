@@ -67,12 +67,13 @@ func TestKindByte(t *testing.T) {
 		{"Location", kind.Location, 7},
 		{"Character", kind.Character, 8},
 		{"Process", kind.Process, 9},
-		{"Test", kind.Test, 10},
+		{"Blob", kind.Blob, 10},
+		{"Test", kind.Test, 11},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equal(t, tt.expected, tt.kind.Byte())
+			assert.Equal(t, tt.expected, tt.kind.Byte(), "Kind: %s", tt.kind.String())
 		})
 	}
 }
@@ -87,13 +88,14 @@ func TestFromByte(t *testing.T) {
 		{"Label", 1, kind.Label},
 		{"Config", 2, kind.Param},
 		{"Variables", 3, kind.Variable},
-		{"Test", 10, kind.Test},
+		{"Blob", 10, kind.Blob},
+		{"Test", 11, kind.Test},
 		{"Invalid High", 255, kind.None},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equal(t, tt.expected, kind.KindFromByte(tt.input))
+			assert.Equal(t, tt.expected, kind.KindFromByte(tt.input), "Input byte: %d", tt.input)
 		})
 	}
 }
