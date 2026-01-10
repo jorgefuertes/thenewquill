@@ -45,16 +45,22 @@ func New() *Adventure {
 	}
 }
 
-func (a *Adventure) Export(path string) (int, error) {
+// Export exports the adventure database to a file
+// It returns the number of bytes written and the final file size
+func (a *Adventure) Export(path string) (int64, int64, error) {
 	if _, err := a.Config.Set("date", fmt.Sprintf("%d", time.Now().Unix())); err != nil {
-		return 0, err
+		return 0, 0, err
 	}
 
-	_, bFile, err := a.DB.Export(path)
-
-	return bFile, err
+	return a.DB.Export(path)
 }
 
 func (a *Adventure) Import(path string) error {
-	return a.DB.Import(path)
+	if err := a.DB.Import(path); err != nil {
+		return err
+	}
+
+	a.DB.Freeze()
+
+	return nil
 }

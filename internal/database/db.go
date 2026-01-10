@@ -7,8 +7,6 @@ import (
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 )
 
-const minLabelID uint32 = 3
-
 type (
 	labels    map[uint32]string
 	data      map[uint32]Record

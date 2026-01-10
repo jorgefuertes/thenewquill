@@ -1,22 +1,13 @@
 package database
 
 import (
-	"io"
-	"regexp"
+	"encoding/binary"
 
+	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 	"github.com/jorgefuertes/thenewquill/pkg/log"
 )
 
-var (
-	labelRg  = regexp.MustCompile(`^L:(\d+)\|([\d\p{L}\-_\.]+)$`)
-	recordRg = regexp.MustCompile(`^R:(\d+)\|(\d+)\|(\d+)\|(.*)$`)
-)
-
 func (db *DB) Import(filename string) error {
-	db.ResetDB()
-	db.lock()
-	defer db.unlock()
-
 	f, err := newFileReader(filename)
 	if err != nil {
 		return err
@@ -28,8 +19,8 @@ func (db *DB) Import(filename string) error {
 		}
 	}()
 
-	if f.version != version {
-		log.Warning("Invalid database header %q, expected version %q", f.version, version)
+	if f.version != exportVersion {
+		log.Warning("Invalid database header %d, expected version %d", f.version, exportVersion)
 		log.Warning("A database for another runtime version can lead to in game problems")
 	}
 
@@ -37,47 +28,75 @@ func (db *DB) Import(filename string) error {
 		return ErrInvalidFormatHeader
 	}
 
-	for {
-		line, err := f.readLn()
-		if err == io.EOF {
-			break
-		}
+	// reset the database
+	db.ResetDB()
+	db.lock()
+	defer db.unlock()
 
-		if err != nil {
+	// labels count
+	var labelsCount uint32
+	if err := binary.Read(f.z, endian, &labelsCount); err != nil {
+		return err
+	}
+
+	// labels
+	for i := uint32(1); i <= labelsCount; i++ {
+		var id uint32
+		if err := binary.Read(f.z, endian, &id); err != nil {
 			return err
 		}
 
-		if labelRg.MatchString(line) {
-			id, label, err := labelFromLine(line)
-			if err != nil {
-				return err
-			}
-
-			if id > db.lastLabelID {
-				db.lastLabelID = id
-			}
-
-			db.labels[id] = label
-
-			continue
+		var length uint8
+		if err := binary.Read(f.z, endian, &length); err != nil {
+			return err
 		}
 
-		if recordRg.MatchString(line) {
-			id, r, err := recordFromLine(line)
-			if err != nil {
-				return err
-			}
-
-			if id > db.lastDataID {
-				db.lastDataID = id
-			}
-
-			db.data[id] = r
-
-			continue
+		labelBytes := make([]byte, length)
+		if err := binary.Read(f.z, endian, &labelBytes); err != nil {
+			return err
 		}
 
-		log.Warning("Skipping unknown line: %s", line)
+		db.labels[id] = string(labelBytes)
+	}
+
+	// records count
+	var recordsCount uint32
+	if err := binary.Read(f.z, endian, &recordsCount); err != nil {
+		return err
+	}
+
+	// records
+	for i := uint32(1); i <= recordsCount; i++ {
+		var id uint32
+		if err := binary.Read(f.z, endian, &id); err != nil {
+			return err
+		}
+
+		var labelID uint32
+		if err := binary.Read(f.z, endian, &labelID); err != nil {
+			return err
+		}
+
+		var kindByte byte
+		if err := binary.Read(f.z, endian, &kindByte); err != nil {
+			return err
+		}
+
+		var dataLength uint64
+		if err := binary.Read(f.z, endian, &dataLength); err != nil {
+			return err
+		}
+
+		dataBytes := make([]byte, dataLength)
+		if err := binary.Read(f.z, endian, &dataBytes); err != nil {
+			return err
+		}
+
+		db.data[id] = Record{
+			LabelID: labelID,
+			Kind:    kind.Kind(kindByte),
+			Data:    dataBytes,
+		}
 	}
 
 	return nil

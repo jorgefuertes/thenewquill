@@ -2,19 +2,23 @@ package database
 
 import (
 	"compress/gzip"
+	"encoding/binary"
 	"fmt"
 	"os"
 	"strings"
 )
 
+const zBegin = "---"
+
 type fileWriter struct {
 	filename  string
 	raw       *os.File
 	z         *gzip.Writer
-	byteCount int
+	byteCount int64
 }
 
-func (f *fileWriter) close() (int, int, error) {
+// close closes the file writer and returns the number of bytes written and the final file size
+func (f *fileWriter) close() (int64, int64, error) {
 	if err := f.z.Flush(); err != nil {
 		return f.byteCount, 0, err
 	}
@@ -36,62 +40,66 @@ func (f *fileWriter) close() (int, int, error) {
 		return f.byteCount, 0, err
 	}
 
-	return f.byteCount, int(info.Size()), nil
+	return f.byteCount, info.Size(), nil
 }
 
-func createFile(filename string, headers ...string) (*fileWriter, error) {
+func newFileWriter(filename string, fileType, version byte, headers ...string) (*fileWriter, error) {
 	f := &fileWriter{filename: filename}
 
 	var err error
 	f.raw, err = os.OpenFile(filename, os.O_CREATE|os.O_WRONLY, 0o644)
 	if err != nil {
-		return f, err
+		panic(err)
 	}
 
 	if err := f.raw.Truncate(0); err != nil {
-		return f, err
+		return nil, err
 	}
 
 	if len(headers) > 0 {
-		if err := f.writeHeaders(headers); err != nil {
-			return f, err
-		}
+		f.writeHumanHeaders(headers)
 	}
 
 	f.z, err = gzip.NewWriterLevel(f.raw, gzip.BestCompression)
 	if err != nil {
-		return f, err
+		return nil, err
 	}
+
+	f.write([]byte{fileType, version})
 
 	return f, nil
 }
 
-func (f *fileWriter) write(format string, args ...any) error {
+func (f *fileWriter) write(data any) {
+	f.byteCount += int64(binary.Size(data))
+
+	if f.z != nil {
+		if err := binary.Write(f.z, endian, data); err != nil {
+			panic(fmt.Sprintf("[fz] cannot write data, %s: %+v", err, data))
+		}
+
+		return
+	}
+
+	if err := binary.Write(f.raw, endian, data); err != nil {
+		panic(fmt.Sprintf("[fr] cannot write data, %s: %+v", err, data))
+	}
+}
+
+func (f *fileWriter) writeString(format string, args ...any) {
 	s := format
 	if len(args) > 0 {
 		s = fmt.Sprintf(format, args...)
 	}
 
-	if f.z != nil {
-		n, err := f.z.Write([]byte(s))
-		f.byteCount += n
-
-		return err
-	}
-
-	n, err := f.raw.Write([]byte(s))
-	f.byteCount += n
-
-	return err
+	f.write([]byte(s))
 }
 
-func (f *fileWriter) writeLn(format string, args ...any) error {
-	format += "\n"
-
-	return f.write(format, args...)
+func (f *fileWriter) writeStringLn(format string, args ...any) {
+	f.writeString(format+"\n", args...)
 }
 
-func (f *fileWriter) writeHeaders(headers []string) error {
+func (f *fileWriter) writeHumanHeaders(headers []string) {
 	max := 0
 	for _, h := range headers {
 		if len(h) > max {
@@ -100,19 +108,13 @@ func (f *fileWriter) writeHeaders(headers []string) error {
 	}
 	max += 4
 
-	if err := f.writeLn(strings.Repeat("#", max)); err != nil {
-		return err
-	}
+	f.writeStringLn(strings.Repeat("#", max))
 
 	for _, h := range headers {
-		if err := f.writeLn("# %s%s#", h, strings.Repeat(" ", max-len(h)-3)); err != nil {
-			return err
-		}
+		f.writeStringLn("# %s%s#", h, strings.Repeat(" ", max-len(h)-3))
 	}
 
-	if err := f.writeLn(strings.Repeat("#", max)); err != nil {
-		return err
-	}
-
-	return f.writeLn("---")
+	f.writeStringLn(strings.Repeat("#", max))
+	f.writeStringLn("")
+	f.writeStringLn(zBegin)
 }

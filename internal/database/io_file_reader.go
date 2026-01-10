@@ -2,15 +2,15 @@ package database
 
 import (
 	"compress/gzip"
-	"io"
+	"encoding/binary"
+	"fmt"
 	"os"
-	"regexp"
 )
 
 type fileReader struct {
 	filename string
-	version  string
-	fileType string
+	fileType byte
+	version  byte
 	raw      *os.File
 	z        *gzip.Reader
 }
@@ -23,6 +23,8 @@ func (f *fileReader) close() error {
 	return f.raw.Close()
 }
 
+// newFileReader opens the file and prepares it for reading
+// reads the header fileType and version
 func newFileReader(filename string) (*fileReader, error) {
 	f := &fileReader{filename: filename}
 
@@ -32,69 +34,61 @@ func newFileReader(filename string) (*fileReader, error) {
 		return f, err
 	}
 
-	f.version, f.fileType, err = f.readHeaders()
-	if err != nil {
-		return f, err
+	// skip human headers
+	for {
+		line, err := f.readLine()
+		if err != nil {
+			return nil, fmt.Errorf("cannot find the zBegin mark: %s", err)
+		}
+
+		if line == zBegin {
+			break
+		}
 	}
 
 	f.z, err = gzip.NewReader(f.raw)
 	if err != nil {
-		return f, err
+		return nil, err
 	}
+
+	var fileType byte
+	if err := binary.Read(f.z, endian, &fileType); err != nil {
+		return nil, err
+	}
+
+	var version byte
+	if err := binary.Read(f.z, endian, &version); err != nil {
+		return nil, err
+	}
+
+	f.fileType = fileType
+	f.version = version
 
 	return f, nil
 }
 
-func (f *fileReader) readLn() (string, error) {
-	var reader io.Reader
-
-	reader = f.raw
-	if f.z != nil {
-		reader = f.z
-	}
-
-	line := ""
-	for {
-		b := make([]byte, 1)
-		if _, err := reader.Read(b); err != nil {
-			return line, err
-		}
-
-		if b[0] == '\n' {
-			break
-		}
-
-		line += string(b)
-	}
-
-	return line, nil
-}
-
-// readHeaders reads the headers of the file and returns the format version
-func (f *fileReader) readHeaders() (string, string, error) {
-	formatVersionRg := regexp.MustCompile(
-		`^# Format version: ([\d\.]+), type: (` + databaseType + `|` + saveType + `)\s+#$`,
-	)
-	ver := ""
-	fileType := ""
+func (f *fileReader) readLine() (string, error) {
+	var line []byte
+	buf := make([]byte, 1)
 
 	for {
-		line, err := f.readLn()
+		var err error
+		if f.z != nil {
+			_, err = f.z.Read(buf)
+		} else {
+			_, err = f.raw.Read(buf)
+		}
+
 		if err != nil {
-			return ver, fileType, err
+			return "", err
 		}
 
-		if line == "---" {
+		if buf[0] == '\n' {
 			break
 		}
 
-		if formatVersionRg.MatchString(line) {
-			matches := formatVersionRg.FindAllStringSubmatch(line, 1)
-
-			ver = matches[0][1]
-			fileType = matches[0][2]
-		}
+		line = append(line, buf[0])
 	}
 
-	return ver, fileType, nil
+	return string(line), nil
 }

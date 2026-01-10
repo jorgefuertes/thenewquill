@@ -5,16 +5,21 @@ import (
 	"time"
 )
 
-func (db *DB) Save(filename string) (int, int, error) {
+const (
+	saveType    byte = 'S'
+	saveVersion byte = 1
+)
+
+func (db *DB) Save(filename string) (int64, int64, error) {
 	if len(db.snapshots) == 0 {
 		return 0, 0, ErrNothingToSave
 	}
 
 	params := db.getParams()
 
-	f, err := createFile(filename,
+	f, err := newFileWriter(filename, saveType, saveVersion,
 		"The New Quill Adventure Save",
-		fmt.Sprintf("Format version: %s, type: %s", version, saveType),
+		fmt.Sprintf("Format version: %d, type: %c", saveVersion, saveType),
 		fmt.Sprintf("Timestamp: %d", time.Now().Unix()),
 		fmt.Sprintf("Snapshots: %d", len(db.snapshots)),
 		"",
@@ -29,17 +34,26 @@ func (db *DB) Save(filename string) (int, int, error) {
 	db.lock()
 	defer db.unlock()
 
-	for i, snap := range db.snapshots {
-		if err := f.writeLn("S:%d", i); err != nil {
-			return 0, 0, err
-		}
+	if len(db.snapshots) > 255 {
+		return 0, 0, fmt.Errorf("too many snapshots to save (%d), max is 255", len(db.snapshots))
+	}
 
+	// snapshots count
+	f.write(byte(len(db.snapshots)))
+
+	for _, snap := range db.snapshots {
+		// snapshot's records count
+		f.write(uint32(len(snap)))
+
+		// records
 		for id, r := range snap {
-			if err := f.writeLn("%s%d|%d|%d|%s", recordBegin, id, r.LabelID, r.Kind, r.Data); err != nil {
-				return 0, 0, err
-			}
+			f.write(id)
+			f.write(r.LabelID)
+			f.write(r.Kind)
+			f.write(uint64(len(r.Data))) // data length
+			f.write(r.Data)
 		}
 	}
 
-	return 0, 0, nil
+	return f.close()
 }

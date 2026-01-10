@@ -92,11 +92,11 @@ func (db *DB) isFullOfLabels() bool {
 }
 
 func (db *DB) CountLabels() uint32 {
-	return uint32(len(db.labels) - 1)
+	return uint32(len(db.labels))
 }
 
 func (db *DB) ExistsLabelID(id uint32) bool {
-	return id <= db.CountLabels()
+	return id <= db.CountLabels()-1
 }
 
 func (db *DB) GetLabelFromRecordOrBlank(id uint32) string {
