@@ -67,6 +67,19 @@ func (q *query) First() (*Word, error) {
 	return w, err
 }
 
+func (q *query) All() []*Word {
+	var words []*Word
+
+	cur := q.db.Query(q.filters...)
+	w := &Word{}
+	for cur.Next(w) {
+		words = append(words, w)
+		w = &Word{}
+	}
+
+	return words
+}
+
 func (q *query) Count() int {
 	return q.db.Query(q.filters...).Count()
 }

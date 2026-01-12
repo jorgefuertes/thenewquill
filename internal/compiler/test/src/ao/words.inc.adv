@@ -149,4 +149,7 @@ adjective: altos, esbeltos, largos
 
 // conjunction
 
-conjunction: y, entonces
+conjunction: y, entonces, además
+
+// prepositions
+preposition: a, con
