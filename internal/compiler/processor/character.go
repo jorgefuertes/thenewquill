@@ -96,10 +96,28 @@ func readCharacter(l line.Line, st *status.Status, a *adventure.Adventure) error
 				WithFilename(st.CurrentFilename()).AddErr(err)
 		}
 
+		if !noun.IsCharacter {
+			noun.IsCharacter = true
+
+			if err := a.Words.Update(noun); err != nil {
+				return cerr.ErrCannotUpdateWord.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
+					WithFilename(st.CurrentFilename()).AddErr(err)
+			}
+		}
+
 		adj, err := a.Words.GetAnyWith(adjLabel, word.Adjective)
 		if err != nil {
 			return cerr.ErrWordNotFound.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
 				WithFilename(st.CurrentFilename()).AddErr(err)
+		}
+
+		if !adj.IsCharacter {
+			adj.IsCharacter = true
+
+			if err := a.Words.Update(adj); err != nil {
+				return cerr.ErrCannotUpdateWord.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
+					WithFilename(st.CurrentFilename()).AddErr(err)
+			}
 		}
 
 		st.SetCurrentStoreable(&character.Character{LabelID: labelID, NounID: noun.ID, AdjectiveID: adj.ID})

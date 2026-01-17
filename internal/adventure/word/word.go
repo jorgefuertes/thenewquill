@@ -10,10 +10,13 @@ import (
 )
 
 type Word struct {
-	ID       uint32
-	LabelID  uint32   `valid:"required"`
-	Type     WordType `valid:"required"`
-	Synonyms []string `valid:"count(1|50),len(1|25)"`
+	ID           uint32
+	LabelID      uint32   `valid:"required"`
+	Type         WordType `valid:"required"`
+	Synonyms     []string `valid:"count(1|50),len(1|25)"`
+	IsConnection bool
+	IsItem       bool
+	IsCharacter  bool
 }
 
 var _ adapter.Storeable = &Word{}

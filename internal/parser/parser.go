@@ -1,41 +1,22 @@
 package parser
 
 import (
-	"fmt"
 	"regexp"
 	"strings"
 
 	"github.com/jorgefuertes/thenewquill/internal/adventure/word"
-	"github.com/jorgefuertes/thenewquill/pkg/log"
+	"github.com/jorgefuertes/thenewquill/internal/lang"
 )
-
-type Lang string
-
-const (
-	EN Lang = "en"
-	ES Lang = "es"
-)
-
-type SL struct {
-	Adverb      []*word.Word
-	Verb        []*word.Word
-	Adjective1  []*word.Word
-	Noun1       []*word.Word
-	Preposition []*word.Word
-	Adjective2  []*word.Word
-	Noun2       []*word.Word
-	Executed    bool
-}
 
 type Parser struct {
 	wordStore *word.Service
-	lang      Lang
-	lastInput string
+	lang      lang.Lang
 	splitRg   *regexp.Regexp
-	history   []SL
+	Sentences []LS
+	cursor    int
 }
 
-func New(wordStore *word.Service, lang Lang) (*Parser, error) {
+func New(wordStore *word.Service) (*Parser, error) {
 	words := wordStore.Get().WithType(word.Conjunction).All()
 
 	conjunctions := ""
@@ -51,14 +32,15 @@ func New(wordStore *word.Service, lang Lang) (*Parser, error) {
 
 	splitStr := `(?i)(?:\.|,|;|¡|!|¿|\?|\n` + conjunctions + `)+`
 	splitRg := regexp.MustCompile(splitStr)
-	fmt.Printf("Split regex: %s\n", splitRg.String())
+
+	l := wordStore.GetLang()
 
 	return &Parser{
 		wordStore: wordStore,
-		lang:      lang,
-		lastInput: "",
+		lang:      l,
 		splitRg:   splitRg,
-		history:   []SL{},
+		Sentences: []LS{},
+		cursor:    -1,
 	}, nil
 }
 
@@ -68,11 +50,78 @@ func (p *Parser) Parse(input string) {
 	parts := p.splitRg.Split(strings.TrimSpace(input), -1)
 	for _, part := range parts {
 		part = strings.TrimSpace(part)
+		part = strings.ToLower(part)
 		if part != "" {
 			phrases = append(phrases, part)
 		}
 	}
 
-	log.Debug("Parsed phrases: %+v", phrases)
-	_ = phrases
+	p.transformToLogicalSentences(phrases)
+}
+
+func (p *Parser) Reset() {
+	p.Sentences = []LS{}
+	p.cursor = -1
+}
+
+func (p *Parser) Len() int {
+	return len(p.Sentences)
+}
+
+func (p *Parser) transformToLogicalSentences(phrases []string) {
+	// TODO: implement talking with other characters when text is between quotes
+	// 1st pass - tokenize phrases into words
+	for _, phrase := range phrases {
+		ls := NewLS()
+		tokens := strings.Split(phrase, " ")
+		for _, token := range tokens {
+			w, err := p.wordStore.GetAnyWith(token, word.Verb, word.Adverb, word.Noun, word.Adjective)
+			if err == nil {
+				ls.addWord(w)
+			}
+		}
+
+		if ls.isEmpty() {
+			continue
+		}
+
+		p.Sentences = append(p.Sentences, ls)
+	}
+
+	// 2nd pass - add implied verbs if missing
+	for _, ls := range p.Sentences {
+		if !ls.Has(word.Verb) && ls.Has(word.Noun) {
+			noun := ls.Get(word.Noun, First)
+			if noun == nil {
+				continue
+			}
+
+			if noun.IsConnection {
+				verb := p.wordStore.GetDefaultVerbSyns(p.lang, lang.Go)
+				if verb != nil {
+					ls.addWordAt(verb, 0)
+				}
+
+				return
+			}
+
+			if noun.IsItem {
+				verb := p.wordStore.GetDefaultVerbSyns(p.lang, lang.Examine)
+				if verb != nil {
+					ls.setVerb(verb)
+				}
+
+				return
+			}
+
+			if noun.IsCharacter {
+				verb := p.wordStore.GetDefaultVerbSyns(p.lang, lang.Talk)
+				if verb != nil {
+					ls.setVerb(verb)
+				}
+
+				return
+			}
+		}
+	}
 }

@@ -131,11 +131,29 @@ func readItem(l line.Line, st *status.Status, a *adventure.Adventure) error {
 				WithFilename(st.CurrentFilename()).AddErr(fmt.Errorf("%w while looking for noun %q", err, nounLabel))
 		}
 
+		if !noun.IsItem {
+			noun.IsItem = true
+
+			if err := a.Words.Update(noun); err != nil {
+				return cerr.ErrCannotUpdateWord.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
+					WithFilename(st.CurrentFilename()).AddErr(err)
+			}
+		}
+
 		adj, err := a.Words.GetAnyWith(adjLabel, word.Adjective)
 		if err != nil {
 			return cerr.ErrAdjectiveNotFound.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
 				WithFilename(st.CurrentFilename()).
 				AddErr(fmt.Errorf("%w while looking for adjective %q", err, adjLabel))
+		}
+
+		if !adj.IsItem {
+			adj.IsItem = true
+
+			if err := a.Words.Update(adj); err != nil {
+				return cerr.ErrCannotUpdateWord.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
+					WithFilename(st.CurrentFilename()).AddErr(err)
+			}
 		}
 
 		i := item.New()

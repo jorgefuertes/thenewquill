@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/jorgefuertes/thenewquill/internal/adventure/config"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/location"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/word"
 	"github.com/jorgefuertes/thenewquill/internal/database"
@@ -14,7 +15,8 @@ import (
 
 func TestLocations(t *testing.T) {
 	db := database.NewDB()
-	wordStore := word.NewService(db)
+	configStore := config.NewService(db)
+	wordStore := word.NewService(db, configStore)
 	locationStore := location.NewService(db)
 	prevCount := wordStore.Count()
 	prevLabelCount := int(db.CountLabels())

@@ -6,6 +6,7 @@ import (
 
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 	"github.com/jorgefuertes/thenewquill/internal/database"
+	"github.com/jorgefuertes/thenewquill/internal/lang"
 	"github.com/jorgefuertes/thenewquill/pkg/validator"
 )
 
@@ -64,6 +65,21 @@ func (s *Service) ValidateAll() []error {
 				)
 			}
 		}
+	}
+
+	// check for required verbs
+	l := s.GetLang()
+
+	if s.GetDefaultVerbSyns(lang.Lang(l), lang.Go) == nil {
+		validationErrors = append(validationErrors, ErrMissingGoVerb)
+	}
+
+	if s.GetDefaultVerbSyns(lang.Lang(l), lang.Talk) == nil {
+		validationErrors = append(validationErrors, ErrMissingTalkVerb)
+	}
+
+	if s.GetDefaultVerbSyns(lang.Lang(l), lang.Examine) == nil {
+		validationErrors = append(validationErrors, ErrMissingExamineVerb)
 	}
 
 	return validationErrors

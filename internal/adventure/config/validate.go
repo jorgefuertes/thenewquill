@@ -6,6 +6,7 @@ import (
 
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 	"github.com/jorgefuertes/thenewquill/internal/database"
+	"github.com/jorgefuertes/thenewquill/internal/lang"
 	"github.com/jorgefuertes/thenewquill/pkg/validator"
 )
 
@@ -19,7 +20,6 @@ const (
 )
 
 var (
-	allowedLanguages   = []string{"en", "es"}
 	allowedParamLabels = []string{
 		TitleParamLabel,
 		AuthorParamLabel,
@@ -50,7 +50,7 @@ func (s *Service) ValidateAll() []error {
 	}
 
 	// check if the language is valid
-	if !slices.Contains(allowedLanguages, s.GetValueOrBlank(LanguageParamLabel)) {
+	if !lang.IsAllowedLanguage(s.GetValueOrBlank(LanguageParamLabel)) {
 		validationErrors = append(
 			validationErrors,
 			fmt.Errorf("%w: %s=%q", ErrUnrecognizedLanguage, LanguageParamLabel, s.GetValueOrBlank(LanguageParamLabel)),

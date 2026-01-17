@@ -46,6 +46,16 @@ func readLocation(l line.Line, st *status.Status, a *adventure.Adventure) error 
 						AddErr(err).AddErr(fmt.Errorf("missing actionWord with label %q", actionLabel))
 				}
 
+				// set this word as a connection word
+				if !actionWord.IsConnection {
+					actionWord.IsConnection = true
+
+					if err := a.Words.Update(actionWord); err != nil {
+						return cerr.ErrCannotUpdateWord.WithStack(st.Stack).WithSection(st.Section).WithLine(l).
+							WithFilename(st.CurrentFilename()).AddErr(err)
+					}
+				}
+
 				// assign a label temporarily to the destination
 				// real ID will be assigned later
 				destLabelID, err := a.DB.CreateLabel(destLabel)

@@ -1,16 +1,19 @@
 package word
 
 import (
+	"github.com/jorgefuertes/thenewquill/internal/adventure/config"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 	"github.com/jorgefuertes/thenewquill/internal/database"
+	"github.com/jorgefuertes/thenewquill/internal/lang"
 )
 
 type Service struct {
-	db *database.DB
+	db  *database.DB
+	cfg *config.Service
 }
 
-func NewService(d *database.DB) *Service {
-	s := &Service{db: d}
+func NewService(d *database.DB, cfg *config.Service) *Service {
+	s := &Service{db: d, cfg: cfg}
 
 	labels := map[uint32]string{
 		1: database.LabelAsterisk,
@@ -33,6 +36,14 @@ func NewService(d *database.DB) *Service {
 	return s
 }
 
+func (s *Service) DB() *database.DB {
+	return s.db
+}
+
+func (s *Service) GetLang() lang.Lang {
+	return lang.Lang(s.cfg.GetValueOrBlank(config.LanguageParamLabel))
+}
+
 func (s *Service) Create(w *Word) (uint32, error) {
 	return s.db.Create(w)
 }
@@ -43,4 +54,16 @@ func (s *Service) Update(w *Word) error {
 
 func (s *Service) Count() int {
 	return s.db.CountRecordsByKind(kind.Word)
+}
+
+func (s *Service) GetDefaultVerbSyns(l lang.Lang, a lang.Action) *Word {
+	for _, syn := range lang.GetDefaultSynonymForAction(l, a) {
+		w, _ := s.Get().WithType(Verb).WithSynonym(syn).First()
+
+		if w != nil {
+			return w
+		}
+	}
+
+	return nil
 }

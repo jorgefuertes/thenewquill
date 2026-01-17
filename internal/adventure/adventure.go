@@ -32,13 +32,15 @@ type Adventure struct {
 func New() *Adventure {
 	d := database.NewDB()
 
+	sCfg := config.NewService(d)
+
 	return &Adventure{
 		DB:         d,
-		Config:     config.NewService(d),
+		Config:     sCfg,
 		Characters: character.NewService(d),
 		Items:      item.NewService(d),
 		Messages:   message.NewService(d),
-		Words:      word.NewService(d),
+		Words:      word.NewService(d, sCfg),
 		Locations:  location.NewService(d),
 		Variables:  variable.NewService(d),
 		Blobs:      blob.NewService(d),

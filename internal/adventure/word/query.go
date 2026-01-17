@@ -55,6 +55,24 @@ func (q *query) WithType(t WordType) *query {
 	return q
 }
 
+func (q *query) WithIsConnection(isConnection bool) *query {
+	q.filters = append(q.filters, database.NewFilter("IsConnection", database.Equal, isConnection))
+
+	return q
+}
+
+func (q *query) WithIsItem(isItem bool) *query {
+	q.filters = append(q.filters, database.NewFilter("IsItem", database.Equal, isItem))
+
+	return q
+}
+
+func (q *query) WithIsCharacter(isCharacter bool) *query {
+	q.filters = append(q.filters, database.NewFilter("IsCharacter", database.Equal, isCharacter))
+
+	return q
+}
+
 func (q *query) Exists() bool {
 	return q.db.Query(q.filters...).Exists()
 }
