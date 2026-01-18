@@ -45,14 +45,52 @@ func New(wordStore *word.Service) (*Parser, error) {
 }
 
 func (p *Parser) Parse(input string) {
-	var phrases []string
+	var phrases []phrase
 
-	parts := p.splitRg.Split(strings.TrimSpace(input), -1)
+	input = strings.TrimSpace(input)
+	parts := p.splitRg.Split(input, -1)
+
 	for _, part := range parts {
 		part = strings.TrimSpace(part)
+		if part == "" {
+			continue
+		}
+
 		part = strings.ToLower(part)
-		if part != "" {
-			phrases = append(phrases, part)
+		phrases = append(phrases, partToPhrases(part)...)
+	}
+
+	// split talk phrases into sub-phrases if needed
+	for i, ph := range phrases {
+		if !ph.isTalking {
+			continue
+		}
+
+		if !p.splitRg.MatchString(ph.str) {
+			continue
+		}
+
+		subParts := p.splitRg.Split(ph.str, -1)
+		for _, sp := range subParts {
+			sp = strings.TrimSpace(sp)
+			if sp == "" {
+				continue
+			}
+
+			subPhrases := partToPhrases(sp)
+			if len(subPhrases) < 2 {
+				continue
+			}
+
+			// replace the original phrase with the first sub-phrase
+			phrases[i].str = sp
+
+			// insert the remaining sub-phrases
+			for j := 1; j < len(subPhrases); j++ {
+				phrases = append(phrases, phrase{})
+				copy(phrases[i+j+1:], phrases[i+j:])
+				phrases[i+j] = subPhrases[j]
+			}
 		}
 	}
 
@@ -68,12 +106,13 @@ func (p *Parser) Len() int {
 	return len(p.Sentences)
 }
 
-func (p *Parser) transformToLogicalSentences(phrases []string) {
-	// TODO: implement talking with other characters when text is between quotes
+func (p *Parser) transformToLogicalSentences(phrases []phrase) {
 	// 1st pass - tokenize phrases into words
 	for _, phrase := range phrases {
 		ls := NewLS()
-		tokens := strings.Split(phrase, " ")
+		ls.talking = phrase.isTalking
+
+		tokens := strings.Split(phrase.str, " ")
 		for _, token := range tokens {
 			w, err := p.wordStore.GetAnyWith(token, word.Verb, word.Adverb, word.Noun, word.Adjective)
 			if err == nil {

@@ -14,8 +14,8 @@ import (
 
 func TestParser(t *testing.T) {
 	type phrase struct {
-		str    string
-		isMain bool
+		str       string
+		isTalking bool
 	}
 
 	type testCase struct {
@@ -31,23 +31,23 @@ func TestParser(t *testing.T) {
 			lang.ES,
 			"coger la llave y abrir la puerta. luego ¡Ir norte!",
 			[]phrase{
-				{"coger llave", true},
-				{"abrir puerta", true},
-				{"ir norte", true},
+				{"coger llave", false},
+				{"abrir puerta", false},
+				{"ir norte", false},
 			},
 		},
 		{
 			"Spanish single word connection",
 			lang.ES,
 			"Norte",
-			[]phrase{{"norte", true}},
+			[]phrase{{"norte", false}},
 		},
 		{
 			"Spanish talking to character",
 			lang.ES,
 			"decir al elfo \"dame el cuchillo y vete a tu casa\"",
 			[]phrase{
-				{"hablar elfo", true},
+				{"hablar elfo", false},
 				{"dame cuchillo", true},
 				{"vete casa", true},
 			},
@@ -80,12 +80,12 @@ func TestParser(t *testing.T) {
 				phrases = append(phrases, s.String())
 			}
 
-			require.Equal(t, len(c.expected), len(p.Sentences), "prhases: \n\t%s", strings.Join(phrases, "\n\t"))
+			require.Equal(t, len(c.expected), len(p.Sentences), "phrases: \n\t%s", strings.Join(phrases, "\n\t"))
 
 			for i, e := range c.expected {
 				lsStr := p.NextLS().String()
 				require.Equal(t, e.str, lsStr, "phrase %d does not match", i+1)
-				require.Equal(t, e.isMain, p.Current().IsMain(), "phrase %d main flag does not match", i+1)
+				require.Equal(t, e.isTalking, p.Current().IsTalking(), "phrase %d main flag does not match", i+1)
 			}
 		})
 	}

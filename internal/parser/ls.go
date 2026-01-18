@@ -15,12 +15,12 @@ const (
 )
 
 type LS struct {
-	main  bool
-	words []*word.Word
+	words   []*word.Word
+	talking bool
 }
 
 func NewLS() LS {
-	return LS{main: true, words: []*word.Word{}}
+	return LS{talking: false, words: []*word.Word{}}
 }
 
 // IsEmpty checks if the LS has no words.
@@ -113,6 +113,6 @@ func (ls LS) String() string {
 	return strings.Join(tokens, " ")
 }
 
-func (ls LS) IsMain() bool {
-	return ls.main
+func (ls LS) IsTalking() bool {
+	return ls.talking
 }
