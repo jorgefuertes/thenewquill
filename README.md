@@ -9,7 +9,7 @@ Don't pay too much attention to it atm, but feel free to contribute.
 
 ## Compiler
 
-The compiler is written in Go, and it's, at the moment, supporting Spanish only.
+The compiler is written in Go, and it's, at the moment, supporting Spanish and English only.
 
 ## License
 
