@@ -14,8 +14,9 @@ import (
 
 func TestParser(t *testing.T) {
 	type phrase struct {
-		str       string
-		isTalking bool
+		str      string
+		original string
+		sub      bool
 	}
 
 	type testCase struct {
@@ -27,45 +28,45 @@ func TestParser(t *testing.T) {
 
 	testCases := []testCase{
 		{
-			"Spanish composed 3 phrases",
-			lang.ES,
-			"coger la llave y abrir la puerta. luego ¡Ir norte!",
-			[]phrase{
-				{"coger llave", false},
-				{"abrir puerta", false},
-				{"ir norte", false},
-			},
-		},
-		{
 			"Spanish single word connection",
 			lang.ES,
 			"Norte",
-			[]phrase{{"norte", false}},
+			[]phrase{{"norte", "Norte", false}},
+		},
+		{
+			"Spanish composed 3 phrases",
+			lang.ES,
+			"Coger la llave y abrir la puerta, ¡Ir norte!",
+			[]phrase{
+				{"coger llave", "Coger la llave", false},
+				{"abrir puerta", "abrir la puerta", false},
+				{"ir norte", "Ir norte", false},
+			},
 		},
 		{
 			"Spanish talking to character",
 			lang.ES,
-			"decir al elfo \"dame el cuchillo y vete a tu casa\"",
+			`decir al elfo "dame el cuchillo y vete a tu casa"`,
 			[]phrase{
-				{"hablar elfo", false},
-				{"dame cuchillo", true},
-				{"vete casa", true},
+				{"decir elfo", "decir al elfo", false},
+				{"dame cuchillo", "dame el cuchillo", true},
+				{"vete casa", "vete a tu casa", true},
 			},
 		},
 		{
 			"English single word connection",
 			lang.EN,
 			"North",
-			[]phrase{{"north", true}},
+			[]phrase{{"north", "North", false}},
 		},
 		{
 			"English composed 3 phrases",
 			lang.EN,
 			"take the key and open the door. then go north!",
 			[]phrase{
-				{"take key", true},
-				{"open door", true},
-				{"go north", true},
+				{"take key", "take the key", false},
+				{"open door", "open the door", false},
+				{"go north", "go north", false},
 			},
 		},
 	}
@@ -80,12 +81,19 @@ func TestParser(t *testing.T) {
 				phrases = append(phrases, s.String())
 			}
 
-			require.Equal(t, len(c.expected), len(p.Sentences), "phrases: \n\t%s", strings.Join(phrases, "\n\t"))
+			var originals []string
+			for _, s := range p.Sentences {
+				originals = append(originals, s.Original())
+			}
+
+			require.Equal(t, len(c.expected), len(p.Sentences), "phrases: \n\t- %s\noriginals:\n\t- %s",
+				strings.Join(phrases, "\n\t- "), strings.Join(originals, "\n\t- "))
 
 			for i, e := range c.expected {
 				lsStr := p.NextLS().String()
 				require.Equal(t, e.str, lsStr, "phrase %d does not match", i+1)
-				require.Equal(t, e.isTalking, p.Current().IsTalking(), "phrase %d main flag does not match", i+1)
+				require.Equal(t, e.original, p.Current().Original(), "phrase %d original does not match", i+1)
+				require.Equal(t, e.sub, p.Current().IsSub(), "phrase %d SUB flag does not match", i+1)
 			}
 		})
 	}
@@ -103,16 +111,10 @@ func setupParser(t *testing.T, l lang.Lang) *parser.Parser {
 		createWords(t, wordStore, word.Conjunction, "and", "then", "also")
 		createWords(t, wordStore, word.Verb, "take", "open", "go", "give", "say")
 		createWords(t, wordStore, word.Noun, "key", "door", "north", "elf", "home", "knife")
-		setAsItem(t, wordStore, "key", "door", "knife")
-		setAsConnection(t, wordStore, "north")
-		setAsCharacter(t, wordStore, "elf")
 	} else {
 		createWords(t, wordStore, word.Conjunction, "y", "luego", "también", "después", "entonces")
 		createWords(t, wordStore, word.Verb, "coger", "abrir", "ir", "dame", "vete", "decir")
 		createWords(t, wordStore, word.Noun, "llave", "puerta", "norte", "elfo", "casa", "cuchillo")
-		setAsItem(t, wordStore, "llave", "puerta", "cuchillo")
-		setAsConnection(t, wordStore, "norte")
-		setAsCharacter(t, wordStore, "elfo")
 	}
 
 	p, err := parser.New(wordStore)
@@ -135,42 +137,4 @@ func createWords(t *testing.T, wordStore *word.Service, wType word.WordType, lab
 		require.NoError(t, err)
 		require.NotZero(t, id)
 	}
-}
-
-func setAsItem(t *testing.T, wordStore *word.Service, labels ...string) {
-	t.Helper()
-
-	for _, label := range labels {
-		w, err := wordStore.Get().WithSynonym(label).First()
-		require.NoError(t, err)
-		require.NotNil(t, w)
-
-		w.IsItem = true
-		err = wordStore.Update(w)
-		require.NoError(t, err)
-	}
-}
-
-func setAsConnection(t *testing.T, wordStore *word.Service, label string) {
-	t.Helper()
-
-	w, err := wordStore.Get().WithSynonym(label).First()
-	require.NoError(t, err)
-	require.NotNil(t, w)
-
-	w.IsConnection = true
-	err = wordStore.Update(w)
-	require.NoError(t, err)
-}
-
-func setAsCharacter(t *testing.T, wordStore *word.Service, label string) {
-	t.Helper()
-
-	w, err := wordStore.Get().WithSynonym(label).First()
-	require.NoError(t, err)
-	require.NotNil(t, w)
-
-	w.IsCharacter = true
-	err = wordStore.Update(w)
-	require.NoError(t, err)
 }

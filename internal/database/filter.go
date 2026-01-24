@@ -7,6 +7,7 @@ import (
 
 	"github.com/fxamacker/cbor/v2"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
+	"github.com/jorgefuertes/thenewquill/internal/util"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 )
@@ -128,11 +129,11 @@ func checkCondition(recordMap map[string]any, f Filter) bool {
 
 	switch f.condition {
 	case Equal:
-		if !compare(v, f.value) {
+		if !util.Compare(v, f.value) {
 			return false
 		}
 	case NotEqual:
-		if compare(v, f.value) {
+		if util.Compare(v, f.value) {
 			return false
 		}
 	case Contains:
@@ -164,26 +165,11 @@ func contains(haystack, needle any) bool {
 		return strings.Contains(hs, needle.(string))
 	case []any:
 		for _, v := range hs {
-			if compare(v, needle) {
+			if util.Compare(v, needle) {
 				return true
 			}
 		}
 	}
 
 	return false
-}
-
-func compare(v1, v2 any) bool {
-	switch v1.(type) {
-	case int, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64, uintptr:
-		return fmt.Sprintf("%d", v1) == fmt.Sprintf("%d", v2)
-	case float32, float64:
-		return fmt.Sprintf("%.4f", v1) == fmt.Sprintf("%.4f", v2)
-	case bool:
-		return fmt.Sprintf("%t", v1) == fmt.Sprintf("%t", v2)
-	case string:
-		return fmt.Sprintf("%s", v1) == fmt.Sprintf("%s", v2)
-	default:
-		return fmt.Sprintf("%v", v1) == fmt.Sprintf("%v", v2)
-	}
 }

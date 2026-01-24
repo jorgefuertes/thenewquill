@@ -21,7 +21,27 @@ func LimitStr(s string, max int) string {
 	return string(runes)
 }
 
-func RemoveAccents(s string) string {
+func ContainsString(list []string, needle string) bool {
+	needle = NormalizeString(needle)
+
+	for _, item := range list {
+		if NormalizeString(item) == needle {
+			return true
+		}
+	}
+
+	return false
+}
+
+func NormalizeString(s string) string {
+	s = strings.ToLower(s)
+	s = removeAccents(s)
+	s = removeSymbols(s)
+
+	return s
+}
+
+func removeAccents(s string) string {
 	replacements := map[string]string{
 		`á`: `a`, `é`: `e`, `í`: `i`, `ó`: `o`, `ú`: `u`,
 		`ñ`: `n`, `ü`: `u`, `ç`: `c`,
@@ -34,7 +54,7 @@ func RemoveAccents(s string) string {
 	return s
 }
 
-func RemoveSymbols(s string) string {
+func removeSymbols(s string) string {
 	var output string
 
 	for i := 0; i < len(s); i++ {

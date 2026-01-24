@@ -15,12 +15,21 @@ const (
 )
 
 type LS struct {
-	words   []*word.Word
-	talking bool
+	original string
+	words    []*word.Word
+	sub      bool
 }
 
 func NewLS() LS {
-	return LS{talking: false, words: []*word.Word{}}
+	return LS{words: []*word.Word{}}
+}
+
+func (ls LS) Original() string {
+	return ls.original
+}
+
+func (ls LS) IsSub() bool {
+	return ls.sub
 }
 
 // IsEmpty checks if the LS has no words.
@@ -74,36 +83,6 @@ func (ls LS) GetIndexOf(t word.WordType, ord Ordinal) int {
 	return -1
 }
 
-func (ls *LS) setVerb(w *word.Word) {
-	if ls.Has(word.Adverb) {
-		ls.addWordAt(w, 1)
-	} else {
-		ls.prepend(w)
-	}
-}
-
-func (ls *LS) prepend(w *word.Word) {
-	ls.words = append([]*word.Word{w}, ls.words...)
-}
-
-func (ls *LS) append(w *word.Word) {
-	ls.words = append(ls.words, w)
-}
-
-func (ls *LS) addWordAt(w *word.Word, index int) {
-	if index < 0 {
-		return
-	}
-
-	if index >= len(ls.words) {
-		ls.append(w)
-
-		return
-	}
-
-	ls.words = append(ls.words[:index], append([]*word.Word{w}, ls.words[index:]...)...)
-}
-
 func (ls LS) String() string {
 	tokens := []string{}
 	for _, w := range ls.words {
@@ -111,8 +90,4 @@ func (ls LS) String() string {
 	}
 
 	return strings.Join(tokens, " ")
-}
-
-func (ls LS) IsTalking() bool {
-	return ls.talking
 }

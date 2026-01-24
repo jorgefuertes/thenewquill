@@ -1,7 +1,6 @@
 package word
 
 import (
-	"slices"
 	"strings"
 
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
@@ -50,18 +49,7 @@ func (w Word) GetLabelID() uint32 {
 }
 
 func (w Word) HasSynonym(syn string) bool {
-	syn = strings.ToLower(syn)
-
-	// check for exact match
-	if slices.Contains(w.Synonyms, syn) {
-		return true
-	}
-
-	// check without accent or symbols
-	syn = util.RemoveAccents(syn)
-	syn = util.RemoveSymbols(syn)
-
-	return slices.Contains(w.Synonyms, syn)
+	return util.ContainsString(w.Synonyms, syn)
 }
 
 func (w Word) Is(t WordType, syn string) bool {
@@ -69,14 +57,5 @@ func (w Word) Is(t WordType, syn string) bool {
 		return false
 	}
 
-	syn = strings.ToLower(syn)
-	if slices.Contains(w.Synonyms, syn) {
-		return true
-	}
-
-	// check without accent or symbols
-	syn = util.RemoveAccents(syn)
-	syn = util.RemoveSymbols(syn)
-
-	return slices.Contains(w.Synonyms, syn)
+	return util.ContainsString(w.Synonyms, syn)
 }
