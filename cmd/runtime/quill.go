@@ -61,7 +61,6 @@ func main() {
 	time.Sleep(time.Second * 1)
 
 	for {
-
 		line, err := o.Input(">", time.Second*120)
 		if err != nil {
 			if err == console.ErrTimedOut {
