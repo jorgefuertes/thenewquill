@@ -54,6 +54,27 @@ func (ls LS) Has(t word.WordType) bool {
 	return ls.Get(t, First) != nil
 }
 
+func (ls *LS) setVerb(w *word.Word) {
+	if ls.Has(word.Verb) {
+		return
+	}
+
+	words := []*word.Word{}
+
+	for _, ww := range ls.words {
+		if ww.Type == word.Adjective || ww.Type == word.Noun {
+			words = append(words, w)
+			words = append(words, ww)
+
+			continue
+		}
+
+		words = append(words, ww)
+	}
+
+	ls.words = words
+}
+
 func (ls LS) Get(t word.WordType, ord Ordinal) *word.Word {
 	count := 0
 	for _, w := range ls.words {

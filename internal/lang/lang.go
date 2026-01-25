@@ -36,28 +36,3 @@ func IsAllowedLanguage(l string) bool {
 func AllowedLanguages() []Lang {
 	return allowedLanguages
 }
-
-func GetDefaultSynonymForAction(lang Lang, action Action) []string {
-	switch action {
-	case Go:
-		if lang == ES {
-			return []string{"ir", "moverse", "caminar", "ve", "muévete", "camina"}
-		}
-
-		return []string{"go", "move", "walk"}
-	case Examine:
-		if lang == ES {
-			return []string{"ex", "examinar", "mirar", "ver", "examina", "mira"}
-		}
-
-		return []string{"ex", "examine", "look", "see"}
-	case Talk:
-		if lang == ES {
-			return []string{"hablar", "decir", "charlar", "di", "habla", "charla"}
-		}
-
-		return []string{"talk", "say", "chat"}
-	default:
-		return []string{}
-	}
-}

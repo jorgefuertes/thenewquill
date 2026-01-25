@@ -139,6 +139,7 @@ func (p *Parser) Parse(input string) {
 	p.addWord(current)
 	p.closeLS()
 	p.removeEmptyLS()
+	p.completeSentences()
 }
 
 func (p *Parser) Reset() {

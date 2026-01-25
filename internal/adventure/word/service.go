@@ -1,6 +1,8 @@
 package word
 
 import (
+	"fmt"
+
 	"github.com/jorgefuertes/thenewquill/internal/adventure/config"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 	"github.com/jorgefuertes/thenewquill/internal/database"
@@ -56,14 +58,29 @@ func (s *Service) Count() int {
 	return s.db.CountRecordsByKind(kind.Word)
 }
 
-func (s *Service) GetDefaultVerbSyns(l lang.Lang, a lang.Action) *Word {
-	for _, syn := range lang.GetDefaultSynonymForAction(l, a) {
-		w, _ := s.Get().WithType(Verb).WithSynonym(syn).First()
-
-		if w != nil {
-			return w
-		}
+func (s *Service) GetDefaultVerbForAction(a lang.Action) (*Word, error) {
+	defaults := map[lang.Lang]map[lang.Action]string{
+		lang.EN: {
+			lang.Go:      "go",
+			lang.Examine: "examine",
+			lang.Talk:    "say",
+		},
+		lang.ES: {
+			lang.Go:      "ir",
+			lang.Examine: "examinar",
+			lang.Talk:    "decir",
+		},
 	}
 
-	return nil
+	name, ok := defaults[s.GetLang()][a]
+	if !ok {
+		panic(fmt.Errorf("no default verb for action %d in language %q", a, s.GetLang().String()))
+	}
+
+	w, err := s.Get().WithType(Verb).WithLabel(name).First()
+	if err != nil {
+		return nil, fmt.Errorf("you need to define an action verb with label %q", name)
+	}
+
+	return w, nil
 }

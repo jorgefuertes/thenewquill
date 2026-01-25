@@ -68,18 +68,11 @@ func (s *Service) ValidateAll() []error {
 	}
 
 	// check for required verbs
-	l := s.GetLang()
-
-	if s.GetDefaultVerbSyns(lang.Lang(l), lang.Go) == nil {
-		validationErrors = append(validationErrors, ErrMissingGoVerb)
-	}
-
-	if s.GetDefaultVerbSyns(lang.Lang(l), lang.Talk) == nil {
-		validationErrors = append(validationErrors, ErrMissingTalkVerb)
-	}
-
-	if s.GetDefaultVerbSyns(lang.Lang(l), lang.Examine) == nil {
-		validationErrors = append(validationErrors, ErrMissingExamineVerb)
+	for _, a := range []lang.Action{lang.Go, lang.Talk, lang.Examine} {
+		_, err := s.GetDefaultVerbForAction(a)
+		if err != nil {
+			validationErrors = append(validationErrors, err)
+		}
 	}
 
 	return validationErrors
