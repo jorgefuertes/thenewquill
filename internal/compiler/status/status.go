@@ -1,7 +1,6 @@
 package status
 
 import (
-	"encoding/json"
 	"path"
 	"reflect"
 	"slices"
@@ -11,7 +10,6 @@ import (
 	"github.com/jorgefuertes/thenewquill/internal/compiler/line"
 	"github.com/jorgefuertes/thenewquill/internal/database"
 	"github.com/jorgefuertes/thenewquill/internal/database/adapter"
-	"github.com/jorgefuertes/thenewquill/pkg/log"
 )
 
 const stackSize = 5
@@ -101,9 +99,6 @@ func (s *Status) SaveCurrentStoreable() cerr.CompilerError {
 		return cerr.OK
 	}
 
-	j, _ := json.Marshal(s.current.storeable)
-	log.Debug("💾 [STATUS] SaveCurrentStoreable: %T:%s", s.current.storeable, j)
-
 	_, err := s.db.Create(s.current.storeable)
 	if err != nil {
 		return cerr.ErrDBCreate.WithStack(s.Stack).WithSection(s.Section).WithLine(s.current.line).
@@ -132,15 +127,7 @@ func (s *Status) GetCurrentStoreable(dst any) bool {
 }
 
 func (s *Status) SetCurrentStoreable(storeable adapter.Storeable) {
-	if storeable != nil {
-		j, _ := json.Marshal(storeable)
-		log.Debug("📎 [STATUS] SetCurrentStoreable WITH %T:%s", storeable, j)
-	} else {
-		log.Debug("📎 [STATUS] SetCurrentStoreable WITH nil 💨")
-	}
-
 	if s.current == nil {
-		log.Debug("📎 [STATUS] SetCurrentStoreable NIL PARENT")
 		s.current = &currentStoreable{
 			storeable: storeable,
 			line:      s.CurrentLine(),
@@ -150,8 +137,6 @@ func (s *Status) SetCurrentStoreable(storeable adapter.Storeable) {
 		return
 	}
 
-	j, _ := json.Marshal(s.current.storeable)
-	log.Debug("📎 [STATUS] SetCurrentStoreable EXISTING %T:%s", s.current.storeable, j)
 	s.current.storeable = storeable
 }
 
@@ -164,8 +149,6 @@ func (s *Status) GetCurrentLabelID() uint32 {
 }
 
 func (s *Status) ClearCurrent() {
-	log.Debug("📎 [STATUS] ClearCurrent")
-
 	s.current = nil
 }
 

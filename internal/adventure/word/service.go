@@ -7,6 +7,7 @@ import (
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 	"github.com/jorgefuertes/thenewquill/internal/database"
 	"github.com/jorgefuertes/thenewquill/internal/lang"
+	"github.com/jorgefuertes/thenewquill/pkg/log"
 )
 
 type Service struct {
@@ -74,7 +75,7 @@ func (s *Service) GetDefaultVerbForAction(a lang.Action) (*Word, error) {
 
 	name, ok := defaults[s.GetLang()][a]
 	if !ok {
-		panic(fmt.Errorf("no default verb for action %d in language %q", a, s.GetLang().String()))
+		log.Fatal("no default verb for action %d in language %q", a, s.GetLang().String())
 	}
 
 	w, err := s.Get().WithType(Verb).WithLabel(name).First()

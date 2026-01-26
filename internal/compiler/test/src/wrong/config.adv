@@ -1,0 +1,8 @@
+SECTION CONFIG
+
+title:       "Una aventura sin sentido para pruebas"
+author:      "queru"
+description: "Este fuente debería compilar sin errores"
+language:    "es"
+version:     "1.0.0"
+date:        "16-03-2025"

@@ -111,7 +111,7 @@ func TestCompilerHappyPath(t *testing.T) {
 			{word.Verb, []string{"ad"}},
 			{word.Verb, []string{"decir", "di", "hablar", "habla"}},
 			{word.Verb, []string{"ir", "voy", "vamos", "ve"}},
-			{word.Verb, []string{"ex", "exam", "examinar", "examina", "mirar", "mira", "miro"}},
+			{word.Verb, []string{"examinar", "ex", "exam", "examina", "mirar", "mira", "miro"}},
 			{word.Verb, []string{"save", "grabar", "graba", "grabo", "salvar", "salva", "salvo"}},
 			{word.Verb, []string{"ram", "ramsave"}},
 			{word.Noun, []string{"jugador"}},

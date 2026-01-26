@@ -1,3 +1,5 @@
+INCLUDE "config.adv"
+
 SECTION WORDS
 
 noun: denario, dinero

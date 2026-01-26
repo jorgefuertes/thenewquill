@@ -1,11 +1,8 @@
 package database
 
 import (
-	"encoding/json"
-
 	"github.com/fxamacker/cbor/v2"
 	"github.com/jorgefuertes/thenewquill/internal/database/adapter"
-	"github.com/jorgefuertes/thenewquill/pkg/log"
 )
 
 func (db *DB) Create(entity adapter.Storeable) (uint32, error) {
@@ -16,9 +13,6 @@ func (db *DB) Create(entity adapter.Storeable) (uint32, error) {
 	if db.isFullOfRecords() {
 		return 0, ErrDatabaseIsFull
 	}
-
-	j, _ := json.Marshal(entity)
-	log.Debug("🗄️ [DB] Create: %T:%s", entity, j)
 
 	if entity.GetID() != 0 {
 		return entity.GetID(), ErrIDFieldIsNotZero

@@ -1,12 +1,9 @@
 package compiler_test
 
 import (
-	"io"
 	"testing"
 
-	"github.com/fatih/color"
 	"github.com/jorgefuertes/thenewquill/internal/compiler"
-	"github.com/jorgefuertes/thenewquill/pkg/log"
 
 	cerr "github.com/jorgefuertes/thenewquill/internal/compiler/compiler_error"
 
@@ -14,9 +11,6 @@ import (
 )
 
 func TestWrongFiles(t *testing.T) {
-	whiteOnRed := color.New(color.FgWhite, color.BgRed).SprintFunc()
-	t.Log(whiteOnRed("This text should be white on red"))
-
 	testCases := []struct {
 		name          string
 		filename      string
@@ -26,9 +20,6 @@ func TestWrongFiles(t *testing.T) {
 		{"unclosed string", "src/wrong/unclosed_string.adv", cerr.ErrUnclosedMultiline},
 		{"duplicated synonyms", "src/wrong/duped_syn.adv", cerr.ErrDuplicatedSynonym},
 	}
-
-	// disable logging
-	log.SetOutput(io.Discard)
 
 	t.Run("wrong", func(t *testing.T) {
 		for _, tc := range testCases {
