@@ -46,10 +46,44 @@
 \chapter{El compilador}        
     \section{Línea de comandos}
     \section{Identificadores y etiquetas}
-        Cada entidad definida en el código fuente tiene obligatoriamente un identificador y opcionalmente una serie de
-        etiquetas. El identificador es único dentro de su clase, es decir, no puede haber dos \ic{items} con \ic{id}
-        \la{petaca}, si bien puede haber un objeto con \ic{id} \la{petaca} y una \ic{word} de tipo \ic{noun} con \ic{id}
-        \la{petaca}.
 
+
+\chapter{Lenguaje de programación}
+    \section{Estructura del programa}
+        La sección de procesos empieza, en nuestros ficheros fuente, con la directiva \ic{SECTION PROCESS TABLES}.
+        Dentro de esta sección, definimos cada tabla de procesos con la directiva \ic{TABLE <etiqueta>}, y la
+        cerramos con la directiva \ic{END TABLE}.
+
+        La etiqueta es única, es decir, no puede haber dos tablas con la misma etiqueta en el mismo programa.
+
+        \subsection{Etiquetas reservadas}
+            Hay ciertas etiquetas reservadas, que pueden y deben usarse para definir tablas de procesos, pero que tienen
+            un significado especial para el sistema. Estas etiquetas son:
+            \begin{itemize}
+                \item \ic{init}: Tabla de procesos de inicialización del juego. Se ejecuta al inicio de la aventura,
+                    toda la tabla basándonos en las condiciones.
+                \item \ic{response}: Tabla de respuestas en la que se buscan las sentencias lógicas. Se ejecuta cuando
+                    el jugador introduce un comando. Se ejecutan los procesos que correspondan con
+                    \ic{<verbo\_1>} \ic{<nombre\_1>}.
+                \item \ic{turn}: Tabla de procesos que se ejecuta en cada turno del juego, justo antes de la tabla de
+                    respuestas. Se procesan todas las acciones basándose en las condiciones.
+                \item \ic{location}: Tabla de procesos que se ejecuta al entrar en una nueva localidad o al pedir
+                    una descripción de la misma. El programador es responsable de comprobar la localidad con una
+                    condición, o bien no hacerlo y asumir que esa parte de la tabla se ejecuta siempre para todas
+                    las localidades.
+                \item \ic{cron}: Tablas que son procesadas en segundo plano. Cada proceso se define con
+                    \ic{EVERY <n> <turns|hour|min|sec>}, y se ejecuta cada n turnos, horas, minutos o segundos. La
+                    ejecución se bloquea temporalmente si se está ejecutando cualquier otra tabla, y viceversa, no se
+                    entra, por ejemplo, en la tabla de respuestas si se está ejecutando un proceso cron hasta que este
+                    termina.
+            \end{itemize}
+
+    \section{Tipos de datos}
+    \section{Variables}
+    \section{Constantes}
+    \section{Operadores}
+    \section{Estructuras de control}
+    \section{Funciones y procedimientos}
+    \section{Bibliotecas estándar}
 
 \end{document}

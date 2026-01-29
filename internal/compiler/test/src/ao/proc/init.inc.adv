@@ -1,0 +1,8 @@
+// The init table is processed when the adventure starts.
+
+BEGIN INIT TABLE
+
+SET AT human start
+SET VAR score 0
+
+END INIT TABLE

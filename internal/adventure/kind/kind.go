@@ -19,6 +19,7 @@ const (
 	Item
 	Location
 	Character
+	Table
 	Process
 	Blob
 	Test
@@ -45,7 +46,8 @@ func kindNamesAndAliases() map[Kind][]string {
 		Item:      {"item", "object", "items", "objects"},
 		Location:  {"location", "room", "loc", "locations", "rooms"},
 		Character: {"character", "char", "player", "players", "characters", "chars"},
-		Process:   {"process table", "proc", "proc table", "process tables", "proc tables", "procs"},
+		Table:     {"table", "tables"},
+		Process:   {"process", "processes", "proc", "procs"},
 		Blob:      {"pictures", "picture", "pic"},
 		Test:      {"test", "testitem"},
 	}
@@ -62,7 +64,8 @@ func (k Kind) HumanName() string {
 		Item:      "Items",
 		Location:  "Locations",
 		Character: "Characters",
-		Process:   "Process Tables",
+		Table:     "Tables",
+		Process:   "Processes",
 		Blob:      "Binary Objects",
 		Test:      "Test Objects",
 	}
@@ -94,7 +97,8 @@ func (s Kind) TitleString() string {
 		Item:      "ITEMS",
 		Location:  "LOCATIONS",
 		Character: "CHARACTERS",
-		Process:   "PROCESS TABLES",
+		Table:     "TABLE",
+		Process:   "PROCESS",
 		Blob:      "BLOBS",
 		Test:      "TEST",
 	}

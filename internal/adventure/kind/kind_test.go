@@ -9,6 +9,7 @@ import (
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/location"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/message"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/process"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/variable"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/word"
 
@@ -37,7 +38,8 @@ func TestKindString(t *testing.T) {
 		{"Message", kind.Message, "message"},
 		{"Item", kind.Item, "item"},
 		{"Location", kind.Location, "location"},
-		{"Process", kind.Process, "process table"},
+		{"Table", kind.Table, "table"},
+		{"Process", kind.Process, "process"},
 		{"Character", kind.Character, "character"},
 		{"Test", kind.Test, "test"},
 		{"Invalid", kind.Kind(254), "none"},
@@ -66,9 +68,10 @@ func TestKindByte(t *testing.T) {
 		{"Item", kind.Item, 6},
 		{"Location", kind.Location, 7},
 		{"Character", kind.Character, 8},
-		{"Process", kind.Process, 9},
-		{"Blob", kind.Blob, 10},
-		{"Test", kind.Test, 11},
+		{"Table", kind.Table, 9},
+		{"Process", kind.Process, 10},
+		{"Blob", kind.Blob, 11},
+		{"Test", kind.Test, 12},
 	}
 
 	for _, tt := range tests {
@@ -88,14 +91,28 @@ func TestFromByte(t *testing.T) {
 		{"Label", 1, kind.Label},
 		{"Config", 2, kind.Param},
 		{"Variables", 3, kind.Variable},
-		{"Blob", 10, kind.Blob},
-		{"Test", 11, kind.Test},
+		{"Word", 4, kind.Word},
+		{"Message", 5, kind.Message},
+		{"Item", 6, kind.Item},
+		{"Location", 7, kind.Location},
+		{"Character", 8, kind.Character},
+		{"Table", 9, kind.Table},
+		{"Process", 10, kind.Process},
+		{"Blob", 11, kind.Blob},
+		{"Test", 12, kind.Test},
 		{"Invalid High", 255, kind.None},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equal(t, tt.expected, kind.KindFromByte(tt.input), "Input byte: %d", tt.input)
+			assert.Equal(
+				t,
+				tt.expected,
+				kind.KindFromByte(tt.input),
+				"Input byte: %d, expected kind: %d",
+				tt.input,
+				tt.expected,
+			)
 		})
 	}
 }
@@ -113,13 +130,21 @@ func TestFromString(t *testing.T) {
 		{"Config alias", "cfg", kind.Param},
 		{"Variable", "var", kind.Variable},
 		{"Word", "vocabulary", kind.Word},
+		{"Message", "message", kind.Message},
+		{"Item", "object", kind.Item},
+		{"Location", "room", kind.Location},
+		{"Character", "player", kind.Character},
+		{"Table", "table", kind.Table},
+		{"Process", "proc", kind.Process},
+		{"Blob", "picture", kind.Blob},
+		{"Test", "testitem", kind.Test},
 		{"Invalid", "invalid", kind.None},
 		{"Case insensitive", "CONFIG", kind.Param},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equal(t, tt.expected, kind.KindFromString(tt.input))
+			assert.Equal(t, tt.expected, kind.KindFromString(tt.input), "Input string: %s", tt.input)
 		})
 	}
 }
@@ -137,6 +162,8 @@ func TestKindOf(t *testing.T) {
 		{"Message", &message.Message{}, kind.Message},
 		{"Config", &config.Param{}, kind.Param},
 		{"Variable", &variable.Variable{}, kind.Variable},
+		{"Table", &process.Table{}, kind.Table},
+		{"Process", &process.Process{}, kind.Process},
 		{"None", nil, kind.None},
 	}
 

@@ -95,6 +95,9 @@ noun: xyzzy
 
 // verbs
 
+verb: ir, voy, vé, ve, vete, vamos
+verb: examinar, ex, examina, examino
+verb: decir, digo, di, hablar, hablo, habla, preguntar, pregunta
 verb: usar, usa, usando
 verb: bajar, abajo, bajo
 verb: abandonar, fin, retirarse, rindo, rendirse, rendir, quit, terminar, termino
@@ -115,13 +118,11 @@ verb: cerrar, cierro, cierra
 verb: comer, como, come
 verb: m, mirar, d, desc, describir, r, redesc, redescribir
 verb: dar, darle, doy, da
-verb: decir, digo, di, hablar, hablo, habla, preguntar, pregunta
 verb: dejar, deja, dejo, soltar, suelto, suelta
 verb: encender, enciendo, enciende
 verb: entrar, entra, entro
 verb: oir, escuchar, escucha, escucho, oigo, oye
 verb: esperar, espero, espera
-verb: examinar, ex, examina, examino
 verb: grabar, save
 verb: intro, introduzco, introduce, inserta, meter, meto, mete, poner, pongo, pon
 verb: leer, leo, lee
