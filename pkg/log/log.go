@@ -5,8 +5,6 @@ import (
 	"io"
 	"os"
 	"strings"
-
-	"github.com/fatih/color"
 )
 
 type LogLevel int
@@ -16,6 +14,7 @@ const (
 	InfoLevel
 	WarningLevel
 	ErrorLevel
+	FatalLevel
 	NoLevel
 )
 
@@ -32,35 +31,11 @@ func (l LogLevel) String() string {
 		return "WARN"
 	case ErrorLevel:
 		return "ERROR"
+	case FatalLevel:
+		return "FATAL"
 	default:
 		return "DEBUG"
 	}
-}
-
-func isTerminal() bool {
-	return output != nil && output == os.Stdout
-}
-
-func (l LogLevel) Color() string {
-	if !isTerminal() {
-		return fmt.Sprintf("[%5s]", l.String())
-	}
-
-	var c color.Attribute
-	switch l {
-	case DebugLevel:
-		c = color.FgHiBlue
-	case InfoLevel:
-		c = color.FgHiCyan
-	case WarningLevel:
-		c = color.FgHiYellow
-	case ErrorLevel:
-		c = color.FgHiRed
-	default:
-		c = color.FgWhite
-	}
-
-	return color.New(c).Sprintf("[%5s]", l)
 }
 
 func SetLevel(l LogLevel) {
@@ -96,7 +71,7 @@ func send(level LogLevel, format string, args ...any) {
 			continue
 		}
 
-		if _, err := fmt.Fprintf(output, "%s %s\n", level.Color(), line); err != nil {
+		if _, err := fmt.Fprintf(output, "%s %s\n", level.color(), line); err != nil {
 			fmt.Printf("[%5s] %s\n", level.String(), line)
 			fmt.Printf("[ERROR] I can't write to the output: %s", err)
 		}
