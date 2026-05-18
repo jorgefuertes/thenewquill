@@ -9,12 +9,12 @@ import (
 
 func TestValidate(t *testing.T) {
 	type TestStruct struct {
-		Label  string   `valid:"matches(^[\\d\\p{L}\\-_]+$)"`
+		Label  string   `valid:"matches(^[\d\p{L}\-_]+$)"`
 		Name   string   `valid:"required"`
 		Age    int      `valid:"required,min=18,max=99"`
 		City   string   `valid:"in=zaragoza|madrid|barcelona"`
 		Phone  string   `valid:"numeric"`
-		Emails []string `valid:"len(6|50),count(1|4),matches(^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$)"`
+		Emails []string `valid:"len(6|50),count(1|4),matches(^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$)"`
 		Syns   []string `valid:"len(1|25),count(1|25)"`
 	}
 

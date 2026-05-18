@@ -1,4 +1,4 @@
-.PHONY: test tmp dist
+.PHONY: test tmp dist lint format
 
 dist: lint test
 	@rm -rf dist
@@ -28,12 +28,21 @@ test-clean:
 test-input: test-clean
 	@go test -run "TestConsoleInput" ./internal/output/console/. -tags manual
 
-lint:
+format:
+	@echo "Formatting..."
+	@go mod tidy
+	@go tool gofumpt -w .
+	@go tool goimports -w .
+	@go tool golines -m 120 -t 4 --reformat-tags --ignore-generated --chain-split-dots -w .
+	@trunk fmt -a
+
+lint: format
 	@echo "Linting..."
 	@go tool gofumpt -l -w .
 	@go tool staticcheck ./...
 	@golangci-lint cache clean
 	@go tool golangci-lint run ./...
+	@trunk check -a -v --color
 
 clean: test-clean
 	@rm -Rf dist

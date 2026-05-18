@@ -1,12 +1,12 @@
 package console
 
-import "github.com/gdamore/tcell/v2"
+import "github.com/gdamore/tcell/v3"
 
 func (c *console) scroll() {
 	for row := 1; row < c.Rows(); row++ {
 		for col := 0; col < c.Cols(); col++ {
-			r, _, style, _ := c.screen.GetContent(col, row)
-			c.screen.SetContent(col, row-1, r, nil, style)
+			str, style, _ := c.screen.Get(col, row)
+			c.screen.Put(col, row-1, str, style)
 		}
 	}
 	for col := 0; col < c.Cols(); col++ {

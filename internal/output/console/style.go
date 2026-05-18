@@ -1,6 +1,6 @@
 package console
 
-import "github.com/gdamore/tcell/v2"
+import "github.com/gdamore/tcell/v3"
 
 func (c *console) SetStyle(style tcell.Style) {
 	c.style = style

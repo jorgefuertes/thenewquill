@@ -1,10 +1,11 @@
 .continue
-.trunk
 .vscode
 .aider*
 /work
 /tmp
 /dist
+.claude
+CLAUDE.md
 
 # LaTeX
 *.aux

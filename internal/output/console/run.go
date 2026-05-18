@@ -2,16 +2,17 @@ package console
 
 import (
 	"unicode"
+	"unicode/utf8"
 
 	"github.com/jorgefuertes/thenewquill/pkg/log"
 
-	"github.com/gdamore/tcell/v2"
+	"github.com/gdamore/tcell/v3"
 )
 
 // Run starts the console, blocking until the user closes it, you should run it in a goroutine.
 func (c *console) Run() {
 	for {
-		ev := c.screen.PollEvent()
+		ev := <-c.screen.EventQ()
 
 		switch ev := ev.(type) {
 		case *tcell.EventKey:
@@ -22,7 +23,7 @@ func (c *console) Run() {
 					c.input.historyAdd()
 					c.input.on = false
 					c.Println()
-				case tcell.KeyBackspace, tcell.KeyBackspace2:
+				case tcell.KeyBackspace:
 					if c.input.Len() > 0 && c.input.pos > 0 {
 						copy(c.input.current[c.input.pos-1:], c.input.current[c.input.pos:])
 						c.input.current = c.input.current[:c.input.Len()-1]
@@ -59,20 +60,21 @@ func (c *console) Run() {
 					c.Println()
 					continue
 				default:
-					if unicode.IsPrint(ev.Rune()) {
+					r, _ := utf8.DecodeRuneInString(ev.Str())
+					if unicode.IsPrint(r) {
 						if c.input.Len() >= inputLimit {
 							_ = c.screen.Beep()
 							continue
 						}
 
 						if c.input.pos >= c.input.Len() {
-							c.input.current = append(c.input.current, ev.Rune())
+							c.input.current = append(c.input.current, r)
 							c.input.pos = c.input.Len()
-							c.screen.SetContent(c.at.Col, c.at.Row, ev.Rune(), nil, c.style)
+							c.screen.SetContent(c.at.Col, c.at.Row, r, nil, c.style)
 						} else {
 							c.input.current = append(c.input.current, 0)
 							copy(c.input.current[c.input.pos+1:], c.input.current[c.input.pos:])
-							c.input.current[c.input.pos] = ev.Rune()
+							c.input.current[c.input.pos] = r
 							c.drawInput()
 							c.input.pos++
 						}

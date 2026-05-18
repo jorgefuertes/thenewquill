@@ -14,6 +14,7 @@ import (
 	"github.com/jorgefuertes/thenewquill/internal/adventure/config"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 	"github.com/jorgefuertes/thenewquill/internal/compiler"
+	"github.com/jorgefuertes/thenewquill/internal/util"
 	"github.com/jorgefuertes/thenewquill/pkg/log"
 
 	"github.com/jedib0t/go-pretty/v6/table"
@@ -85,7 +86,7 @@ func compileAction(c *cli.Context) error {
 	t.AppendFooter(
 		table.Row{"Total", fmt.Sprintf("%d entries with %d labels", a.DB.CountRecords(), a.DB.CountLabels())},
 	)
-	t.SetStyle(table.StyleColoredCyanWhiteOnBlack)
+	t.SetStyle(table.StyleRounded)
 	fmt.Println()
 	fmt.Printf(
 		"> %s v%s\n> %s\n",
@@ -96,8 +97,8 @@ func compileAction(c *cli.Context) error {
 	fmt.Printf("> Compiled in %dms\n", elapsed.Milliseconds())
 	fmt.Println("> Compiler: v" + compiler.VERSION)
 
-	fmt.Printf("> %d bytes packed to %q\n", bFile, outputFilename)
-	fmt.Printf("> %d total bytes\n", bSent)
+	fmt.Printf("> %s total processed\n", util.HumanBytes(bSent))
+	fmt.Printf("> %s packed to %q\n", util.HumanBytes(bFile), outputFilename)
 	fmt.Println()
 	t.Render()
 	fmt.Println()
