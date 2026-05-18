@@ -33,16 +33,18 @@ format:
 	@go mod tidy
 	@go tool gofumpt -w .
 	@go tool goimports -w .
-	@go tool golines -m 120 -t 4 --reformat-tags --ignore-generated --chain-split-dots -w .
-	@trunk fmt -a
+	@go tool golines -m 120 -t 4 --ignore-generated --chain-split-dots -w .
 
-lint: format
-	@echo "Linting..."
+lint:
+	@echo "Linting Go..."
 	@go tool gofumpt -l -w .
 	@go tool staticcheck ./...
-	@golangci-lint cache clean
+	@go tool golangci-lint cache clean
 	@go tool golangci-lint run ./...
-	@trunk check -a -v --color
+	@echo "Linting Markdown..."
+	@npx --yes markdownlint-cli2 "**/*.md" "#tmp" "#dist" "#work"
+	@echo "Checking vulnerabilities..."
+	@go tool govulncheck ./...
 
 clean: test-clean
 	@rm -Rf dist

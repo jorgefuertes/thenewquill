@@ -60,5 +60,5 @@ func (o *output) Print() {
 		content += c
 	}
 
-	fmt.Fprintln(o.errOutput, borderStyle.Render(content))
+	_, _ = fmt.Fprintln(o.errOutput, borderStyle.Render(content))
 }

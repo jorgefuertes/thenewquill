@@ -7,6 +7,7 @@ import (
 
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 	"github.com/jorgefuertes/thenewquill/internal/database/adapter"
+	"github.com/jorgefuertes/thenewquill/pkg/log"
 )
 
 type Blob struct {
@@ -30,7 +31,11 @@ func (b *Blob) Load(filename string) error {
 		return err
 	}
 
-	defer f.Close()
+	defer func() {
+		if err := f.Close(); err != nil {
+			log.Warning("Error closing `%s`: %s", filename, err)
+		}
+	}()
 
 	info, err := f.Stat()
 	if err != nil {

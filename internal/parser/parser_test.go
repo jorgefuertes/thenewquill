@@ -142,7 +142,8 @@ func setupParser(t *testing.T, l lang.Lang) *parser.Parser {
 
 	db := database.NewDB()
 	configStore := config.NewService(db)
-	configStore.Set(config.LanguageParamLabel, l.String())
+	_, err := configStore.Set(config.LanguageParamLabel, l.String())
+	require.NoError(t, err, "failed to set language config")
 	wordStore := word.NewService(db, configStore)
 
 	if l == lang.EN {

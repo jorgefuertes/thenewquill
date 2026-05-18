@@ -9,12 +9,12 @@ import (
 
 func TestValidate(t *testing.T) {
 	type TestStruct struct {
-		Label  string   `valid:"matches(^[\d\p{L}\-_]+$)"`
+		Label  string   `valid:"matches(^[A-Za-z0-9_-]+$)"`
 		Name   string   `valid:"required"`
 		Age    int      `valid:"required,min=18,max=99"`
 		City   string   `valid:"in=zaragoza|madrid|barcelona"`
 		Phone  string   `valid:"numeric"`
-		Emails []string `valid:"len(6|50),count(1|4),matches(^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$)"`
+		Emails []string `valid:"len(6|50),count(1|4),matches(^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+[.][A-Za-z]{2,}$)"`
 		Syns   []string `valid:"len(1|25),count(1|25)"`
 	}
 
@@ -176,7 +176,7 @@ func TestValidate(t *testing.T) {
 				},
 				Syns: []string{"john", "doe", "y", "z"},
 			},
-			expected: errors.New("validating TestStruct: Label does not match regexp `^[\\d\\p{L}\\-_]+$`"),
+			expected: errors.New("validating TestStruct: Label does not match regexp `^[A-Za-z0-9_-]+$`"),
 		},
 		{
 			name: "valid label",

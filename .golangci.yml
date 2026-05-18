@@ -1,0 +1,19 @@
+version: "2"
+
+linters:
+  enable:
+    - gosec
+    - errcheck
+    - govet
+    - ineffassign
+    - staticcheck
+    - unused
+  settings:
+    gosec:
+      excludes:
+        - G302 # file permissions: adventure DB is meant to be shareable
+        - G304 # file inclusion via variable: paths come from the user
+        - G404 # weak rng: no crypto context (label generation, sampling)
+  exclusions:
+    paths:
+      - .*_test\.go$

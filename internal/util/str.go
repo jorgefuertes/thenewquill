@@ -120,7 +120,7 @@ func SplitIntoLines(text string, maxLen int) []string {
 
 		if regexp.MustCompile(`[\.,;]+$`).MatchString(line) && !regexp.MustCompile(`\s+`).Match(b) {
 			line += " "
-			reader.UnreadByte()
+			_ = reader.UnreadByte()
 
 			continue
 		}
@@ -140,11 +140,11 @@ func SplitIntoLines(text string, maxLen int) []string {
 				continue
 			}
 
-			reader.UnreadByte()
+			_ = reader.UnreadByte()
 
 			for !regexp.MustCompile(`[^\p{L}\p{N}]{1}$`).MatchString(line) {
 				line = line[:len(line)-1]
-				reader.UnreadByte()
+				_ = reader.UnreadByte()
 
 				if len(line) == 0 {
 					b := make([]byte, maxLen-1)

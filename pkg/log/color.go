@@ -37,15 +37,15 @@ func (level LogLevel) color() string {
 
 	if termenv.HasDarkBackground() {
 		if style, ok := darkBgColors[level]; ok {
-			return fmt.Sprintf("%s", style.Render(level.String()))
+			return style.Render(level.String())
 		}
 
-		return fmt.Sprintf("%s", darkBgColors[NoLevel].Render(NoLevel.String()))
+		return darkBgColors[NoLevel].Render(NoLevel.String())
 	}
 
 	if style, ok := lightBgColors[level]; ok {
-		return fmt.Sprintf("%s", style.Render(level.String()))
+		return style.Render(level.String())
 	}
 
-	return fmt.Sprintf("%s", lightBgColors[NoLevel].Render(NoLevel.String()))
+	return lightBgColors[NoLevel].Render(NoLevel.String())
 }
