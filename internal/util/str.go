@@ -71,7 +71,7 @@ func SplitIntoFields(s string) []string {
 
 	for i, field := range fields {
 		if strings.HasPrefix(field, "@B64:") && len(field) > 5 {
-			b, err := base64.StdEncoding.DecodeString(field[4:])
+			b, err := base64.StdEncoding.DecodeString(field[5:])
 			if err == nil {
 				fields[i] = string(b)
 			}

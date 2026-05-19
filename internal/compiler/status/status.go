@@ -148,6 +148,16 @@ func (s *Status) GetCurrentLabelID() uint32 {
 	return s.current.storeable.GetLabelID()
 }
 
+// CurrentKind returns the kind of the current storeable, or kind.None when
+// no entity is currently buffered.
+func (s *Status) CurrentKind() kind.Kind {
+	if s.current == nil || s.current.storeable == nil {
+		return kind.None
+	}
+
+	return s.current.storeable.GetKind()
+}
+
 func (s *Status) ClearCurrent() {
 	s.current = nil
 }

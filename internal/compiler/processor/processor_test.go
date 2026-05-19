@@ -203,6 +203,37 @@ func TestReadMessage(t *testing.T) {
 		m, err := a.Messages.Get().WithLabel("greeting").First()
 		require.NoError(t, err)
 		assert.NotZero(t, m.GetID())
+		assert.Equal(t, "Hello there", m.Text)
+	})
+
+	t.Run("plural variants of the same label merge into one message", func(t *testing.T) {
+		a, st := setup(t, kind.Message)
+
+		require.NoError(t, processor.ProcessLine(mk(`order_count.zero: "No orders yet."`), st, a))
+		require.NoError(t, processor.ProcessLine(mk(`order_count.one: "One order."`), st, a))
+		require.NoError(t, processor.ProcessLine(mk(`order_count.many: "_ orders."`), st, a))
+
+		require.True(t, st.SaveCurrentStoreable().IsOK())
+
+		// Only one message should exist for "order_count".
+		assert.Equal(t, 1, a.Messages.Get().WithLabel("order_count").Count())
+
+		m, err := a.Messages.Get().WithLabel("order_count").First()
+		require.NoError(t, err)
+		assert.Equal(t, "No orders yet.", m.Text, "zero variant lives in Text")
+		assert.True(t, m.IsPluralized(), "one/many variants must be present")
+	})
+
+	t.Run("different labels stay as separate messages", func(t *testing.T) {
+		a, st := setup(t, kind.Message)
+
+		require.NoError(t, processor.ProcessLine(mk(`hello: "Hi"`), st, a))
+		require.NoError(t, processor.ProcessLine(mk(`bye: "Bye"`), st, a))
+
+		require.True(t, st.SaveCurrentStoreable().IsOK())
+
+		assert.True(t, a.Messages.Get().WithLabel("hello").Exists())
+		assert.True(t, a.Messages.Get().WithLabel("bye").Exists())
 	})
 
 	t.Run("garbage returns error", func(t *testing.T) {

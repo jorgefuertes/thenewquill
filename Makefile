@@ -21,6 +21,8 @@ run-ao: compile-ao runtime
 
 test:
 	@gotestsum -- -v -test.v ./...
+	@echo "Trying to compile AO..."
+	@make compile-ao > /dev/null
 
 test-clean:
 	@go clean -testcache
