@@ -96,20 +96,28 @@ func (db *DB) Query(filters ...Filter) *cursor {
 	db.lock()
 	defer db.unlock()
 
-	for _, r := range db.data {
+	// Dedupe by record ID so that snapshot overlays override the base data
+	// instead of stacking on top of it.
+	matched := make(map[uint32]Record)
+
+	for id, r := range db.data {
 		if db.matchesAllFilters(r, filters...) {
-			c.addOrReplace(r)
+			matched[id] = r
 		}
 	}
 
 	if db.IsFrozen() {
 		for _, snap := range db.snapshots {
-			for _, r := range snap {
+			for id, r := range snap {
 				if db.matchesAllFilters(r, filters...) {
-					c.addOrReplace(r)
+					matched[id] = r
 				}
 			}
 		}
+	}
+
+	for _, r := range matched {
+		c.addOrReplace(r)
 	}
 
 	return c

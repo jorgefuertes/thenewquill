@@ -36,7 +36,11 @@ func (db *DB) Update(entity adapter.Storeable) error {
 	r.LabelID = labelID
 
 	if db.IsFrozen() {
-		// add to last snapshot
+		// add to last snapshot; create one implicitly if the caller has not
+		// opened a transaction yet, so Update never panics on snapshots[-1].
+		if len(db.snapshots) == 0 {
+			db.snapshots = append(db.snapshots, make(data))
+		}
 		db.snapshots[len(db.snapshots)-1][id] = r
 
 		return nil

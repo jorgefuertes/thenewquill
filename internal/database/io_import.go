@@ -57,6 +57,9 @@ func (db *DB) Import(filename string) error {
 		}
 
 		db.labels[id] = string(labelBytes)
+		if id > db.lastLabelID {
+			db.lastLabelID = id
+		}
 	}
 
 	// records count
@@ -96,6 +99,9 @@ func (db *DB) Import(filename string) error {
 			LabelID: labelID,
 			Kind:    kind.Kind(kindByte),
 			Data:    dataBytes,
+		}
+		if id > db.lastDataID {
+			db.lastDataID = id
 		}
 	}
 
