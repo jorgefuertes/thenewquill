@@ -100,7 +100,7 @@ func (l Line) AsMsg() (string, string, message.Plural, bool) {
 			return "", "", message.Zero, false
 		}
 
-		return parts[2], parts[3], message.PluralFromString(parts[1]), true
+		return parts[1], parts[3], message.PluralFromString(parts[2]), true
 	}
 
 	parts := rg.Msg.FindStringSubmatch(l.Text)

@@ -9,6 +9,44 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestNewAndNumber(t *testing.T) {
+	l := line.New("hello", 7)
+	assert.Equal(t, "hello", l.Text)
+	assert.Equal(t, 7, l.Number())
+}
+
+func TestAdd(t *testing.T) {
+	l := line.New("hello", 1)
+	l.Add(" world")
+	assert.Equal(t, "hello world", l.Text)
+	assert.Equal(t, 1, l.Number(), "Number should not change on Add")
+
+	// Appending to an empty line.
+	empty := line.New("", 0)
+	empty.Add("first")
+	assert.Equal(t, "first", empty.Text)
+}
+
+func TestOptimizedText(t *testing.T) {
+	testCases := []struct {
+		name string
+		text string
+		want string
+	}{
+		{"trims surrounding whitespace", "   foo   ", "foo"},
+		{"strips trailing line comment", `foo: "bar" // a note`, `foo: "bar"`},
+		{"strips trailing block comment", `foo: "bar" /* a note */`, `foo: "bar"`},
+		{"no comment is preserved", `foo: "bar"`, `foo: "bar"`},
+		{"only whitespace becomes empty", "  \t  ", ""},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert.Equal(t, tc.want, line.New(tc.text, 0).OptimizedText())
+		})
+	}
+}
+
 func TestLineToVar(t *testing.T) {
 	type result struct {
 		key   string

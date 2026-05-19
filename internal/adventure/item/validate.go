@@ -13,12 +13,12 @@ func (i Item) Validate() error {
 		return err
 	}
 
-	if i.Weight > i.MaxWeight {
-		return ErrWeightShouldBeLessOrEqualThanMaxWeight
-	}
-
 	if i.Weight < 0 || i.MaxWeight < 0 {
 		return ErrWeightCannotBeNegative
+	}
+
+	if i.Weight > i.MaxWeight {
+		return ErrWeightShouldBeLessOrEqualThanMaxWeight
 	}
 
 	return nil

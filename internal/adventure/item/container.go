@@ -15,7 +15,6 @@ func (s *Service) TotalWeight(i Item) int {
 	items := s.db.Query(
 		database.FilterByKind(kind.Item),
 		database.NewFilter("At", database.Equal, i.ID),
-		database.NewFilter("Container", database.Equal, true),
 	)
 
 	var item Item
@@ -52,7 +51,7 @@ func (s *Service) IsContained(item Item) bool {
 
 	_, err := s.GetItemContainer(item)
 
-	return err != nil
+	return err == nil
 }
 
 func (s *Service) Contents(id uint32) []Item {

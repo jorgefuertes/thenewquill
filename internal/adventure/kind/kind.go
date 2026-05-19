@@ -48,7 +48,7 @@ func kindNamesAndAliases() map[Kind][]string {
 		Character: {"character", "char", "player", "players", "characters", "chars"},
 		Table:     {"table", "tables"},
 		Process:   {"process", "processes", "proc", "procs"},
-		Blob:      {"pictures", "picture", "pic"},
+		Blob:      {"pictures", "picture", "pic", "blob"},
 		Test:      {"test", "testitem"},
 	}
 }

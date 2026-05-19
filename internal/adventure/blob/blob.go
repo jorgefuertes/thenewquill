@@ -20,9 +20,7 @@ type Blob struct {
 var _ adapter.Storeable = &Blob{}
 
 func New() *Blob {
-	b := &Blob{Data: make([]byte, 0)}
-
-	return b
+	return &Blob{}
 }
 
 func (b *Blob) Load(filename string) error {
