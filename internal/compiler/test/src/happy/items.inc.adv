@@ -15,8 +15,14 @@ petaca: petaca _
     is container
     is in bolsa
 
+cofre: cofre dorada
+    desc: "Un cofre dorado bastante macizo."
+    is at celda3
+    is container
+
 llave1: llave dorada
     desc: "Una llave dorada."
+    is in cofre
 
 llave2: llave plateada
     desc: "Una llave plateada."

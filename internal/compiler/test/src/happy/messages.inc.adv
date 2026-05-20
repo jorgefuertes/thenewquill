@@ -42,3 +42,28 @@ multiline: """
 	at the end.
 		Line 5 and this line is indented.
 	"""
+
+// ============================================================================
+// Process tables demo messages
+// Referenced by the sample tables under proc/. Not used by other sections.
+// ============================================================================
+
+intro:        "Despiertas en una celda fría y húmeda. El aire huele a humedad y miedo."
+low-health:   "Te encuentras malherido. Necesitas descansar."
+dead:         "La oscuridad te envuelve. Has muerto en la cárcel de Roma."
+hungry:       "Tu estómago ruge. Tienes hambre."
+starving:     "Te estás muriendo de hambre."
+dwarf-grunt:  "El enano gruñe con desprecio y te mira mal."
+dwarf-rage:   "¡El enano pierde la paciencia y te golpea con fuerza!"
+elf-cry:      "El elfo solloza desconsoladamente entre las gradas."
+elf-hidden:   "No ves al elfo por ningún lado, debe estar escondido."
+torch-on:     "La antorcha se enciende con un chasquido."
+torch-off:    "La antorcha se apaga."
+no-here:      "No ves nada de eso aquí."
+score-msg:    "Llevas _ puntos en _ turnos."
+end-game:     "Fin de la aventura."
+storm:        "Un lejano trueno resuena más allá de los muros."
+chest-shut:   "El cofre está cerrado."
+chest-opened: "El cofre se abre con un crujido y deja ver su contenido."
+empty-bag:    "La bolsa está vacía."
+new-location: "Recorres el lugar con la mirada."

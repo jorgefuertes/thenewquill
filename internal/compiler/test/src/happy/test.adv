@@ -34,6 +34,11 @@ aFloat    = 1.5 // float
 name      = "The New Quill Adventure Writing System" // string
 hello     = "Hello, _.\nWelcome to _.\n" // string with interpolated arguments
 
+// Global state used by the sample process tables under proc/.
+turns     = 0
+score     = 0
+hunger    = 0
+
 INCLUDE "messages.inc.adv"
 INCLUDE "words.inc.adv" // include another file
 INCLUDE "locations.inc.adv"

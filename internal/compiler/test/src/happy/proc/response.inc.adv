@@ -1,0 +1,221 @@
+// response: matches verb+noun from the player's input.
+// Order matters — specific rules first, wildcards last.
+
+TABLE response
+
+    // ---------------------------------------------------------------------
+    // Examining
+    // ---------------------------------------------------------------------
+
+    examinar _:                       // "look" with no noun → describe room
+        LOOK
+        DONE
+
+    examinar talismán:
+        PRESENT talismán
+        WRITE worn
+        DONE
+
+    examinar bolsa:
+        PRESENT bolsa
+        IS_OPEN bolsa
+        INVENT                        // list what's inside the open bag
+        OK
+
+    examinar bolsa:
+        PRESENT bolsa
+        NOT IS_OPEN bolsa
+        WRITELN have
+        END
+
+    examinar cofre:
+        HERE cofre
+        IS_OPEN cofre
+        WRITELN chest-opened
+        LISTOBJ
+        DONE
+
+    examinar cofre:
+        HERE cofre
+        WRITELN chest-shut
+        END
+
+    examinar jugador:
+        HUMAN player
+        LT player.health 30
+        WRITE low-health
+        DONE
+
+    examinar jugador:
+        HUMAN player
+        WRITE score-msg score turns
+        DONE
+
+    // ---------------------------------------------------------------------
+    // Inventory: take / drop / wear / unwear
+    // ---------------------------------------------------------------------
+
+    coger denario:
+        HERE denario
+        NOT CARRIED denario
+        GET denario
+        INC score 1
+        WRITE get-ok
+        OK
+
+    coger llave:
+        HERE llave1
+        IS_OPEN cofre
+        GET llave1
+        INC score 5
+        WRITE get-ok
+        OK
+
+    coger _:
+        WRITE get-nook
+        DONE
+
+    dejar denario:
+        CARRIED denario
+        DROP denario
+        DEC score 1
+        WRITE drop-ok
+        OK
+
+    dejar _:
+        WRITE havent
+        DONE
+
+    poner talismán:                   // wear
+        CARRIED talismán
+        NOT WORN talismán
+        WEAR talismán
+        WRITE wear-ok
+        OK
+
+    poner _:
+        WRITE wear-nook
+        DONE
+
+    quitar talismán:                  // unwear
+        WORN talismán
+        UNWEAR talismán
+        WRITE unwear-ok
+        OK
+
+    quitar _:
+        WRITE unwear-nook
+        DONE
+
+    // ---------------------------------------------------------------------
+    // Containers (open/close)
+    // ---------------------------------------------------------------------
+
+    abrir bolsa:
+        PRESENT bolsa
+        NOT IS_OPEN bolsa
+        OPEN bolsa
+        OK
+
+    abrir cofre:
+        HERE cofre
+        NOT IS_OPEN cofre
+        OPEN cofre
+        WRITELN chest-opened
+        OK
+
+    cerrar bolsa:
+        PRESENT bolsa
+        IS_OPEN bolsa
+        CLOSE bolsa
+        OK
+
+    cerrar cofre:
+        HERE cofre
+        IS_OPEN cofre
+        CLOSE cofre
+        OK
+
+    poner denario:                    // shorthand: put coin into open bag
+        CARRIED denario
+        PRESENT bolsa
+        IS_OPEN bolsa
+        PUT_INTO denario bolsa
+        OK
+
+    // ---------------------------------------------------------------------
+    // Light / dark (no "encender" verb in vocab → we reuse "abrir antorcha")
+    // ---------------------------------------------------------------------
+
+    abrir antorcha:
+        CARRIED ant-off
+        DESTROY ant-off
+        CREATE ant-on
+        GIVE ant-on player
+        SET ant-on.on true
+        WRITE torch-on
+        OK
+
+    cerrar antorcha:
+        CARRIED ant-on
+        DESTROY ant-on
+        CREATE ant-off
+        GIVE ant-off player
+        SET ant-on.on false
+        WRITE torch-off
+        OK
+
+    // ---------------------------------------------------------------------
+    // NPC interaction
+    // ---------------------------------------------------------------------
+
+    decir enano:
+        ENGAGE enano
+        DONE
+
+    decir elfo:
+        ENGAGE elfo
+        DONE
+
+    // ---------------------------------------------------------------------
+    // Movement helpers
+    // ---------------------------------------------------------------------
+
+    ir norte:
+        // The engine normally handles connections from location data;
+        // override here only to demonstrate GOTO from a response.
+        AT celda
+        GOTO vestíbulo
+        OK
+
+    // ---------------------------------------------------------------------
+    // System / meta
+    // ---------------------------------------------------------------------
+
+    fin _:
+        WRITELN sure
+        WRITELN bye
+        DONE
+
+    // ---------------------------------------------------------------------
+    // Diagnostic / debug
+    // ---------------------------------------------------------------------
+
+    examinar denario:
+        ZERO score
+        WRITELN have-nothing
+        DONE
+
+    examinar _:
+        WRITELN cant-do
+        DONE
+
+    // ---------------------------------------------------------------------
+    // Catch-all
+    // ---------------------------------------------------------------------
+
+    * *:
+        WRITE cant
+        DONE
+
+END TABLE

@@ -5,6 +5,7 @@ celda:
 	desc: "De momento estás en una fría celda, junto a un fiambre bastante deteriorado. Tras los barrotes de tu puerta \
 		ves un lóbrego vestíbulo."
 	exits: salir vestíbulo
+	visited = false
 
 celda2:
 	title: "Fría celda"
@@ -50,6 +51,7 @@ exterior:
 	title: "Exterior"
 	desc: "Estás en el exterior de la cárcel. Ves varias avenidas de la bella Roma Imperial."
 	exits: norte corredor3, sur templo, este vestales, oeste coliseo
+	visited = false
 
 vestales:
 	title: "Casa de las Vestales"

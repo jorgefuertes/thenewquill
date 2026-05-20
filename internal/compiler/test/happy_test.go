@@ -24,7 +24,7 @@ func TestCompilerHappyPath(t *testing.T) {
 	require.NoError(t, err)
 
 	t.Run("vars", func(t *testing.T) {
-		assert.Equal(t, 15, a.Variables.Count())
+		assert.Equal(t, 20, a.Variables.Count())
 
 		testCases := []struct {
 			key      string
@@ -37,9 +37,14 @@ func TestCompilerHappyPath(t *testing.T) {
 			{"aFloat", 1.5},
 			{"name", `The New Quill Adventure Writing System`},
 			{"hello", `Hello, _.\nWelcome to _.\n`},
+			{"turns", 0},
+			{"score", 0},
+			{"hunger", 0},
 			{"gradas.people", 500},
 			{"subasta.running", true},
 			{"via.open", true},
+			{"celda.visited", false},
+			{"exterior.visited", false},
 			{"ant-on.on", false},
 			{"player.health", 100},
 			{"enano.patience", 255},

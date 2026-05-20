@@ -1,0 +1,49 @@
+// cron: timer-driven background processes.
+// Header is `<HOURS|MINUTES|SECONDS|TURNS> <count>:` (specs §2.3, §3).
+// No combined units; if you need 4m 30s use `SECONDS 270` or two processes.
+
+TABLE cron
+
+    // Every turn: bump the turn counter. Other turn-based processes piggy
+    // back on the `turns` variable.
+    TURNS 1:
+        INC turns 1
+
+    // Every 30s of wall clock: 25% chance of a thunder rumble. Generic
+    // enough to play anywhere.
+    SECONDS 30:
+        CHANCE 25
+        WRITELN storm
+
+    // Every 5 turns: hunger creeps up by one point.
+    TURNS 5:
+        INC hunger 1
+        END
+
+    // Hunger >5 → warn. Hunger >10 → start bleeding health.
+    TURNS 5:
+        GT hunger 5
+        WRITELN hungry
+
+    TURNS 5:
+        GT hunger 10
+        WRITELN starving
+        DEC player.health 5
+
+    // Every 4m30s = 270s the elf un-hides for a beat and cries somewhere.
+    SECONDS 270:
+        EQ elfo.hidden true
+        SET elfo.hidden false
+        WRITELN elf-cry
+
+    // Once per hour: full status check (here a no-op to exercise HOURS).
+    HOURS 1:
+        WRITE score-msg score turns
+
+    // Game-over check on every turn: if health drops to zero, teleport the
+    // player to the death location. The `location` table picks it up.
+    TURNS 1:
+        LT player.health 1
+        GOTO muerte
+
+END TABLE

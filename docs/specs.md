@@ -75,54 +75,73 @@ Se descarta la forma `BEGIN <KIND> TABLE` de la muestra antigua: redundante
 
 ### 2.3 Cuerpo de tabla
 
-El cuerpo depende del tipo de tabla y se divide en **procesos**. Cada proceso
-abre con una **cabecera** terminada en `:` y su cuerpo son líneas de condactos
-indentadas. El proceso queda implícitamente cerrado al encontrar otra cabecera
-o `END TABLE` — no hay `END PROCESS`.
+El cuerpo de toda tabla se divide en **procesos**. Cada proceso abre con una
+**cabecera de dos tokens** terminada en `:` y su cuerpo son líneas de
+condactos indentadas. El proceso queda implícitamente cerrado al encontrar
+otra cabecera o `END TABLE` — no hay `END PROCESS`.
 
-Cabecera por tabla:
+**Forma universal**: todas las tablas usan la misma estructura de cabecera —
+dos tokens separados por un espacio, donde cada token puede ser una label
+concreta, el comodín `*` o la NullWord `_`. Lo que esos dos tokens
+*significan* depende del tipo de tabla:
 
-| Tabla      | Forma de cabecera                          | Ejemplo                        |
-|------------|--------------------------------------------|--------------------------------|
-| `init`     | opcional, informativa (ignorada)           | `setup-vars:`                  |
-| `location` | `<label-de-localidad>:`                    | `cave:`                        |
-| `response` | `<verbo> <nombre>:`                        | `take sword:`                  |
-| `cron`     | `EVERY <intervalo>:`                       | `EVERY 30s:`, `EVERY 04m30s:`  |
-| `npc`      | `<label-de-personaje>:`                    | `sage:`                        |
+| Tabla      | Slot 1                                    | Slot 2                                      |
+|------------|-------------------------------------------|---------------------------------------------|
+| `init`     | siempre `_`                               | siempre `_`                                 |
+| `location` | label de localidad o `*`                  | siempre `_`                                 |
+| `response` | label de verbo, `*` o `_`                 | label de nombre, `*` o `_`                  |
+| `cron`     | unidad: `HOURS`, `MINUTES`, `SECONDS`, `TURNS` | número entero (cuenta de la unidad anterior) |
+| `npc`      | label de nombre (de personaje) o `*`      | label de adjetivo, `*` o `_`                |
 
-Las cabeceras de `location`, `response` y `npc` admiten **comodines** (§2.6).
+Casos especiales:
 
-### 2.4 La tabla `init` es plana
+- **`init`** sólo admite `_ _` como cabecera. No se aceptan labels
+  informativas; para anotar o agrupar visualmente usa comentarios.
+- **`cron`** usa un patrón distinto a las demás tablas: slot 1 es una
+  *unidad de tiempo* en mayúsculas, slot 2 es la *cuenta* en número entero.
+  Ejemplos: `MINUTES 2:`, `TURNS 3:`, `SECONDS 30:`, `HOURS 1:`. La unidad
+  `TURNS` se mide en turnos de juego; las otras tres se miden en tiempo
+  real.
+- **`location`** sólo discrimina por slot 1 (la localidad). Slot 2 queda
+  reservado como `_` para mantener la forma uniforme. `*` en slot 1
+  significa "este proceso corre en todas las localidades" (catch-all).
+- **`npc`** identifica al personaje por el par (nombre, adjetivo) con que
+  se declaró en `SECTION CHARACTERS` — la misma firma que usa el compilador
+  para el dispatch.
+- **`response`** casa contra la SL del jugador (slot 1 = verbo, slot 2 =
+  nombre o adjetivo según la convención del lenguaje fuente).
 
-`init` se ejecuta entera al arrancar, así que no necesita agrupar procesos por
-un disparador. Su cuerpo es una lista directa de condactos:
+Los comodines (§2.6) se aplican uniformemente en todas las tablas excepto
+`cron` (donde ni `*` ni `_` tienen sentido — la cabecera codifica un
+intervalo concreto).
+
+### 2.4 La tabla `init`
+
+`init` se ejecuta entera al arrancar. Su cuerpo es una lista de procesos
+cuyas cabeceras son todas `_ _:` — `init` no discrimina, sólo agrupa
+condactos en bloques sintácticos. **No se admiten labels informativas**;
+para anotar usa comentarios:
 
 ```
 TABLE init
-    SET AT human start
-    SET VAR score 0
-    SET VAR turns 0
-END TABLE
-```
-
-Para ayudar a estructurar visualmente una init larga, **se admiten cabeceras
-informativas** con el mismo formato que en otras tablas (`<label>:`). El
-compilador las **ignora completamente** — son equivalentes a un comentario,
-pero respetan el ritmo visual del resto del fuente:
-
-```
-TABLE init
-    setup-world:
+    _ _:
+        // World setup
         SET AT human start
-    setup-scores:
-        SET VAR score 0
-        SET VAR turns 0
+        SET turns 0
+        SET score 0
+    _ _:
+        // Light off, torch at the tomb
+        DESTROY ant-on
+        CREATE ant-off
+        PUT_AT ant-off tumba
 END TABLE
 ```
 
-Las cabeceras informativas no crean labels, no se persisten, no afectan al
-orden de ejecución (init siempre corre todos los condactos en orden de
-aparición). El programador puede usarlas o no.
+Todos los procesos `_ _:` corren en orden de aparición; el `END` o la
+condición falsa de uno no afecta a los siguientes (sigue siendo la
+política universal de §4.4). El programador puede tener un único proceso
+gigante con todos los condactos o muchos pequeños — el resultado de la
+ejecución es el mismo, pero la legibilidad cambia.
 
 ### 2.5 Líneas de condacto
 
@@ -149,35 +168,42 @@ END TABLE
 
 ### 2.6 Comodines en las cabeceras
 
-En las cabeceras de `location`, `response` y `npc` se admiten dos labels
-especiales (ya reservadas en el sistema: existen como labels con IDs fijos
-`1` y `2` en el `database` desde el arranque):
+En las cabeceras de `init`, `location`, `response` y `npc` se admiten dos
+labels especiales (ya reservadas en el sistema: existen como labels con IDs
+fijos `1` y `2` en el `database` desde el arranque):
 
 - `*` — **comodín**. Coincide con **cualquier** label en esa posición.
 - `_` — **NullWord** (legado DAAD). Indica la **ausencia** de palabra en esa
-  posición. Sólo tiene sentido posicional para `response` (verbo o nombre
-  ausentes en la SL del jugador).
+  posición — útil para `response` (verbo o nombre ausentes en la SL del
+  jugador) y obligatorio en los slots reservados de `init` y slot 2 de
+  `location`.
 
 Ejemplos:
 
 ```
 TABLE response
-    take *:        // "take <cualquier cosa>"
+    coger *:        // "coger <cualquier cosa>"
         ...
-    * sword:       // "<cualquier verbo> sword"
+    * denario:      // "<cualquier verbo> denario"
         ...
-    * *:           // catch-all: lo que no encajó arriba
+    * *:            // catch-all: lo que no encajó arriba
         WRITE i-dont-understand
-    look _:        // "look" sin nombre
+    examinar _:     // "examinar" sin nombre
         ...
 
 TABLE location
-    *:             // se ejecuta en cualquier localidad
+    * _:            // se ejecuta en cualquier localidad
         WRITE turn-counter
 
 TABLE npc
-    *:             // hablar con cualquier NPC sin proceso propio
+    * _:            // cualquier personaje sin adjetivo
         WRITE generic-greeting
+    * *:            // cualquier personaje, cualquier adjetivo (más amplio)
+        WRITE generic-snub
+
+TABLE init
+    _ _:            // único formato admitido en init
+        SET turns 0
 ```
 
 **Orden de resolución.** Cuando hay varios procesos cuya cabecera podría
@@ -186,8 +212,8 @@ en el fuente y aborta el siguiente sólo si el actual ejecuta un condacto
 que cierra el turno (`DONE`/`OK`/etc., concretado en §6.3). Esto da control
 explícito al programador: "lo específico primero, lo genérico al final".
 
-`*` y `_` **no** se admiten como cabecera de `cron` (cuyo encabezado es un
-intervalo, no un label) ni en `init` (que no usa cabecera semántica).
+`*` y `_` **no** se admiten en cabeceras de `cron`: ahí la cabecera codifica
+un intervalo concreto (unidad + cuenta), no un patrón de matching.
 
 ### 2.7 Comentarios, includes y blancos
 
@@ -206,59 +232,66 @@ Reutilizamos las convenciones léxicas ya existentes en el lenguaje:
 SECTION TABLES
 
 TABLE init
-    setup-world:
-        SET AT human start
-    setup-scores:
-        SET VAR score 0
-        SET VAR hunger 0
+    _ _:
+        // World setup
+        MOVE human start
+    _ _:
+        // Counters
+        SET score 0
+        SET hunger 0
 END TABLE
 
 TABLE location
-    cave:
-        ZERO VAR visited-cave        // sólo la primera vez
-        SET VAR visited-cave 1
-        WRITE seen-cave-first
-    forest:
-        WRITE seen-forest
-    *:
-        WRITE you-feel-the-wind      // en cualquier localidad
+    cave _:
+        ZERO visited-cave            // sólo la primera vez
+        SET visited-cave 1
+        WRITELN seen-cave-first
+    forest _:
+        WRITELN seen-forest
+    * _:
+        WRITELN you-feel-the-wind    // en cualquier localidad
 END TABLE
 
 TABLE response
-    take sword:
-        HERE sword
-        NOT CARRIED sword
-        GET sword
+    coger denario:
+        HERE denario
+        NOT CARRIED denario
+        GET denario
         OK
-    drop sword:
-        CARRIED sword
-        DROP sword
+    dejar denario:
+        CARRIED denario
+        DROP denario
         OK
-    take *:                          // "coger" cualquier otra cosa
-        WRITE cannot-take
-    look _:                          // "mirar" sin objeto
-        WRITE describe-here
+    coger *:                         // "coger" cualquier otra cosa
+        WRITELN cannot-take
+    examinar _:                      // "examinar" sin objeto
+        LOOK
+        DONE
     * *:                             // catch-all
-        WRITE i-dont-understand
+        WRITELN i-dont-understand
 END TABLE
 
 TABLE cron
-    EVERY 30s:
+    SECONDS 30:
         CHANCE 25
-        WRITE thunder-rumble
-    EVERY 5m:
-        SET VAR hunger +1
-        GT VAR hunger 10
-        WRITE hungry-warning
+        WRITELN thunder-rumble
+    MINUTES 5:
+        INC hunger 1
+        GT hunger 10
+        WRITELN hungry-warning
+    TURNS 1:
+        INC turns 1
 END TABLE
 
 TABLE npc
-    sage:
-        WRITE sage-greeting
-    troll:
+    sage _:                          // personaje "sage" declarado como `sage _`
+        WRITELN sage-greeting
+    troll _:
         ATTACK
-    *:
-        WRITE generic-npc-snub       // cualquier otro NPC
+    * _:                             // cualquier otro NPC (adj `_`)
+        WRITELN generic-npc-snub
+    * *:                             // fallback aún más amplio
+        WRITELN generic-npc-snub
 END TABLE
 ```
 
@@ -283,28 +316,28 @@ No hay tablas definidas por el usuario fuera de este conjunto en el MVP.
 - Se descarta la tabla `turn` que aparecía en el manual: su rol queda cubierto
   por `cron` (para acciones periódicas) y por `response` (para reacciones a
   acciones del jugador). Si más adelante se demuestra necesaria, se reconsidera.
-- `cron` programa cada entrada con la directiva `EVERY <intervalo>`. El intervalo
-  se escribe con sufijos de unidad:
+- `cron` programa cada entrada con una cabecera de dos tokens
+  `<unidad> <cuenta>:` donde `<unidad>` es una de las cuatro palabras
+  reservadas y `<cuenta>` es un número entero positivo:
 
-  | Forma            | Significado                |
-  |------------------|----------------------------|
-  | `EVERY 15s`      | cada 15 segundos           |
-  | `EVERY 5m`       | cada 5 minutos             |
-  | `EVERY 04m30s`   | cada 4 minutos y 30 segundos (combinado) |
-  | `EVERY 10`       | cada 10 turnos (sin sufijo) |
+  | Cabecera        | Significado            |
+  |-----------------|------------------------|
+  | `SECONDS 15:`   | cada 15 segundos       |
+  | `MINUTES 5:`    | cada 5 minutos         |
+  | `HOURS 1:`      | cada hora              |
+  | `TURNS 10:`     | cada 10 turnos         |
 
-  Las únicas unidades reconocidas son `s` (segundos), `m` (minutos) y la forma
-  sin sufijo (turnos del jugador). No se admiten `h`, `d` ni otras escalas.
-  Se permite combinar `m` y `s` en un único token (`<a>m<b>s`).
-- `npc`: cada proceso lleva en su cabecera el **label del NPC** al que aplica
-  (igual que un proceso de `location` lleva el label de su localidad). Esto
-  permite indexar por personaje y dispatch directo en runtime.
-- Exclusión mutua: si una tabla está ejecutándose, las demás esperan. La regla
-  detallada (qué bloquea a qué, qué pasa si se acumulan disparos de `cron`) se
-  fija en §7.
-- Exclusión mutua: si una tabla está ejecutándose, las demás esperan. La regla
-  detallada (qué bloquea a qué, qué pasa si se acumulan disparos de `cron`) se
-  fija en §7.
+  `HOURS`, `MINUTES` y `SECONDS` son reloj de pared; `TURNS` se mide en
+  turnos completos del jugador (§7.1). No se admiten otras unidades ni
+  combinaciones (`MINUTES 4 SECONDS 30` no existe; se aproxima con
+  `SECONDS 270` o con dos procesos `cron` distintos).
+- `npc`: cada proceso lleva en su cabecera el par **nombre-adjetivo** del
+  personaje al que aplica (igual que un personaje se declara en
+  `SECTION CHARACTERS` con un noun y un adjetivo). Esto permite indexar
+  por personaje y dispatch directo en runtime.
+- Exclusión mutua: si una tabla está ejecutándose, las demás esperan. La
+  regla detallada (qué bloquea a qué, qué pasa si se acumulan disparos
+  de `cron`) se fija en §7.
 
 ---
 
@@ -317,17 +350,17 @@ cabecera (cuando aplica), cuerpo, y un cierre implícito.
 
 ### 4.1 Cabecera
 
-La forma léxica de la cabecera se describe en §2.3 y §2.6. Conceptualmente, la
-cabecera es la **clave de dispatch** que decide cuándo este proceso es elegible
-para ejecutarse:
+La forma léxica de la cabecera se describe en §2.3 y §2.6 (dos tokens, cada
+uno label o comodín). Conceptualmente, la cabecera es la **clave de
+dispatch** que decide cuándo este proceso es elegible para ejecutarse:
 
-| Tabla      | La cabecera identifica…                          |
-|------------|--------------------------------------------------|
-| `init`     | nada (cabeceras opcionales informativas)         |
-| `location` | la localidad sobre la que aplica el proceso      |
-| `response` | el par verbo+nombre de la SL                     |
-| `cron`     | el intervalo de tiempo o turnos                  |
-| `npc`      | el personaje sobre el que aplica el proceso      |
+| Tabla      | La cabecera identifica…                                                  |
+|------------|--------------------------------------------------------------------------|
+| `init`     | nada (`_ _` siempre); todos los procesos son elegibles al arrancar       |
+| `location` | la localidad sobre la que aplica el proceso (slot 1; slot 2 `_`)         |
+| `response` | el par verbo+nombre de la SL del jugador                                 |
+| `cron`     | el intervalo: unidad (`HOURS`/`MINUTES`/`SECONDS`/`TURNS`) + cuenta      |
+| `npc`      | el par nombre+adjetivo del personaje (la misma firma de declaración)     |
 
 La resolución contra wildcards (`*`, `_`) se hace en orden de aparición en el
 fuente (§2.6). Esto permite escribir "lo específico primero, lo genérico al
@@ -717,7 +750,7 @@ Notas:
 `DESTROY` no borra el item de la base de datos — sólo apaga el flag. Esto
 permite re-`CREATE`-arlo más tarde si el guión lo requiere.
 
-#### Variables
+#### Mutación de variables
 
 | Opcode | Mnemónico | Firma             | Semántica                              |
 |--------|-----------|-------------------|----------------------------------------|
@@ -792,12 +825,12 @@ respuesta actual, o terminan el proceso/turno.
 
 | Opcode | Mnemónico  | Firma                              | Semántica                                       |
 |--------|------------|------------------------------------|-------------------------------------------------|
-| `0xC0` | `WRITE`    | `<MsgID> [<Num|VarID>...]`        | Imprime el mensaje sin salto de línea final.    |
-| `0xC1` | `WRITELN`  | `<MsgID> [<Num|VarID>...]`        | Como `WRITE` y añade `\n` al final.             |
-| `0xC2` | `NEWLINE`  | _(sin args)_                       | Imprime un `\n`. Útil para encadenar `WRITE`s.  |
-| `0xC3` | `CLEAR`    | _(sin args)_                       | Limpia la pantalla.                             |
-| `0xC4` | `LISTOBJ`  | _(sin args)_                       | Imprime la lista de items visibles en la localidad actual, usando el mensaje configurado en `SECTION MESSAGES` (e.g. `loc-objects: "Aquí hay _"`). |
-| `0xC5` | `INVENT`   | _(sin args)_                       | Imprime la lista de items que lleva el humano (atajo equivalente a iterar). |
+| `0xC0` | `WRITE`    | `<MsgID> [<Num\|VarID>...]`        | Imprime el mensaje sin salto de línea final.    |
+| `0xC1` | `WRITELN`  | `<MsgID> [<Num\|VarID>...]`        | Como `WRITE` y añade `\n` al final.             |
+| `0xC2` | `NEWLINE`  | *(sin args)*                       | Imprime un `\n`. Útil para encadenar `WRITE`s.  |
+| `0xC3` | `CLEAR`    | *(sin args)*                       | Limpia la pantalla.                             |
+| `0xC4` | `LISTOBJ`  | *(sin args)*                       | Imprime la lista de items visibles en la localidad actual, usando el mensaje configurado en `SECTION MESSAGES` (e.g. `loc-objects: "Aquí hay _"`). |
+| `0xC5` | `INVENT`   | *(sin args)*                       | Imprime la lista de items que lleva el humano (atajo equivalente a iterar). |
 
 **Interpolación en `WRITE`/`WRITELN`.** El mensaje referenciado puede contener
 placeholders `_` (mecanismo ya soportado por el subsistema `Message`,
@@ -841,7 +874,7 @@ WRITE seen-cave 5                   // error: sobra 1 arg
 | Opcode | Mnemónico | Firma         | Semántica                                                |
 |--------|-----------|---------------|----------------------------------------------------------|
 | `0xD0` | `PLAY`    | `<BlobID>`    | Arranca la reproducción de un blob de audio. Asíncrono — no bloquea el turno. Si ya había audio sonando, se sustituye. |
-| `0xD1` | `STOP`    | _(sin args)_  | Detiene la reproducción de audio actual, si la hay. No-op si nada sonaba. |
+| `0xD1` | `STOP`    | *(sin args)*  | Detiene la reproducción de audio actual, si la hay. No-op si nada sonaba. |
 | `0xD2` | `PICTURE` | `<BlobID>`    | Muestra el blob como ilustración de la localidad actual. Lo que se ve hasta que el siguiente `PICTURE` lo reemplace. |
 
 Validación en compilación: el `BlobID` debe corresponder a un blob con MIME
@@ -862,7 +895,7 @@ del intérprete (§7.2) consulta al terminar `response` para decidir si dispara
 
 | Opcode | Mnemónico | Firma         | Semántica                                                    |
 |--------|-----------|---------------|--------------------------------------------------------------|
-| `0xF0` | `LOOK`    | _(sin args)_  | Arma `look_requested`: tras la respuesta, se dispara la tabla `location` para la localidad actual. |
+| `0xF0` | `LOOK`    | *(sin args)*  | Arma `look_requested`: tras la respuesta, se dispara la tabla `location` para la localidad actual. |
 | `0xF1` | `ENGAGE`  | `<CharID>`    | Arma `npc_engaged = char`: tras la respuesta, se dispara la tabla `npc` con la cabecera de ese personaje. |
 
 Usar `LOOK` y `ENGAGE` desde la tabla `response` es la forma estándar de
@@ -876,9 +909,9 @@ cortan ejecución:
 
 | Opcode | Mnemónico | Firma         | Semántica                                                |
 |--------|-----------|---------------|----------------------------------------------------------|
-| `0xFA` | `END`     | _(sin args)_  | Termina este proceso. El motor pasa al siguiente proceso de la misma tabla. Equivale a una condición falsa final. |
-| `0xFB` | `DONE`    | _(sin args)_  | Termina este turno: ninguna tabla más se ejecuta hasta el próximo disparo (§7.3). |
-| `0xFC` | `OK`      | _(sin args)_  | Equivalente a `WRITE ok` (mensaje canónico) + `DONE`. Atajo del patrón "acción consumida". |
+| `0xFA` | `END`     | *(sin args)*  | Termina este proceso. El motor pasa al siguiente proceso de la misma tabla. Equivale a una condición falsa final. |
+| `0xFB` | `DONE`    | *(sin args)*  | Termina este turno: ninguna tabla más se ejecuta hasta el próximo disparo (§7.3). |
+| `0xFC` | `OK`      | *(sin args)*  | Equivalente a `WRITE ok` (mensaje canónico) + `DONE`. Atajo del patrón "acción consumida". |
 
 #### Resumen §6.3
 
@@ -1092,20 +1125,34 @@ Process {
 }
 ```
 
-`LabelID = 0` se reserva para procesos de `init` sin cabecera (cabeceras
-informativas de §2.4 se descartan al compilar).
+El struct `Process` siempre persiste sus dos slots de cabecera como IDs
+(`Slot1`, `Slot2 uint32`); el significado de cada slot depende del `Kind`
+de la tabla (§4.1). Cuando el slot vale `*` o `_`, se almacenan los IDs
+reservados (1 y 2) — no hay un valor "ausente". `init` guarda `(2, 2)` en
+sus dos slots (NullWord en ambos).
 
 #### `ProcessHeader`
 
-Unión etiquetada por `Kind`:
+La estructura es **flat**: dos campos uniformes que el intérprete decodifica
+con el `Kind` de la tabla. Esto evita unión etiquetada y simplifica el
+binario.
 
-| `Kind`      | Campos significativos                                  |
-|-------------|--------------------------------------------------------|
-| `Init`      | (ninguno)                                              |
-| `Location`  | `LocID` (o `LabelAsterisk` para `*:`)                  |
-| `Response`  | `VerbID`, `NounID` (cualquiera puede ser `*` o `_`)    |
-| `Cron`      | `IntervalKind` (`Sec`/`Min`/`Turns`), `IntervalValue` (uint32) |
-| `NPC`       | `CharID` (o `LabelAsterisk` para `*:`)                 |
+| `Kind`      | Interpretación de `Slot1`                | Interpretación de `Slot2`                |
+|-------------|------------------------------------------|------------------------------------------|
+| `Init`      | siempre `_` (id=2)                       | siempre `_` (id=2)                       |
+| `Location`  | `LocID` o `*` (id=1)                     | siempre `_` (id=2)                       |
+| `Response`  | `WordID` (verbo), o `*`/`_`              | `WordID` (nombre), o `*`/`_`             |
+| `Cron`      | unidad codificada como uint32 enum (ver más abajo) | cuenta `uint32`                    |
+| `NPC`       | `WordID` (nombre del personaje), o `*`   | `WordID` (adjetivo), o `*`/`_`           |
+
+Para `Cron`, `Slot1` toma uno de cuatro valores enteros bien definidos:
+
+```
+1 = HOURS
+2 = MINUTES
+3 = SECONDS
+4 = TURNS
+```
 
 Los wildcards no se "expanden" en compilación: se guardan literalmente como
 IDs de los labels reservados `*` (id=1) y `_` (id=2), y el dispatcher en
@@ -1279,6 +1326,7 @@ En compilación: cada error apunta al fichero, número de línea y stack de
 contexto (gracias a la infraestructura existente de `CompilerError`).
 
 En runtime: cada error de proceso se registra con:
+
 - Identificación del proceso (`Table.Label + Process.Label` o índice).
 - Opcode que falló.
 - Estado relevante del juego.

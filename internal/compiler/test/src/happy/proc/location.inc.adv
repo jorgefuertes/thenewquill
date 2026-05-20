@@ -1,0 +1,44 @@
+// location: fires when the player enters a location or asks to look around.
+// Header is `<loc|*> _:` — slot 2 is reserved as `_` (specs §2.3).
+
+TABLE location
+
+    // First time the player steps into the prison cell: introduce the scene
+    // and flip the per-location visited flag so subsequent visits skip the
+    // intro.
+    celda _:
+        EQ celda.visited false
+        PICTURE prison-pic            // would need a "prison-pic" blob
+        WRITELN intro
+        SET celda.visited true
+        END                           // skip the catch-all for the first visit
+
+    celda _:
+        // From the second visit onwards we just write the standard description.
+        WRITELN new-location
+
+    // The outdoor area shows a different picture only on first arrival.
+    exterior _:
+        EQ exterior.visited false
+        PICTURE city-pic              // would need a "city-pic" blob
+        SET exterior.visited true
+
+    // Empty cell with the chest: hint the player about the closed chest while
+    // its contents are still hidden.
+    celda3 _:
+        NOT IS_OPEN cofre
+        WRITELN chest-shut
+
+    // Death location: stop audio, write epitaph, end the game.
+    muerte _:
+        STOP
+        CLEAR
+        WRITELN dead
+        WRITE end-game
+        DONE
+
+    // Catch-all: after any movement, list visible objects in the room.
+    * _:
+        LISTOBJ
+
+END TABLE

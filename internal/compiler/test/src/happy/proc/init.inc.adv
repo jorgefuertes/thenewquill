@@ -1,0 +1,37 @@
+// init: runs once at adventure start.
+// All processes in init use the universal header form `_ _:` (specs §2.4).
+// No informative labels — use comments to group condactos visually.
+
+TABLE init
+
+    _ _:
+        // Welcome screen
+        CLEAR
+        WRITE intro
+        NEWLINE
+        WAIT 1
+
+    _ _:
+        // Counters
+        SET turns 0
+        SET score 0
+        SET hunger 0
+
+    _ _:
+        // Make sure the torch starts off, and place the lit alias far away
+        // so the player has to light it later.
+        DESTROY ant-on
+        CREATE ant-off
+        SET ant-on.on false
+        PUT_AT ant-off tumba
+
+    _ _:
+        // NPC setup: the elf starts hidden in the seating area.
+        SET elfo.hidden true
+        MOVE elfo gradas
+
+    _ _:
+        // Background audio (needs SECTION PICTURES; see proc/tables.inc.adv)
+        PLAY ambient
+
+END TABLE
