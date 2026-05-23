@@ -6,13 +6,12 @@
 
 Una **Sentencia Lógica** (SL) es la unidad mínima que el parser extrae del input del jugador. Tiene tres campos posicionales más un contenido opcional entrecomillado:
 
-```
-SL = (verbo, nombre, adjetivo, contenido-entrecomillado?)
-```
+**Formato SL:** `[verbo] [adverbio] [artículo] <nombre|pronombre> [adjetivo] [adverbio] 
+  "<NPC SUBSL> [conjucción,puntuación]..." [conjucción,puntuación]...`
 
-Cualquiera de los tres primeros campos puede estar ausente — se representa con `_` (NullWord) en la cabecera del proceso que intente casar la SL.
+> La _SUBSL_ es una cadena opcional entrecomillada que contiene una SL anidada.
 
-A partir del `nombre`, el parser **infiere bindings**:
+A partir del `nombre` o del `pronombre`, el parser **infiere bindings**:
 
 - Si el nombre resuelve a un Item declarado, `ITEM` queda ligado a ese Item.
 - Si el nombre resuelve a un NPC declarado, `NPC` queda ligado a ese Character.
@@ -25,20 +24,63 @@ El input del jugador se parte en **una o varias SLs encadenadas**, separadas por
 
 Si una SL contiene un bloque entrecomillado, ese bloque queda reservado y **no se parsea** hasta que la tabla `npc` lo procesa (ver anidamiento más abajo).
 
+#### Ejemplos simples
+
+- INPUT: `coger hacha`
+- SL1: verb: `coger`, noun: `hacha`, item: `hacha`
+
+- INPUT: `examinar troll`
+- SL1: verb: `examinar`, noun: `troll`, npc: `troll`
+
+- INPUT: `ex cueva`
+- SL1: verb: `examinar`, noun: `cueva`, npc: `false`, item: `false`
+
+- INPUT: `salidas`
+- SL1: verb: `_`, noun: `salidas`
+
+#### Ejemplos compuestos o anidados
+
+- INPUT: `decir hobbit "coge el hacha y corta leña" y coger leña` 
+- SL1: verb: `decir`, noun: `hobbit`, npc: `hobbit`
+  - SUBSL1: verb: `coger`, noun: `hacha`, item: `hacha`
+  - SUBSL2: verb: `cortar`, noun: `leña`, item: `leña`
+- SL2: verb: `coger`, noun: `leña`, item: `leña`
+
+- INPUT: `coger la espada rápidamente y atacar al troll con ella`
+- SL1: verb: `coger`, noun: `espada`, adverb: `rápidamente`, item: `espada`
+- SL2: verb: `atacar`, noun: `troll`, npc: `troll`, item: `espada`
+
+- INPUT: `coger rápidamente la espada y atacar al troll con ella`
+- SL1: verb: `coger`, noun: `espada`, adverb: `rápidamente`, item: `espada`
+- SL2: verb: `atacar`, noun: `troll`, npc: `troll`, item: `espada`
+
+- INPUT: `coger rápidamente la espada, perseguir al troll y matarlo`
+- SL1: verb: `coger`, noun: `espada`, adverb: `rápidamente`, item: `espada`
+- SL2: verb: `perseguir`, noun: `troll`, npc: `troll`, item: `espada`
+- SL2: verb: `atacar`, noun: `troll`, npc: `troll`, item: `espada`
+
+#### El parser hace el trabajo
+
+El parser hacer el trabajo duro y se encarga de construir las SLs a partir del input del jugador. Sin embargo el programador tiene que tener en cuenta que debe introducir los suficientes datos en el fuente, los verbos, adverbios, sustantivos, sinónimos, etc. para que el parser pueda construir las SLs correctamente.
+
+Aún así, el parser no es infalible y puede fallar en algunos casos, pero es bastante avanzado y si el programador aprende como funciona, será un gran aliado.
+
 ### Tabla de procesos
 
 Una tabla o lista que contiene una serie de procesos con expresiones de entrada. Dichas tablas son fijas y se ejecutan en un momento predeterminado.
 
-Se termina la ejecución de las tablas con un `DONE`, o con un `OK` que es lo mismo que `DONE` pero muestra un mensaje de confirmación al usuario, el mensaje con label `ok`, o lo contrario `nook`:
+Los terminadores controlan el flujo de ejecución de las tablas:
 
-| Action | Description                                                                                       |
-|--------|---------------------------------------------------------------------------------------------------|
-| `DONE` | Se termina silenciosamente la ejecución de las tablas, y se procesa la siguiente SL.              |
-| `OK`   | Se imprime el mensaje `ok` y se termina la ejecución de las tablas, se procesa la siguiente SL.   |
-| `NOOK` | Se imprime el mensaje `nook` y se termina la ejecución de las tablas (descartando resto de input).|
-| `END`  | Termina la ejecución **solamente de la tabla actual** y se continúa con la siguiente tabla.       |
+| Action | Description                                                                                                 |
+|--------|-------------------------------------------------------------------------------------------------------------|
+| `DONE` | Termina el ciclo de tablas para la SL/SUBSL actual.                                                         |
+|        | Si quedan SUBSLs, re-entra con la siguiente. Si no, pasa a la siguiente SL.                                 |
+| `OK`   | Igual que `DONE`, pero imprime el mensaje `ok` antes de continuar.                                          |
+| `NOOK` | Imprime el mensaje `nook` y descarta todas las SUBSLs y SLs restantes. Devuelve el control al jugador.      |
+| `END`  | Termina **solamente la tabla actual** y continúa con la siguiente tabla del ciclo.                          |
 
-Caer al final del cuerpo de un proceso sin terminador explícito equivale a un `END` implícito: la tabla se da por terminada, se continua con la siguiente tabla si la hubiera.
+Caer al final del cuerpo de un proceso sin terminador explícito equivale a un `END` implícito: la tabla se da por terminada, se continúa con la siguiente tabla del ciclo.
+Al agotar el ciclo completo de tablas sin `DONE`, `OK` ni `NOOK`, se aplica la misma lógica que `DONE`.
 
 ### Proceso
 
@@ -118,7 +160,7 @@ Las tablas disponibles son:
 
 No se pueden crear otras tablas. Se admiten `INCLUDE` para repartir el contenido entre varios ficheros.
 
-Tras el input del jugador, se entra por la tabla 2 y se continúa con la 3, 4 y 5, salvo que se encuentre una instrucción `DONE`, `OK` o `NOOK`, en cuyo caso se detiene la ejecución de las tablas y se devuelve el control al jugador. Si se encuentra un `END`, se detiene la ejecución de la tabla actual y se continúa con la siguiente tabla compatible.
+Tras el input del jugador, el ciclo de tablas se ejecuta para cada SL empezando por la tabla 2 (`turn`), y continuando con la 3, 4 y 5 según apliquen. Al completar el ciclo, si quedan SUBSLs pendientes del bloque entrecomillado, se re-entra en el ciclo **sin** `turn` con la misma SL y la siguiente SUBSL. Si no quedan SUBSLs, se pasa a la siguiente SL principal (con `turn`). La tabla `turn` se ejecuta **una sola vez por SL principal**.
 
 ### Procesos
 
@@ -156,7 +198,7 @@ Dos formas de cabecera:
 - `EVERY n` — el proceso se ejecuta cada n turnos.
 - `TIMEOUT n` — el proceso se ejecuta si el jugador no escribe en n segundos. El turno se da por consumido automáticamente.
 
-Al consumirse un `TIMEOUT` se ejecuta este proceso y cualquier otro `EVERY` compatible con el nuevo número de turnos. A no ser que se termine con una instrucción de finalización `DONE/OK/NOOK/END`.
+La tabla `turn` se ejecuta **una sola vez por SL principal**; no se re-ejecuta para las SUBSLs del bloque entrecomillado. Al consumirse un `TIMEOUT` se ejecuta este proceso y cualquier otro `EVERY` compatible con el nuevo número de turnos, salvo que un terminador corte el ciclo antes.
 
 #### Tabla `item`
 
@@ -245,7 +287,7 @@ Reglas:
 - **Bindings heredados**: lo que armó el outer (`NPC`, `ITEM`, etc.) es visible desde los sub-procesos.
 - **Preludio opcional**: el outer puede tener condactos antes de los sub-procesos. Esos condactos se ejecutan una vez al entrar al outer (y no se repiten en las re-entradas al mismo outer por sub-SLs distintas, ver más abajo).
 - **Cierre implícito del outer**: termina al aparecer otra cabecera top-level o se termina la tabla.
-- Si se termina con `END` se descartan las sub-SLs restantes y se para a la siguiente SL.
+- Los terminadores dentro de sub-procesos tienen la misma semántica que en el resto del lenguaje: `END` termina la tabla `npc` y continúa con `response`; `DONE`/`OK` terminan el ciclo y re-entran con la siguiente SUBSL o SL; `NOOK` descarta todo.
 
 ## Hablar con NPCs: comillas y sub-SLs
 
@@ -266,7 +308,7 @@ Cuando el outer `decir elfo:` matchea en la tabla `npc`:
 1. Se ejecuta el preludio del outer (si lo hay).
 2. El parser extrae la **primera sub-SL** del contenido.
 3. Los sub-procesos del outer se prueban contra esa sub-SL.
-4. Si quedan más sub-SLs en el contenido, se **re-entra al mismo outer** con la siguiente sub-SL. **El preludio no se vuelve a ejecutar**; sólo los sub-procesos.
+4. Si quedan más sub-SLs en el contenido, se **re-entra en el ciclo de tablas** con la misma SL outer y la siguiente SUBSL. La tabla `turn` no se re-ejecuta. El preludio del outer no se vuelve a ejecutar.
 
 Ejemplo:
 
@@ -284,7 +326,7 @@ Paso a paso:
 
 1. Tabla `npc` matchea `decir elfo:`. Preludio ejecutado.
 2. Sub-SL `coger llave` despachada contra los sub-procesos del outer.
-3. Re-entrada al outer con sub-SL `abrir puerta`. Sólo sub-dispachar.
+3. Ciclo termina (sin `turn`). Quedan SUBSLs → re-entrada al ciclo con la misma SL `decir elfo` y SUBSL `abrir puerta`. Preludio no se repite.
 
 ### SLs fuera de comillas
 
