@@ -7,15 +7,16 @@ Especificaciones para implementación.
 | Término | Definición |
 |---------|-----------|
 | SLCONT  | Contenedor que almacena una o varias SL y sus subls |
-| SL | Sentencia Lógica: unidad mínima de input del jugador traducida a tokens o indentificadores internos |
-| TOKEN | En el source es una etiqueta que refenrencia a una palabra, item, npc, etc. |
+| SL | Sentencia Lógica: unidad mínima de input del jugador traducida a tokens o identificadores internos |
+| TOKEN | En el source es una etiqueta que referencia a una palabra, item, npc, etc. |
 |       | Internamente se traduce a un identificador numérico. |
 | SUBSL | SL anidada |
 | NPC | _Non Player Character:_ Personaje no jugador |
 | ITEM | Objeto |
 | PROCESS | Proceso dentro de una tabla, tiene un header y un body, contiene condactos |
 | CONDACT | Condacto: Una condición o una acción dentro de un proceso  |
-| BINDING | Ligadura |
+| BINDING | Asociación entre un nombre simbólico (`ITEM`, `NPC`) y la entidad concreta resuelta por el parser. |
+|         | Es visible en el proceso que casa la SL y en sus sub-procesos. |
 | TABLE | Tabla de procesos, son fijas y tienen un lugar en el flujo del parser. |
 
 ## Tablas de procesos
@@ -127,7 +128,7 @@ Un ejemplo más complicado:
 Realmente el programa tendría que estar preparado para resolver esto, veamos `SL1` entra por `item` y el jugador coge la espada:
 
 ```plaintext
-\\ tabla item
+// tabla item
 
 coger *:
   HERE ITEM
@@ -138,7 +139,7 @@ coger *:
 Entonces `SL2` entra por `npc` y el jugador persigue al troll:
 
 ```plaintext
-\\ tabla npc
+// tabla npc
 
 perseguir troll:
   HERE NPC
@@ -149,7 +150,7 @@ perseguir troll:
 `SL3` arrastra el último `item` y el `último npc`. Entra por `item` pero no hay entrada para `atacar espada`, así que sigue por `npc` y ataca al troll con la espada:
 
 ```plaintext
-\\ tabla item
+// tabla item
 
 atacar troll:
   HERE NPC
@@ -174,7 +175,7 @@ Un proceso es una entrada en una tabla de procesos que se ejecuta cuando se cump
 | Tabla    | Hueco 1                | Hueco 2                              | Ejemplos                                |
 |----------|------------------------|--------------------------------------|-----------------------------------------|
 | init     | `_`                    | `_`                                  | `_ _`                                   |
-| location | localidad o `*`        | `_`                                  | `playa _`, `* _`                        |
+| location | `IN`, `OUT` o `*`      | localidad o `*`                      | `IN celda`, `OUT *`, `* *`              |
 | turn     | `EVERY` o `TIMEOUT`    | número entero positivo               | `EVERY 2`, `TIMEOUT 30`                 |
 | item     | verbo, `*` o `_`       | noun de item, `*` o `_`              | `coger denario`, `coger *`, `* *`       |
 | npc      | verbo, `*` o `_`       | noun de NPC, `*` o `_`               | `decir elfo`, `buscar *`                |
