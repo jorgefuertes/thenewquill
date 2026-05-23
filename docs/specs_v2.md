@@ -1,20 +1,75 @@
-# The New Quill: Tablas de procesos
+# The New Quill: Tablas de procesos y condactos
 
-## Nomenclatura
+Especificaciones para implementación.
 
-### Sentencia Lógica (SL)
+## Breve nomenclatura
+
+| Término | Definición |
+|---------|-----------|
+| SLCONT  | Contenedor que almacena una o varias SL y sus subls |
+| SL | Sentencia Lógica: unidad mínima de input del jugador traducida a tokens o indentificadores internos |
+| TOKEN | En el source es una etiqueta que refenrencia a una palabra, item, npc, etc. |
+|       | Internamente se traduce a un identificador numérico. |
+| SUBSL | SL anidada |
+| NPC | _Non Player Character:_ Personaje no jugador |
+| ITEM | Objeto |
+| PROCESS | Proceso dentro de una tabla, tiene un header y un body, contiene condactos |
+| CONDACT | Condacto: Una condición o una acción dentro de un proceso  |
+| BINDING | Ligadura |
+| TABLE | Tabla de procesos, son fijas y tienen un lugar en el flujo del parser. |
+
+## Tablas de procesos
+
+Las tablas disponibles y su orden de ejecución:
+
+| Orden | Tabla    | Ejecución                                                                |
+|-------|----------|--------------------------------------------------------------------------|
+| 0     | init     | Cuando arranca la aventura, o se reinicia                                |
+| 1     | location | Cuando cambia de ubicación                                               |
+| 2     | turn     | Tras el input, antes de `item`                                           |
+| 3     | item     | Tras el input, sólo si la SL contiene un item                            |
+| 4     | npc      | Tras el input, sólo si la SL contiene un NPC                             |
+| 5     | response | Tras el input, en último lugar                                           |
+| 6     | cron     | Por tiempo o turnos, procesos independientes                             |
+
+No se pueden crear otras tablas. Se admiten `INCLUDE` para repartir el contenido entre varios ficheros.
+
+### Input
+
+Tras el input del jugador, el ciclo de tablas se ejecuta para cada SL empezando por la tabla 2 (`turn`), y continuando con la 3, 4 y 5 según apliquen. Al completar el ciclo, si quedan SUBSLs pendientes del bloque entrecomillado, se re-entra en el ciclo **sin** `turn` con la misma SL y la siguiente SUBSL. Si no quedan SUBSLs, se pasa a la siguiente SL principal (con `turn`). La tabla `turn` se ejecuta **una sola vez por SL principal**.
+
+> Ver _Secuencia Lógica_ más adelante.
+
+Cada tabla contiene una serie de procesos con expresiones de entrada. Como se ha mencionado, dichas tablas son fijas y se ejecutan en un momento predeterminado dentro del flujo del juego.
+
+### Terminadores
+
+Los terminadores controlan el flujo de ejecución de las tablas:
+
+| Action | Description                                                                                               |
+|--------|-----------------------------------------------------------------------------------------------------------|
+| `DONE` | Termina el ciclo de tablas para la SL/SUBSL actual.                                                       |
+|        | Si quedan SUBSLs, re-entra con la siguiente. Si no, pasa a la siguiente SL.                               |
+| `OK`   | Igual que `DONE`, pero imprime el mensaje `ok` antes de continuar.                                        |
+| `NOOK` | Imprime el mensaje `nook` y descarta todas las SUBSLs y SLs restantes. Devuelve el control al jugador.    |
+| `END`  | Termina **solamente la tabla actual** y continúa con la siguiente tabla del ciclo.                        |
+
+Caer al final del cuerpo de un proceso sin terminador explícito equivale a un `END` implícito: la tabla se da por terminada, se continúa con la siguiente tabla del ciclo.
+Al agotar el ciclo completo de tablas sin `DONE`, `OK` ni `NOOK`, se aplica la misma lógica que `DONE`.
+
+## SL: Sentencia Lógica
 
 Una **Sentencia Lógica** (SL) es la unidad mínima que el parser extrae del input del jugador. Tiene tres campos posicionales más un contenido opcional entrecomillado:
 
-**Formato SL:** `[verbo] [adverbio] [artículo] <nombre|pronombre> [adjetivo] [adverbio] 
-  "<NPC SUBSL> [conjucción,puntuación]..." [conjucción,puntuación]...`
+**Formato SL:** `[verb] [adverb] [article] <noun|pronoun> [adjective] [adverb]`
+`"<NPC SUBSL> [conjunction,punctuation]..." [conjunction,punctuation]...`
 
-> La _SUBSL_ es una cadena opcional entrecomillada que contiene una SL anidada.
+> La `SUBSL` es una cadena opcional entrecomillada que contiene una o varias SL anidadas.
 
-A partir del `nombre` o del `pronombre`, el parser **infiere bindings**:
+A partir del `noun` o del `pronoun`, el parser **infiere bindings**:
 
-- Si el nombre resuelve a un Item declarado, `ITEM` queda ligado a ese Item.
-- Si el nombre resuelve a un NPC declarado, `NPC` queda ligado a ese Character.
+- Si el sustantivo resuelve a un Item declarado, `ITEM` queda ligado a ese Item.
+- Si el sustantivo resuelve a un NPC declarado, `NPC` queda ligado a ese Character.
 
 Estos bindings son visibles dentro del cuerpo del proceso que matchea la SL y, al anidar, también desde los sub-procesos.
 
@@ -24,69 +79,122 @@ El input del jugador se parte en **una o varias SLs encadenadas**, separadas por
 
 Si una SL contiene un bloque entrecomillado, ese bloque queda reservado y **no se parsea** hasta que la tabla `npc` lo procesa (ver anidamiento más abajo).
 
-#### Ejemplos simples
+### Ejemplos simples
 
-- INPUT: `coger hacha`
-- SL1: verb: `coger`, noun: `hacha`, item: `hacha`
+- `INPUT`: `coger hacha`
+- `SL1`: verb: `coger`, noun: `hacha`, item: `hacha`
 
-- INPUT: `examinar troll`
-- SL1: verb: `examinar`, noun: `troll`, npc: `troll`
+- `INPUT`: `examinar troll`
+- `SL1`: verb: `examinar`, noun: `troll`, npc: `troll`
 
-- INPUT: `ex cueva`
-- SL1: verb: `examinar`, noun: `cueva`, npc: `false`, item: `false`
+- `INPUT`: `ex cueva`
+- `SL1`: verb: `examinar`, noun: `cueva`, npc: `_`, item: `_`
 
-- INPUT: `salidas`
-- SL1: verb: `_`, noun: `salidas`
+- `INPUT`: `salidas`
+- `SL1`: verb: `_`, noun: `salidas`
 
-#### Ejemplos compuestos o anidados
+### Ejemplos compuestos o anidados
 
-- INPUT: `decir hobbit "coge el hacha y corta leña" y coger leña` 
-- SL1: verb: `decir`, noun: `hobbit`, npc: `hobbit`
-  - SUBSL1: verb: `coger`, noun: `hacha`, item: `hacha`
-  - SUBSL2: verb: `cortar`, noun: `leña`, item: `leña`
-- SL2: verb: `coger`, noun: `leña`, item: `leña`
+- `INPUT`: `decir hobbit "coge el hacha y corta leña" y coger leña`
+- `SL1`: verb: `decir`, noun: `hobbit`, npc: `hobbit`
+  - `SUBSL1`: verb: `coger`, noun: `hacha`, item: `hacha`
+  - `SUBSL2`: verb: `cortar`, noun: `leña`, item: `leña`
+- `SL2`: verb: `coger`, noun: `leña`, item: `leña`
 
-- INPUT: `coger la espada rápidamente y atacar al troll con ella`
-- SL1: verb: `coger`, noun: `espada`, adverb: `rápidamente`, item: `espada`
-- SL2: verb: `atacar`, noun: `troll`, npc: `troll`, item: `espada`
+El último `ITEM` y el último `NPC` resueltos en la cadena se arrastran automáticamente a las SLs siguientes que no resuelvan uno propio.
 
-- INPUT: `coger rápidamente la espada y atacar al troll con ella`
-- SL1: verb: `coger`, noun: `espada`, adverb: `rápidamente`, item: `espada`
-- SL2: verb: `atacar`, noun: `troll`, npc: `troll`, item: `espada`
+- `INPUT`: `coger la espada rápidamente y atacar al troll`
+- `SL1`: verb: `coger`, noun: `espada`, adverb: `rápidamente`, item: `espada`
+- `SL2`: verb: `atacar`, noun: `troll`, npc: `troll`, item: `espada` ← item arrastrado de SL1
 
-- INPUT: `coger rápidamente la espada, perseguir al troll y matarlo`
-- SL1: verb: `coger`, noun: `espada`, adverb: `rápidamente`, item: `espada`
-- SL2: verb: `perseguir`, noun: `troll`, npc: `troll`, item: `espada`
-- SL2: verb: `atacar`, noun: `troll`, npc: `troll`, item: `espada`
+- `INPUT`: `coger rápidamente la espada y atacar al troll`
+- `SL1`: verb: `coger`, noun: `espada`, adverb: `rápidamente`, item: `espada`
+- `SL2`: verb: `atacar`, noun: `troll`, npc: `troll`, item: `espada` ← mismo resultado, distinto orden
 
-#### El parser hace el trabajo
+- `INPUT`: `sonreir al troll y bailar`
+- `SL1`: verb: `sonreir`, noun: `troll`, npc: `troll`
+- `SL2`: verb: `bailar`, noun: `_`, npc: `troll` ← npc arrastrado de SL1
 
-El parser hacer el trabajo duro y se encarga de construir las SLs a partir del input del jugador. Sin embargo el programador tiene que tener en cuenta que debe introducir los suficientes datos en el fuente, los verbos, adverbios, sustantivos, sinónimos, etc. para que el parser pueda construir las SLs correctamente.
+Un ejemplo más complicado:
+
+- `INPUT`: `coger rápidamente la espada, perseguir al troll y matarlo`
+- `SL1`: verb: `coger`, noun: `espada`, adverb: `rápidamente`, item: `espada`
+- `SL2`: verb: `perseguir`, noun: `troll`, npc: `troll`, item: `espada`
+- `SL3`: verb: `atacar`, noun: `_`, npc: `troll`, item: `espada` ← arrastra ambos de SL2
+
+> `matarlo` → 5 primeras letras: `matar` (sinónimo de `atacar`); el clítico `lo` queda descartado.
+
+Realmente el programa tendría que estar preparado para resolver esto, veamos `SL1` entra por `item` y el jugador coge la espada:
+
+```plaintext
+\\ tabla item
+
+coger *:
+  HERE ITEM
+  GET ITEM
+  OK
+```
+
+Entonces `SL2` entra por `npc` y el jugador persigue al troll:
+
+```plaintext
+\\ tabla npc
+
+perseguir troll:
+  HERE NPC
+  SAY "¡Corres tras el troll que sale huyendo despavorido!"
+  END
+```
+
+`SL3` arrastra el último `item` y el `último npc`. Entra por `item` pero no hay entrada para `atacar espada`, así que sigue por `npc` y ataca al troll con la espada:
+
+```plaintext
+\\ tabla item
+
+atacar troll:
+  HERE NPC
+  ITEM espada
+  CARRIED ITEM
+  SAY "¡Atacas al troll con la espada pero corre demasiado y no llegas a herirle! El troll desaparece en la espesura del bosque."
+  DONE
+```
+
+### El parser hace el trabajo
+
+El parser hace el trabajo duro y se encarga de construir las SLs a partir del input del jugador. Sin embargo el programador tiene que tener en cuenta que debe introducir los suficientes datos en el fuente, los verbos, adverbios, sustantivos, sinónimos, conjunciones, etc. para que el parser pueda construir las SLs correctamente.
+
+El parser solo tiene en cuenta las **5 primeras letras** de cada palabra del input. `examinar` y `exami` son equivalentes para el parser; el vocabulario debe definirse teniendo esto en cuenta para evitar colisiones. Este truncado también descarta de forma natural los clíticos verbales: `matarlo` se lee como `matar`, `cogela` como `coger`, etc.
 
 Aún así, el parser no es infalible y puede fallar en algunos casos, pero es bastante avanzado y si el programador aprende como funciona, será un gran aliado.
 
-### Tabla de procesos
+## Procesos
 
-Una tabla o lista que contiene una serie de procesos con expresiones de entrada. Dichas tablas son fijas y se ejecutan en un momento predeterminado.
+Un proceso es una entrada en una tabla de procesos que se ejecuta cuando se cumple la condición de entrada. Las condiciones de entrada son siempre **dos huecos**:
 
-Los terminadores controlan el flujo de ejecución de las tablas:
+| Tabla    | Hueco 1                | Hueco 2                              | Ejemplos                                |
+|----------|------------------------|--------------------------------------|-----------------------------------------|
+| init     | `_`                    | `_`                                  | `_ _`                                   |
+| location | localidad o `*`        | `_`                                  | `playa _`, `* _`                        |
+| turn     | `EVERY` o `TIMEOUT`    | número entero positivo               | `EVERY 2`, `TIMEOUT 30`                 |
+| item     | verbo, `*` o `_`       | noun de item, `*` o `_`              | `coger denario`, `coger *`, `* *`       |
+| npc      | verbo, `*` o `_`       | noun de NPC, `*` o `_`               | `decir elfo`, `buscar *`                |
+| response | verbo, `*` o `_`       | noun, `*` o `_`                      | `examinar playa`, `_ *`, `* *`          |
+| cron     | unidad                 | número, o `"HH:MM:SS"` para `AT`     | `MINUTES 2`, `HOURS 1`, `AT "10:30:00"` |
 
-| Action | Description                                                                                                 |
-|--------|-------------------------------------------------------------------------------------------------------------|
-| `DONE` | Termina el ciclo de tablas para la SL/SUBSL actual.                                                         |
-|        | Si quedan SUBSLs, re-entra con la siguiente. Si no, pasa a la siguiente SL.                                 |
-| `OK`   | Igual que `DONE`, pero imprime el mensaje `ok` antes de continuar.                                          |
-| `NOOK` | Imprime el mensaje `nook` y descarta todas las SUBSLs y SLs restantes. Devuelve el control al jugador.      |
-| `END`  | Termina **solamente la tabla actual** y continúa con la siguiente tabla del ciclo.                          |
+### Comodín y palabra vacía
 
-Caer al final del cuerpo de un proceso sin terminador explícito equivale a un `END` implícito: la tabla se da por terminada, se continúa con la siguiente tabla del ciclo.
-Al agotar el ciclo completo de tablas sin `DONE`, `OK` ni `NOOK`, se aplica la misma lógica que `DONE`.
+- `*` — **comodín**, casa con cualquier label en esa posición.
+- `_` — **NullWord**, indica que esa posición de la SL debe estar vacía para encajar.
 
-### Proceso
+Ambos se admiten en `init`, `location`, `item`, `npc` y `response`. **No** se admiten en `turn` ni `cron`, cuyas cabeceras codifican un disparador, no un patrón de matching.
 
-Un proceso es una serie de instrucciones que se ejecutan cuando se cumple la condición de entrada en una tabla de procesos. Por ejemplo, en la tabla de `item`:
+### Ejemplos
+
+Por ejemplo, en la **tabla de `item`:**
 
 ```plaintext
+// tabla item
+
 * *:
     NOT HERE ITEM
     SAY item_not_here, ITEM
@@ -119,9 +227,11 @@ examinar *:
     DONE
 ```
 
-Tabla de `npc`:
+**Tabla de `npc`:**
 
 ```plaintext
+// tabla npc
+
 * *:
     NOT HERE NPC
     SAY npc_not_here, NPC
@@ -144,71 +254,56 @@ examinar *:
 > Nota: Los mensajes no predefinidos en la sección de mensajes, crean un nuevo mensaje en la base de datos, con una
 etiqueta única generada automáticamente. Se busca si el mensaje ya existe para evitar duplicados. Esto rompe la internacionalización (por definir), y se recomienda no hacerlo como regla general, pero aquí los usamos para mayor claridad.
 
-## Tablas de procesos
+### Cabeceras según la tabla
 
-Las tablas disponibles son:
+Como se definen las cabeceras puede tener pequeños cambios según la tabla.
 
-| Orden | Tabla    | Ejecución                                                                |
-|-------|----------|--------------------------------------------------------------------------|
-| 0     | init     | Cuando arranca la aventura, o se reinicia                                |
-| 1     | location | Cuando cambia de ubicación                                               |
-| 2     | turn     | Tras el input, antes de `item`                                           |
-| 3     | item     | Tras el input, sólo si la SL contiene un item                            |
-| 4     | npc      | Tras el input, sólo si la SL contiene un NPC                             |
-| 5     | response | Tras el input, en último lugar                                           |
-| 6     | cron     | Por tiempo o turnos, procesos independientes                             |
-
-No se pueden crear otras tablas. Se admiten `INCLUDE` para repartir el contenido entre varios ficheros.
-
-Tras el input del jugador, el ciclo de tablas se ejecuta para cada SL empezando por la tabla 2 (`turn`), y continuando con la 3, 4 y 5 según apliquen. Al completar el ciclo, si quedan SUBSLs pendientes del bloque entrecomillado, se re-entra en el ciclo **sin** `turn` con la misma SL y la siguiente SUBSL. Si no quedan SUBSLs, se pasa a la siguiente SL principal (con `turn`). La tabla `turn` se ejecuta **una sola vez por SL principal**.
-
-### Procesos
-
-Un proceso es una entrada en una tabla de procesos que se ejecuta cuando se cumple la condición de entrada. Las condiciones de entrada son siempre **dos huecos**:
-
-| Tabla    | Hueco 1                | Hueco 2                              | Ejemplos                                |
-|----------|------------------------|--------------------------------------|-----------------------------------------|
-| init     | `_`                    | `_`                                  | `_ _`                                   |
-| location | localidad o `*`        | `_`                                  | `playa _`, `* _`                        |
-| turn     | `EVERY` o `TIMEOUT`    | número entero positivo               | `EVERY 2`, `TIMEOUT 30`                 |
-| item     | verbo, `*` o `_`       | noun de item, `*` o `_`              | `coger denario`, `coger *`, `* *`       |
-| npc      | verbo, `*` o `_`       | noun de NPC, `*` o `_`               | `decir elfo`, `buscar *`                |
-| response | verbo, `*` o `_`       | noun, `*` o `_`                      | `examinar playa`, `_ *`, `* *`          |
-| cron     | unidad                 | número, o `"HH:MM:SS"` para `AT`     | `MINUTES 2`, `HOURS 1`, `AT "10:30:00"` |
-
-#### Comodín y palabra vacía
-
-- `*` — **comodín**, casa con cualquier label en esa posición.
-- `_` — **NullWord**, indica que esa posición de la SL debe estar vacía para encajar.
-
-Ambos se admiten en `init`, `location`, `item`, `npc` y `response`. **No** se admiten en `turn` ni `cron`, cuyas cabeceras codifican un disparador, no un patrón de matching.
-
-#### Tabla de inicialización: `init`
+#### Cabeceras en la tabla `init`
 
 Todas las cabeceras han de ser `_ _`, ya que todos los procesos se ejecutan en el arranque (o reinicio) y no hay SL que casar. Para agrupar procesos visualmente sólo se admiten comentarios.
 
-#### Tabla de ubicaciones: `location`
+#### Cabeceras en la tabla `location`
 
-El primer hueco siempre es una localidad o `*`, el segundo `_`. El proceso se ejecuta al entrar en esa localidad. Con `*`, el proceso aplica en todas.
+El primer hueco siempre es el evento (`IN|OUT|*`), el segundo es la localidad o `*`. El proceso `IN` se ejecuta al entrar en esa localidad y el `OUT` se ejecuta al salir.
 
-#### Tabla de turnos: `turn`
+Por ejemplo:
+
+```
+IN *
+  // Se ejecuta al entrar en cualquier localidad
+OUT *
+  // Se ejecuta al salir de cualquier localidad
+IN celda
+  // Se ejecuta al entrar en la celda
+OUT celda
+  // Se ejecuta al salir de la celda
+* *
+  // Se ejecuta al entrar o salir de cualquier localidad
+* celda
+  // Al entrar o salir de la celda
+```
+
+#### Cabeceras en la tabla `turn`
 
 Dos formas de cabecera:
 
-- `EVERY n` — el proceso se ejecuta cada n turnos.
-- `TIMEOUT n` — el proceso se ejecuta si el jugador no escribe en n segundos. El turno se da por consumido automáticamente.
+| Cabecera    | Descripción |
+|-------------|-------------|
+| `EVERY n`   | El proceso se ejecuta cada n turnos. |
+| `TIMEOUT n` | El proceso se ejecuta si el jugador no escribe en n segundos. |
+|             | El turno se da por consumido automáticamente. |
 
-La tabla `turn` se ejecuta **una sola vez por SL principal**; no se re-ejecuta para las SUBSLs del bloque entrecomillado. Al consumirse un `TIMEOUT` se ejecuta este proceso y cualquier otro `EVERY` compatible con el nuevo número de turnos, salvo que un terminador corte el ciclo antes.
+La tabla `turn` se ejecuta **una sola vez por SL principal**; no se re-ejecuta para las SUBSLs del bloque entrecomillado. Al consumirse un `TIMEOUT` se ejecuta este proceso y cualquier otro `EVERY` compatible con el nuevo número de turnos, salvo que un terminador corte el ciclo antes, pero no hay `SL` disponible ni _binding_ alguno.
 
-#### Tabla `item`
+#### Cabeceras en la tabla `item`
 
-Se entra en esta tabla **sólo si la SL contiene un item** (el `nombre` resuelve a un Item declarado). Las cabeceras casan contra verbo + noun de item. El binding `ITEM` está vivo dentro de los procesos.
+Se entra en esta tabla **sólo si la SL contiene un `item`** (el `noun` resuelve a un `item` declarado). Las cabeceras casan contra `verb` y `noun` de item, su etiqueta en realidad. El binding `ITEM` está vivo dentro de los procesos.
 
-#### Tabla `npc`
+#### Cabeceras en la tabla `npc`
 
-Se entra en esta tabla **sólo si la SL contiene un NPC** (el `nombre` resuelve a un Character declarado). Las cabeceras casan contra verbo + noun de NPC. El binding `NPC` está vivo dentro de los procesos.
+Se entra en esta tabla **sólo si la SL contiene un `NPC`** (el `noun` resuelve a un `character` no humano declarado). Las cabeceras casan contra `verb` y `noun` de `NPC` (su etiqueta o ID). El binding `NPC` está vivo dentro de los procesos.
 
-#### Tabla `response`
+#### Cabeceras en la tabla `response`
 
 Tabla general, se ejecuta tras `turn`, `item` y `npc`. Admite `*` y `_` en cualquiera de los dos huecos.
 
@@ -241,7 +336,7 @@ _ *:
     DONE
 ```
 
-#### Tabla `cron`
+#### Cabeceras en la tabla `cron`
 
 Los procesos se ejecutan por intervalos. El primer hueco es la unidad, el segundo el valor; con `AT` el segundo es una cadena con formato `"HH:MM:SS"`.
 
@@ -336,6 +431,7 @@ Lo que sigue al bloque entrecomillado son **SLs principales normales**, no dirig
 decir elfo "dame la llave" y soltar bolsa, quitar abrigo
 ```
 
-- SL1: `decir elfo + contenido "dame la llave"` → entra a `npc`, dispatch interno.
-- SL2: `soltar bolsa` → entra al ciclo `item/npc/response` con bindings limpios.
-- SL3: `quitar abrigo` → entra al ciclo `item/npc/response` con bindings limpios.
+- `SL1`: verb: `decir`, noun: `elfo`, npc: `elfo` --> tabla `npc`
+  - `SUBSL1`: verb: `dar`, noun: `llave`, npc: `elfo`, item: `llave` --> tabla `npc` _submatch_
+- `SL2`: verb: `soltar`, noun: `bolsa`, item: `bolsa` --> tabla `item`
+- `SL3`: verb: `quitar`, noun: `abrigo`, item: `abrigo` --> tabla `item`
