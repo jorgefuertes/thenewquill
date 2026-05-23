@@ -7,12 +7,24 @@ import (
 
 type TableKind uint8
 
+/*
+ * 0: init     Cuando arranca la aventura, o se reinicia
+ * 1: location Cuando cambia de ubicación
+ * 2: turn     Tras el input, antes de `item`
+ * 3: item     Tras el input, sólo si la SL contiene un item
+ * 4: npc      Tras el input, sólo si la SL contiene un NPC
+ * 5: response Tras el input, en último lugar
+ * 6: cron     Por tiempo o turnos, procesos independientes
+ */
+
 const (
 	Init TableKind = iota
 	Location
+	Turn
+	Item
+	NPC
 	Response
 	Cron
-	NPC
 )
 
 type Table struct {

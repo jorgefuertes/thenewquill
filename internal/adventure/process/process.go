@@ -8,6 +8,7 @@ import (
 type Process struct {
 	ID      uint32
 	LabelID uint32
+	Header  string
 	VerbID  uint32
 	NounID  uint32
 }

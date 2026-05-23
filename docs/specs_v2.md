@@ -131,7 +131,7 @@ Realmente el programa tendría que estar preparado para resolver esto, veamos `S
 // tabla item
 
 coger *:
-  HERE ITEM
+  ISHERE ITEM
   GET ITEM
   OK
 ```
@@ -142,21 +142,21 @@ Entonces `SL2` entra por `npc` y el jugador persigue al troll:
 // tabla npc
 
 perseguir troll:
-  HERE NPC
-  SAY "¡Corres tras el troll que sale huyendo despavorido!"
+  ISHERE NPC
+  PRINT "¡Corres tras el troll que sale huyendo despavorido!"
   END
 ```
 
 `SL3` arrastra el último `item` y el `último npc`. Entra por `item` pero no hay entrada para `atacar espada`, así que sigue por `npc` y ataca al troll con la espada:
 
 ```plaintext
-// tabla item
+// tabla npc
 
 atacar troll:
-  HERE NPC
-  ITEM espada
-  CARRIED ITEM
-  SAY "¡Atacas al troll con la espada pero corre demasiado y no llegas a herirle! El troll desaparece en la espesura del bosque."
+  ISHERE NPC
+  EQ ITEM espada
+  ISCARRIED ITEM
+  PRINT "¡Atacas al troll con la espada pero no llegas a herirle! El troll desaparece en el bosque."
   DONE
 ```
 
@@ -197,34 +197,34 @@ Por ejemplo, en la **tabla de `item`:**
 // tabla item
 
 * *:
-    NOT HERE ITEM
-    SAY item_not_here, ITEM
+    NOT ISHERE ITEM
+    PRINT item_not_here, ITEM
     DONE
 
 coger *:
-    CARRIED ITEM
-    SAY already_carried, ITEM
+    ISCARRIED ITEM
+    PRINT already_carried, ITEM
     NOOK
 
 coger *:
-    HERE vigilante
-    SAY vigilante-here
+    ISHERE vigilante
+    PRINT vigilante-here
     NOOK
 
 // A partir de aquí sabemos que el objeto está y el vigilante no.
 
 coger *:
-    OVERWEIGHT ITEM
-    SAY overweight, ITEM
+    ISOVERWEIGHT ITEM
+    PRINT overweight, ITEM
     NOOK
 
 coger *:
     GET ITEM
-    SAY get, ITEM
+    PRINT get, ITEM
     OK
 
 examinar *:
-    SAY ITEM.description
+    PRINT ITEM.description
     DONE
 ```
 
@@ -234,21 +234,21 @@ examinar *:
 // tabla npc
 
 * *:
-    NOT HERE NPC
-    SAY npc_not_here, NPC
+    NOT ISHERE NPC
+    PRINT npc_not_here, NPC
     DONE
 
 buscar *:
-    HERE NPC
-    SAY "He encontrado a {1}.", NPC // Ver nota
+    ISHERE NPC
+    PRINT "He encontrado a {1}.", NPC
     DONE
 
 buscar *:
-    SAY "No encuentro a {1}.", NPC
+    PRINT "No encuentro a {1}.", NPC
     DONE
 
 examinar *:
-    SAY NPC.description
+    PRINT NPC.description
     DONE
 ```
 
@@ -311,29 +311,29 @@ Tabla general, se ejecuta tras `turn`, `item` y `npc`. Admite `*` y `_` en cualq
 ```plaintext
 encender linterna:
     SET linterna.on true
-    SAY "Has encendido la linterna."
+    PRINT "Has encendido la linterna."
     OK
 
 guardar partida:
     INPUT filename "Nombre de la partida: "
-    NOT EMPTY filename
+    NOT ISEMPTY filename
     SAVE filename
     OK
 
 * insulto:
-    SAY "{1} lo serás tú.", TITLECASE(SL.noun)
+    PRINT "{1} lo serás tú.", SL.noun
     QUIT
 
 _ *:
-    SAY "Cualquier nombre sin verbo."
+    PRINT "Cualquier nombre sin verbo."
     DONE
 
 * _:
-    SAY "Cualquier verbo sin nombre."
+    PRINT "Cualquier verbo sin nombre."
     DONE
 
 * *:
-    SAY "No te entiendo."
+    PRINT "No te entiendo."
     DONE
 ```
 
@@ -363,17 +363,17 @@ TABLE npc
 
     decir elfo:
         dar *:
-            HAS NPC ITEM
+            ISCARRIED ITEM NPC
             MOVE ITEM human
-            SAY "Toma _.", ITEM
+            PRINT "Toma _.", ITEM
             OK
 
         dar *:
-            SAY "No tengo _.", ITEM
+            PRINT "No tengo _.", ITEM
             NOOK
 
         * *:
-            SAY "El elfo no sabe responder a eso."
+            PRINT "El elfo no sabe responder a eso."
             NOOK
 ```
 
@@ -436,3 +436,114 @@ decir elfo "dame la llave" y soltar bolsa, quitar abrigo
   - `SUBSL1`: verb: `dar`, noun: `llave`, npc: `elfo`, item: `llave` --> tabla `npc` _submatch_
 - `SL2`: verb: `soltar`, noun: `bolsa`, item: `bolsa` --> tabla `item`
 - `SL3`: verb: `quitar`, noun: `abrigo`, item: `abrigo` --> tabla `item`
+
+## Catálogo de condactos
+
+### Condiciones
+
+Negables con `NOT condition`.
+
+| Condacto       | Parámetros            | Descripción                                                        |
+|----------------|-----------------------|--------------------------------------------------------------------|
+| `NOOP`         | —                     | No hace nada                                                       |
+| `NOT`          | `condition`           | Niega la condición siguiente                                       |
+| `EQ`           | `a b`                 | Verdadero si `a` == `b`                                            |
+| `GT`           | `a b`                 | Verdadero si `a` > `b`                                             |
+| `LT`           | `a b`                 | Verdadero si `a` < `b`                                             |
+| `GTE`          | `a b`                 | Verdadero si `a` >= `b`                                            |
+| `LTE`          | `a b`                 | Verdadero si `a` <= `b`                                            |
+| `ZERO`         | `expr`                | Verdadero si `expr` es cero                                        |
+| `CHANCE`       | `n`                   | Verdadero el n% de las veces (aleatorio)                           |
+| `ISHERE`       | `entity`              | La entidad está en la misma ubicación que el jugador               |
+| `ISAT`         | `entity loc`          | La entidad está en la ubicación `loc`                              |
+| `ISCARRIED`    | `item [who]`          | `item` está en el inventario de `who` (default: human)             |
+| `ISWORN`       | `item [who]`          | `item` está puesto por `who` (default: human)                      |
+| `ISPRESENT`    | `entity`              | La entidad es ISHERE, ISCARRIED o está en un contenedor abierto    |
+| `ISINSIDE`     | `item item_container` | `item` está dentro de `item_container`                             |
+| `ISEMPTY`      | `container\|var`      | El contenedor está vacío, o `var` es cero/vacío                    |
+| `ISOVERWEIGHT` | `item [who]`          | Añadir `item` a `who` excedería el límite de peso (default: human) |
+
+### Acciones
+
+#### Inventario
+
+| Condacto  | Parámetros       | Descripción                                               |
+|-----------|------------------|-----------------------------------------------------------|
+| `GET`     | `item [who]`     | Recoge `item`; actor: `who` (default: human)              |
+| `DROP`    | `item [who]`     | Deja `item` en la ubicación actual; actor: `who`          |
+| `WEAR`    | `item [who]`     | Equipa `item` como puesto; actor: `who`                   |
+| `UNWEAR`  | `item [who]`     | Desequipa `item` al inventario; actor: `who`              |
+| `PUTIN`   | `item container` | Mete `item` dentro de `container`                         |
+| `TAKEOUT` | `item container` | Saca `item` de `container`                                |
+| `GIVE`    | `item who`       | Mueve `item` del inventario del jugador al de `who`       |
+
+#### Mundo
+
+| Condacto  | Parámetros      | Descripción                                               |
+|-----------|-----------------|-----------------------------------------------------------|
+| `MOVE`    | `entity loc`    | Mueve la entidad a `loc`                                  |
+| `CREATE`  | `item [loc]`    | Crea `item` en `loc` (default: ubicación actual)          |
+| `DESTROY` | `item`          | Elimina `item` del juego hasta que `CREATE` lo recree     |
+| `SWAP`    | `entity entity` | Intercambia la posición de dos entidades del mismo tipo   |
+| `GOTO`    | `loc`           | Mueve al jugador a `loc` (dispara eventos de localización)|
+
+#### Variables
+
+| Condacto | Parámetros    | Descripción                                      |
+|----------|---------------|--------------------------------------------------|
+| `SET`    | `var value`   | Asigna `value` a `var` o a una propiedad         |
+| `INC`    | `var [n]`     | Incrementa `var` en `n` (default: 1)             |
+| `DEC`    | `var [n]`     | Decrementa `var` en `n` (default: 1)             |
+| `RANDOM` | `var min max` | Asigna a `var` un valor aleatorio en [min, max]  |
+
+#### Terminal
+
+| Condacto  | Parámetros    | Descripción                                        |
+|-----------|---------------|----------------------------------------------------|
+| `WINDOW`  | `id`          | Abre o selecciona una ventana                      |
+| `AT`      | `row col`     | Posiciona el cursor                                |
+| `PRINT`   | `msg\|prop`   | Imprime un mensaje o el valor de una propiedad     |
+| `CURSOR`  | `on\|off`     | Muestra u oculta el cursor                         |
+| `CLEAR`   | `[window]`    | Limpia la pantalla o una ventana                   |
+| `BG`      | `color`       | Establece el color de fondo                        |
+| `FG`      | `color`       | Establece el color de primer plano                 |
+
+#### Media
+
+| Condacto   | Parámetros | Descripción        |
+|------------|------------|--------------------|
+| `PLAY`     | `blob`     | Reproduce audio    |
+| `PICTURE`  | `blob`     | Muestra una imagen |
+
+#### Input y tiempo
+
+| Condacto  | Parámetros    | Descripción                                        |
+|-----------|---------------|----------------------------------------------------|
+| `INPUT`   | `var prompt`  | Lee texto del jugador en `var`                     |
+| `WAIT`    | `ms`          | Pausa la ejecución `ms` milisegundos               |
+| `ANYKEY`  | —             | Pausa hasta que el jugador pulse una tecla         |
+
+#### Persistencia
+
+| Condacto | Parámetros | Descripción                   |
+|----------|------------|-------------------------------|
+| `SAVE`   | `[slot]`   | Guarda el estado del juego    |
+| `LOAD`   | `[slot]`   | Carga el estado del juego     |
+
+#### Control del juego
+
+| Condacto   | Parámetros | Descripción                                               |
+|------------|------------|-----------------------------------------------------------|
+| `PARSE`    | `str`      | Re-parsea `str` como si el jugador lo hubiera escrito     |
+| `ENGAGE`   | `npc`      | Inicia el dispatch de diálogo con `npc`                   |
+| `RESTART`  | —          | Reinicia la aventura desde el principio                   |
+| `QUIT`     | —          | Sale del juego                                            |
+
+#### Control de proceso
+
+| Condacto | Parámetros | Descripción                                                      |
+|----------|------------|------------------------------------------------------------------|
+| `DONE`   | —          | Termina el ciclo de tablas; continúa con la siguiente SUBSL o SL |
+| `OK`     | —          | Imprime `ok`; termina el ciclo; continúa con siguiente SUBSL o SL|
+| `END`    | —          | Termina la tabla actual; continúa con la siguiente del ciclo     |
+| `NOOK`   | —          | Imprime `nook`; descarta todas las SLs y SUBSLs restantes        |
