@@ -156,7 +156,7 @@ Dos formas de cabecera:
 - `EVERY n` — el proceso se ejecuta cada n turnos.
 - `TIMEOUT n` — el proceso se ejecuta si el jugador no escribe en n segundos. El turno se da por consumido automáticamente.
 
-Al consumirse un `TIMEOUT` se ejecuta este proceso y cualquier otro `EVERY` compatible con el nuevo número de turnos.
+Al consumirse un `TIMEOUT` se ejecuta este proceso y cualquier otro `EVERY` compatible con el nuevo número de turnos. A no ser que se termine con una instrucción de finalización `DONE/OK/NOOK/END`.
 
 #### Tabla `item`
 
@@ -237,8 +237,6 @@ TABLE npc
         * *:
             SAY "El elfo no sabe responder a eso."
             NOOK
-
-END TABLE
 ```
 
 Reglas:
@@ -246,7 +244,8 @@ Reglas:
 - **Una sola capa**: sin sub-sub-procesos.
 - **Bindings heredados**: lo que armó el outer (`NPC`, `ITEM`, etc.) es visible desde los sub-procesos.
 - **Preludio opcional**: el outer puede tener condactos antes de los sub-procesos. Esos condactos se ejecutan una vez al entrar al outer (y no se repiten en las re-entradas al mismo outer por sub-SLs distintas, ver más abajo).
-- **Cierre implícito del outer**: termina al aparecer otra cabecera top-level o `END TABLE`.
+- **Cierre implícito del outer**: termina al aparecer otra cabecera top-level o se termina la tabla.
+- Si se termina con `END` se descartan las sub-SLs restantes y se para a la siguiente SL.
 
 ## Hablar con NPCs: comillas y sub-SLs
 
