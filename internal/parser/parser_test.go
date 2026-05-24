@@ -64,7 +64,7 @@ func TestParser(t *testing.T) {
 			},
 		},
 		{
-			"Spanish exmine an object with infered verb",
+			"Spanish examine an object with infered verb",
 			lang.ES,
 			`cuchillo`,
 			[]phrase{
