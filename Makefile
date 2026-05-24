@@ -44,7 +44,7 @@ lint:
 	@go tool golangci-lint cache clean
 	@go tool golangci-lint run ./...
 	@echo "Linting Markdown..."
-	@npx --yes markdownlint-cli2 "**/*.md" "#tmp" "#dist" "#work"
+	@npx --yes markdownlint-cli2 "**/*.md" "#tmp" "#dist" "#work" "#.trunk"
 	@echo "Checking vulnerabilities..."
 	@go tool govulncheck ./...
 

@@ -164,7 +164,7 @@ atacar troll:
 
 El parser hace el trabajo duro y se encarga de construir las SLs a partir del input del jugador. Sin embargo el programador tiene que tener en cuenta que debe introducir los suficientes datos en el fuente, los verbos, adverbios, sustantivos, sinónimos, conjunciones, etc. para que el parser pueda construir las SLs correctamente.
 
-El parser solo tiene en cuenta las **5 primeras letras** de cada palabra del input. `examinar` y `exami` son equivalentes para el parser; el vocabulario debe definirse teniendo esto en cuenta para evitar colisiones. Este truncado también descarta de forma natural los clíticos verbales: `matarlo` se lee como `matar`, `cogela` como `coger`, etc.
+El parser solo tiene en cuenta las **5 primeras letras de los verbos**. `examinar` y `exami` son equivalentes para el parser; los sinónimos de verbos deben definirse teniendo esto en cuenta para evitar colisiones. Este truncado también descarta de forma natural los clíticos verbales: `matarlo` se lee como `matar`, `cogela` como `coger`, etc. El resto de tipos de palabra (sustantivos, adjetivos, adverbios, etc.) se almacenan y comparan con su longitud completa.
 
 Aún así, el parser no es infalible y puede fallar en algunos casos, pero es bastante avanzado y si el programador aprende como funciona, será un gran aliado.
 

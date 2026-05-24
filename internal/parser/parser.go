@@ -4,6 +4,8 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/jorgefuertes/thenewquill/internal/adventure/character"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/item"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/word"
 	"github.com/jorgefuertes/thenewquill/internal/lang"
 	"github.com/jorgefuertes/thenewquill/internal/util"
@@ -17,14 +19,18 @@ var (
 
 type Parser struct {
 	wordStore *word.Service
+	itemStore *item.Service
+	charStore *character.Service
 	lang      lang.Lang
 	Sentences []LS
 	cursor    int
 }
 
-func New(wordStore *word.Service) (*Parser, error) {
+func New(wordStore *word.Service, itemStore *item.Service, charStore *character.Service) (*Parser, error) {
 	return &Parser{
 		wordStore: wordStore,
+		itemStore: itemStore,
+		charStore: charStore,
 		lang:      wordStore.GetLang(),
 		Sentences: []LS{NewLS()},
 		cursor:    -1,
@@ -140,6 +146,7 @@ func (p *Parser) Parse(input string) {
 	p.closeLS()
 	p.removeEmptyLS()
 	p.completeSentences()
+	p.setBindings()
 }
 
 func (p *Parser) Reset() {

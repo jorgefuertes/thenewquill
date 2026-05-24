@@ -4,6 +4,8 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/jorgefuertes/thenewquill/internal/adventure/character"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/item"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/word"
 )
 
@@ -17,6 +19,8 @@ const (
 type LS struct {
 	original string
 	words    []*word.Word
+	Item     *item.Item
+	NPC      *character.Character
 	sub      bool
 }
 

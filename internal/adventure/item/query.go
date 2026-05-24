@@ -43,6 +43,18 @@ func (q *query) WithLabelID(id uint32) *query {
 	return q
 }
 
+func (q *query) WithNameID(id uint32) *query {
+	q.filters = append(q.filters, database.NewFilter("NounID", database.Equal, id))
+
+	return q
+}
+
+func (q *query) WithAdjectiveID(id uint32) *query {
+	q.filters = append(q.filters, database.NewFilter("AdjectiveID", database.Equal, id))
+
+	return q
+}
+
 func (q *query) Exists() bool {
 	return q.db.Query(q.filters...).Exists()
 }

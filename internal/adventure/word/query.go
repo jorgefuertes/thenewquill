@@ -3,6 +3,7 @@ package word
 import (
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 	"github.com/jorgefuertes/thenewquill/internal/database"
+	"github.com/jorgefuertes/thenewquill/internal/util"
 )
 
 type query struct {
@@ -103,13 +104,19 @@ func (q *query) Count() int {
 }
 
 // GetAnyWith tries to find a Word by its label or synonym for any of the provided word types.
+// For verbs, the synonym search is truncated to MaxSynonymLen to handle clitics and abbreviations.
 func (s *Service) GetAnyWith(labelOrSynonym string, wordTypes ...WordType) (*Word, error) {
 	for _, t := range wordTypes {
 		if w, err := s.Get().WithLabel(labelOrSynonym).WithType(t).First(); err == nil {
 			return w, nil
 		}
 
-		if w, err := s.Get().WithSynonym(labelOrSynonym).WithType(t).First(); err == nil {
+		syn := labelOrSynonym
+		if t == Verb {
+			syn = util.TruncateRunes(syn, MaxSynonymLen)
+		}
+
+		if w, err := s.Get().WithSynonym(syn).WithType(t).First(); err == nil {
 			return w, nil
 		}
 	}
