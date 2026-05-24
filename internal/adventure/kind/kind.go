@@ -20,7 +20,6 @@ const (
 	Location
 	Character
 	Table
-	Process
 	Blob
 	Test
 )
@@ -47,7 +46,6 @@ func kindNamesAndAliases() map[Kind][]string {
 		Location:  {"location", "room", "loc", "locations", "rooms"},
 		Character: {"character", "char", "player", "players", "characters", "chars"},
 		Table:     {"table", "tables"},
-		Process:   {"process", "processes", "proc", "procs"},
 		Blob:      {"pictures", "picture", "pic", "blob"},
 		Test:      {"test", "testitem"},
 	}
@@ -65,7 +63,6 @@ func (k Kind) HumanName() string {
 		Location:  "Locations",
 		Character: "Characters",
 		Table:     "Tables",
-		Process:   "Processes",
 		Blob:      "Binary Objects",
 		Test:      "Test Objects",
 	}
@@ -98,7 +95,6 @@ func (s Kind) TitleString() string {
 		Location:  "LOCATIONS",
 		Character: "CHARACTERS",
 		Table:     "TABLE",
-		Process:   "PROCESS",
 		Blob:      "BLOBS",
 		Test:      "TEST",
 	}

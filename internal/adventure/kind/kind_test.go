@@ -39,7 +39,6 @@ func TestKindString(t *testing.T) {
 		{"Item", kind.Item, "item"},
 		{"Location", kind.Location, "location"},
 		{"Table", kind.Table, "table"},
-		{"Process", kind.Process, "process"},
 		{"Character", kind.Character, "character"},
 		{"Test", kind.Test, "test"},
 		{"Invalid", kind.Kind(254), "none"},
@@ -69,9 +68,8 @@ func TestKindByte(t *testing.T) {
 		{"Location", kind.Location, 7},
 		{"Character", kind.Character, 8},
 		{"Table", kind.Table, 9},
-		{"Process", kind.Process, 10},
-		{"Blob", kind.Blob, 11},
-		{"Test", kind.Test, 12},
+		{"Blob", kind.Blob, 10},
+		{"Test", kind.Test, 11},
 	}
 
 	for _, tt := range tests {
@@ -97,9 +95,8 @@ func TestFromByte(t *testing.T) {
 		{"Location", 7, kind.Location},
 		{"Character", 8, kind.Character},
 		{"Table", 9, kind.Table},
-		{"Process", 10, kind.Process},
-		{"Blob", 11, kind.Blob},
-		{"Test", 12, kind.Test},
+		{"Blob", 10, kind.Blob},
+		{"Test", 11, kind.Test},
 		{"Invalid High", 255, kind.None},
 	}
 
@@ -135,7 +132,6 @@ func TestFromString(t *testing.T) {
 		{"Location", "room", kind.Location},
 		{"Character", "player", kind.Character},
 		{"Table", "table", kind.Table},
-		{"Process", "proc", kind.Process},
 		{"Blob", "picture", kind.Blob},
 		{"Test", "testitem", kind.Test},
 		{"Invalid", "invalid", kind.None},
@@ -163,7 +159,6 @@ func TestKindOf(t *testing.T) {
 		{"Config", &config.Param{}, kind.Param},
 		{"Variable", &variable.Variable{}, kind.Variable},
 		{"Table", &process.Table{}, kind.Table},
-		{"Process", &process.Process{}, kind.Process},
 		{"None", nil, kind.None},
 	}
 

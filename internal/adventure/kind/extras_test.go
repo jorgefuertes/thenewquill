@@ -24,7 +24,6 @@ func TestHumanName(t *testing.T) {
 		{kind.Location, "Locations"},
 		{kind.Character, "Characters"},
 		{kind.Table, "Tables"},
-		{kind.Process, "Processes"},
 		{kind.Blob, "Binary Objects"},
 		{kind.Test, "Test Objects"},
 	}

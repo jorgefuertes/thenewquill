@@ -4,20 +4,20 @@ Especificaciones para implementación.
 
 ## Breve nomenclatura
 
-| Término | Definición |
-|---------|-----------|
-| SLCONT  | Contenedor que almacena una o varias SL y sus subls |
-| SL | Sentencia Lógica: unidad mínima de input del jugador traducida a tokens o identificadores internos |
-| TOKEN | En el source es una etiqueta que referencia a una palabra, item, npc, etc. |
-|       | Internamente se traduce a un identificador numérico. |
-| SUBSL | SL anidada |
-| NPC | _Non Player Character:_ Personaje no jugador |
-| ITEM | Objeto |
-| PROCESS | Proceso dentro de una tabla, tiene un header y un body, contiene condactos |
-| CONDACT | Condacto: Una condición o una acción dentro de un proceso  |
+| Término | Definición                                                                                         |
+|---------|----------------------------------------------------------------------------------------------------|
+| SLCONT  | Contenedor que almacena una o varias SL y sus subls                                                |
+| SL      | Sentencia Lógica: unidad mínima de input del jugador traducida a tokens o identificadores internos |
+| TOKEN   | En el source es una etiqueta que referencia a una palabra, item, npc, etc.                         |
+|         | Internamente se traduce a un identificador numérico.                                               |
+| SUBSL   | SL anidada                                                                                         |
+| NPC     | _Non Player Character:_ Personaje no jugador                                                       |
+| ITEM    | Objeto                                                                                             |
+| PROCESS | Proceso dentro de una tabla, tiene un header y un body, contiene condactos                         |
+| CONDACT | Condacto: Una condición o una acción dentro de un proceso                                          |
 | BINDING | Asociación entre un nombre simbólico (`ITEM`, `NPC`) y la entidad concreta resuelta por el parser. |
-|         | Es visible en el proceso que casa la SL y en sus sub-procesos. |
-| TABLE | Tabla de procesos, son fijas y tienen un lugar en el flujo del parser. |
+|         | Es visible en el proceso que casa la SL y en sus sub-procesos.                                     |
+| TABLE   | Tabla de procesos, son fijas y tienen un lugar en el flujo del parser.                             |
 
 ## Tablas de procesos
 

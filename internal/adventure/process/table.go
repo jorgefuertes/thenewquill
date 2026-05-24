@@ -36,8 +36,8 @@ type Table struct {
 
 var _ adapter.Storeable = &Table{}
 
-func NewTable() *Table {
-	m := &Table{}
+func NewTable(kind TableKind) *Table {
+	m := &Table{Kind: kind}
 
 	return m
 }
