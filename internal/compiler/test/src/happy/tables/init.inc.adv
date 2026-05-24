@@ -1,37 +1,45 @@
-// init: runs once at adventure start.
-// All processes in init use the universal header form `_ _:` (specs §2.4).
-// No informative labels — use comments to group condactos visually.
+// init: runs once at adventure start (or restart).
+// Header `_ _:` (no SL to match).
 
 TABLE init
 
     _ _:
-        // Welcome screen
+        // Terminal setup.
         CLEAR
-        WRITE intro
-        NEWLINE
-        WAIT 1
+        WINDOW 0
+        BG 0
+        FG 7
+        CURSOR off
+        AT 1 1
 
     _ _:
-        // Counters
+        // Welcome screen.
+        PRINT intro
+        WAIT 1500
+
+    _ _:
+        // Counters.
         SET turns 0
         SET score 0
         SET hunger 0
 
     _ _:
-        // Make sure the torch starts off, and place the lit alias far away
-        // so the player has to light it later.
-        DESTROY ant-on
-        CREATE ant-off
-        SET ant-on.on false
-        PUT_AT ant-off tumba
+        // Randomize dwarf patience so each run differs a bit.
+        RANDOM enano.patience 200 255
 
     _ _:
-        // NPC setup: the elf starts hidden in the seating area.
+        // Torch starts unlit, placed far from the player.
+        DESTROY ant-on
+        CREATE ant-off tumba
+        SET ant-on.on false
+
+    _ _:
+        // Elf starts hidden in the stands.
         SET elfo.hidden true
         MOVE elfo gradas
 
     _ _:
-        // Background audio (needs SECTION PICTURES; see proc/tables.inc.adv)
-        PLAY ambient
+        // Placeholder slot — kept to exercise NOOP.
+        NOOP
 
 END TABLE

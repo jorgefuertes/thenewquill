@@ -1,48 +1,97 @@
-// npc: fires when response or another table calls ENGAGE <char>.
-// Header is `<noun|*> <adj|*|_>:` — matches a character by its (noun, adj)
-// pair (specs §2.3). In happy, all three characters are declared as
-// `<label>: <noun> _` so slot 2 is `_` in the specific handlers.
+// npc: fires only when the SL noun resolves to a (non-human) character.
+// Header `<verb|*|_> <npc-noun|*|_>:`. Binding `NPC` is live inside.
+// Also handles the quoted-speech form (`decir <npc> "<subSL>"`) with
+// nested sub-processes (spec §"Hablar con NPCs: comillas y sub-SLs").
 
 TABLE npc
 
-    // Hostile branch first: if the dwarf has lost his patience and hasn't
-    // attacked yet, he hits the player now. Specific before generic.
-    enano _:
+    // ---------------------------------------------------------------------
+    // Reachability check.
+    // ---------------------------------------------------------------------
+
+    * *:
+        NOT ISHERE NPC
+        PRINT cant-do
+        DONE
+
+    // ---------------------------------------------------------------------
+    // Enano — rage trigger when patience runs out.
+    // ---------------------------------------------------------------------
+
+    examinar enano:
         ZERO enano.patience
-        NE enano.death true
+        NOT EQ enano.death true
         SET enano.death true
         DEC player.health 25
-        WRITELN dwarf-rage
+        PRINT dwarf-rage
         DONE
 
-    // Regular interaction: the dwarf grunts and loses some patience.
-    enano _:
-        NOT HUMAN enano               // defensive: never run on the player
-        IN_ROOM enano cuartelillo
+    // Talk to the dwarf while in the guards' room: grunts and loses
+    // patience.
+    decir enano:
+        ISAT enano cuartelillo
         DEC enano.patience 10
-        WRITELN dwarf-grunt
+        PRINT dwarf-grunt
         OK
 
-    // The elf, when visible, just cries.
-    elfo _:
-        EQ elfo.hidden false
-        WRITELN elf-cry
-        OK
+    // Generic dwarf talk elsewhere.
+    decir enano:
+        ENGAGE enano
+        DONE
 
-    // The elf, when hidden, returns "you don't see them".
-    elfo _:
+    // ---------------------------------------------------------------------
+    // Elfo — hidden vs visible.
+    // ---------------------------------------------------------------------
+
+    examinar elfo:
         EQ elfo.hidden true
-        WRITELN elf-hidden
+        PRINT elf-hidden
         DONE
 
-    // Catch-all for any other NPC with no adjective.
-    * _:
-        WRITE cant-do
+    examinar elfo:
+        PRINT elf-cry
         DONE
 
-    // Even broader catch-all: any NPC with any adjective.
+    // Calling the elf brings him to the guards' room.
+    decir elfo:
+        ENGAGE elfo
+        MOVE elfo cuartelillo
+        DONE
+
+    // ---------------------------------------------------------------------
+    // Talking to the elf between quotes (sub-processes).
+    // Players: `decir elfo "dame el talismán y examina la bolsa"`
+    // ---------------------------------------------------------------------
+
+    decir elfo:
+        // Preludio — runs once when entering the outer.
+        SET elfo.hidden false
+        PRINT elf-cry
+
+        dar talismán:
+            ISCARRIED talismán
+            GIVE talismán elfo
+            PRINT ok
+            OK
+
+        dar *:
+            PRINT havent, ITEM
+            NOOK
+
+        examinar *:
+            PRINT elf-cry
+            END
+
+        * *:
+            PRINT cant-do
+            NOOK
+
+    // ---------------------------------------------------------------------
+    // NPC catch-all.
+    // ---------------------------------------------------------------------
+
     * *:
-        WRITE cant-do
+        PRINT cant-do
         DONE
 
 END TABLE

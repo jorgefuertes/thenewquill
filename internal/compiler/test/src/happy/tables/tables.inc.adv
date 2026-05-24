@@ -1,47 +1,24 @@
 /*
     Process tables for the "happy" test adventure.
 
-    These files are a worked example of the condacto language defined in
-    docs/specs.md. All processes use the universal two-token header
-    `<slot1> <slot2>:`. The meaning of each slot per table:
+    These files cover the seven tables defined by docs/specs_v2.md and
+    exercise every condacto in the catalog (except PLAY and PICTURE, which
+    would require real media files under SECTION PICTURES).
 
-        init       _ _                                   (all "_ _")
-        location   <loc|*>   _
-        response   <verb|*|_> <noun|*|_>
-        cron       <HOURS|MINUTES|SECONDS|TURNS> <n>
-        npc        <noun|*>  <adj|*|_>
+    Files:
+      init.inc.adv      — `_ _:` (runs once at adventure start / restart).
+      location.inc.adv  — `<IN|OUT|*> <loc|*>:` (entry / exit hooks).
+      turn.inc.adv      — `EVERY n` / `TIMEOUT n` (per main SL).
+      item.inc.adv      — `<verb> <item-noun>:` (item-bound interactions).
+      npc.inc.adv       — `<verb> <npc-noun>:` (character-bound, includes
+                          one example of nested sub-processes for quoted
+                          speech `decir elfo "..."`).
+      response.inc.adv  — general / fallback table (save, load, quit,
+                          restart, syntax fallbacks).
+      cron.inc.adv      — clock-driven (`HOURS|MINUTES|SECONDS|AT`).
 
-    They reference labels that exist in the rest of the happy/ source:
-
-      Locations: celda, celda3, vestíbulo, cuartelillo, gradas, exterior,
-                 muerte, tumba, …
-      Items:     ant-on, ant-off, talismán, denario, bolsa, cofre,
-                 llave1, llave2, petaca, ropa, cinturón
-      Characters: player (human), enano, elfo
-      Words:     coger, dejar, abrir, cerrar, examinar, decir, ir, fin, …
-                 norte, talismán, bolsa, cofre, antorcha, denario, llave, …
-      Vars:      turns, score, hunger (global)
-                 celda.visited, exterior.visited (per-location)
-                 ant-on.on, player.health,
-                 enano.patience, enano.death, elfo.hidden
-      Messages:  intro, low-health, dead, hungry, starving, dwarf-grunt,
-                 dwarf-rage, elf-cry, elf-hidden, torch-on, torch-off,
-                 no-here, score-msg, end-game, storm, chest-shut,
-                 chest-opened, empty-bag, new-location, get-ok, get-nook,
-                 drop-ok, wear-ok, wear-nook, unwear-ok, unwear-nook,
-                 have, have-nothing, havent, worn, ok, bye, sure, cant,
-                 cant-do, loc-objects
-
-    All of the above already exist in the other happy/*.inc.adv files,
-    EXCEPT a handful of blob labels (`ambient`, `prison-pic`, `city-pic`)
-    that appear in PLAY/PICTURE calls. Those would live in a SECTION
-    PICTURES that does not yet exist in happy.
-
-    The compiler does not yet parse SECTION TABLES, so this folder is
-    intentionally NOT included from test.adv. When the parser lands, add
-    to test.adv:
-
-        INCLUDE "proc/tables.inc.adv"
+    Bindings used inside processes: `ITEM`, `NPC`, and the lowercase
+    `human` keyword (the player character — `player` label here).
 
     Author: queru (github.com/queru) 2026
 */
@@ -50,6 +27,8 @@ SECTION TABLES
 
 INCLUDE "init.inc.adv"
 INCLUDE "location.inc.adv"
+INCLUDE "turn.inc.adv"
+INCLUDE "item.inc.adv"
+INCLUDE "npc.inc.adv"
 INCLUDE "response.inc.adv"
 INCLUDE "cron.inc.adv"
-INCLUDE "npc.inc.adv"

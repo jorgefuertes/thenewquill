@@ -44,3 +44,4 @@ INCLUDE "words.inc.adv" // include another file
 INCLUDE "locations.inc.adv"
 INCLUDE "items.inc.adv"
 INCLUDE "players.inc.adv"
+INCLUDE "tables/tables.inc.adv"

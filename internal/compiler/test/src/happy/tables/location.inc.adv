@@ -1,44 +1,49 @@
-// location: fires when the player enters a location or asks to look around.
-// Header is `<loc|*> _:` — slot 2 is reserved as `_` (specs §2.3).
+// location: fires on entering or leaving a location.
+// Header `<IN|OUT|*> <loc|*>:` (spec §"Cabeceras en la tabla `location`").
 
 TABLE location
 
-    // First time the player steps into the prison cell: introduce the scene
-    // and flip the per-location visited flag so subsequent visits skip the
-    // intro.
-    celda _:
+    // ---------------------------------------------------------------------
+    // First-time entries — show a longer intro and flip a `visited` flag.
+    // ---------------------------------------------------------------------
+
+    IN celda:
         EQ celda.visited false
-        PICTURE prison-pic            // would need a "prison-pic" blob
-        WRITELN intro
+        PRINT intro
         SET celda.visited true
-        END                           // skip the catch-all for the first visit
+        END
 
-    celda _:
-        // From the second visit onwards we just write the standard description.
-        WRITELN new-location
-
-    // The outdoor area shows a different picture only on first arrival.
-    exterior _:
-        EQ exterior.visited false
-        PICTURE city-pic              // would need a "city-pic" blob
-        SET exterior.visited true
-
-    // Empty cell with the chest: hint the player about the closed chest while
-    // its contents are still hidden.
-    celda3 _:
-        NOT IS_OPEN cofre
-        WRITELN chest-shut
-
-    // Death location: stop audio, write epitaph, end the game.
-    muerte _:
-        STOP
-        CLEAR
-        WRITELN dead
-        WRITE end-game
+    IN celda:
+        // Second and later visits.
+        PRINT new-location
         DONE
 
-    // Catch-all: after any movement, list visible objects in the room.
-    * _:
-        LISTOBJ
+    IN exterior:
+        EQ exterior.visited false
+        SET exterior.visited true
+        PRINT new-location
+        DONE
+
+    // ---------------------------------------------------------------------
+    // Death location: announce and end the game.
+    // ---------------------------------------------------------------------
+
+    IN muerte:
+        PRINT dead
+        PRINT end-game
+        DONE
+
+    // ---------------------------------------------------------------------
+    // Generic catch-alls.
+    // ---------------------------------------------------------------------
+
+    IN *:
+        // After any entry, show the standard short description.
+        NOT EQ celda.visited false
+        PRINT new-location
+        DONE
+
+    OUT *:
+        // Hook for "leaving any room" — falls through (implicit END).
 
 END TABLE

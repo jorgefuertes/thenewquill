@@ -1,0 +1,34 @@
+// turn: runs once per main SL, before item/npc/response.
+// Header `EVERY n` or `TIMEOUT n` (spec §"Cabeceras en la tabla `turn`").
+// No SL nor bindings available inside.
+
+TABLE turn
+
+    // Every turn: bump the global counter. Falls through (implicit END) so
+    // the other EVERY / TIMEOUT processes still get a chance.
+    EVERY 1:
+        INC turns 1
+
+    // Idle for 30 seconds → nudge the player.
+    TIMEOUT 30:
+        PRINT cant-do
+        OK
+
+    // Every 3 turns past the first, re-trigger an examine to remind the
+    // player of the scene (uses PARSE to inject a fake input).
+    EVERY 3:
+        GT turns 1
+        PARSE "examinar"
+        OK
+
+    // Every 5 turns when score is still low, slow down hunger.
+    EVERY 5:
+        LT score 5
+        DEC hunger 1
+        OK
+
+    // Every 10 turns, force a key press.
+    EVERY 10:
+        ANYKEY
+
+END TABLE

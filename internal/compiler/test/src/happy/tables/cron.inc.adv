@@ -1,49 +1,59 @@
-// cron: timer-driven background processes.
-// Header is `<HOURS|MINUTES|SECONDS|TURNS> <count>:` (specs §2.3, §3).
-// No combined units; if you need 4m 30s use `SECONDS 270` or two processes.
+// cron: clock-driven background processes.
+// Header `<HOURS|MINUTES|SECONDS|AT> <n|"HH:MM:SS">` (spec §"Cabeceras en
+// la tabla `cron`"). No SL nor bindings inside.
 
 TABLE cron
 
-    // Every turn: bump the turn counter. Other turn-based processes piggy
-    // back on the `turns` variable.
-    TURNS 1:
-        INC turns 1
-
-    // Every 30s of wall clock: 25% chance of a thunder rumble. Generic
-    // enough to play anywhere.
+    // Every 30 wall seconds: 25% chance of distant thunder.
     SECONDS 30:
         CHANCE 25
-        WRITELN storm
+        PRINT storm
+        OK
 
-    // Every 5 turns: hunger creeps up by one point.
-    TURNS 5:
+    // Every minute: hunger creeps up by one.
+    MINUTES 1:
         INC hunger 1
-        END
 
-    // Hunger >5 → warn. Hunger >10 → start bleeding health.
-    TURNS 5:
-        GT hunger 5
-        WRITELN hungry
+    // Hunger 5–9: warn.
+    MINUTES 1:
+        GTE hunger 5
+        LT hunger 10
+        PRINT hungry
+        DONE
 
-    TURNS 5:
-        GT hunger 10
-        WRITELN starving
+    // Hunger ≥ 10: starving, bleed health.
+    MINUTES 1:
+        GTE hunger 10
+        PRINT starving
         DEC player.health 5
+        DONE
 
-    // Every 4m30s = 270s the elf un-hides for a beat and cries somewhere.
-    SECONDS 270:
-        EQ elfo.hidden true
-        SET elfo.hidden false
-        WRITELN elf-cry
-
-    // Once per hour: full status check (here a no-op to exercise HOURS).
+    // Once an hour, after a satiated hunger reset, show a score reminder.
     HOURS 1:
-        WRITE score-msg score turns
+        ZERO hunger
+        PRINT score-msg, score, turns
+        OK
 
-    // Game-over check on every turn: if health drops to zero, teleport the
-    // player to the death location. The `location` table picks it up.
-    TURNS 1:
-        LT player.health 1
+    // Once an hour, generic ping.
+    HOURS 1:
+        PRINT score-msg, score, turns
+        OK
+
+    // Every wall minute, if the score is huge, congratulate.
+    MINUTES 1:
+        GT score 100
+        PRINT ok
+        OK
+
+    // At midnight every day, say goodnight.
+    AT "00:00:00":
+        PRINT bye
+
+    // Every 5 seconds: if the player's health is fatal, teleport to the
+    // death location (the `location` table picks it up from there).
+    SECONDS 5:
+        LTE player.health 0
         GOTO muerte
+        DONE
 
 END TABLE

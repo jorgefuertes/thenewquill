@@ -1,0 +1,164 @@
+// item: fires only when the SL noun resolves to an item.
+// Header `<verb|*|_> <item-noun|*|_>:`. Binding `ITEM` is live inside.
+
+TABLE item
+
+    // ---------------------------------------------------------------------
+    // Reachability: item must be accessible to the player.
+    // ---------------------------------------------------------------------
+
+    * *:
+        NOT ISPRESENT ITEM
+        PRINT no-here
+        DONE
+
+    // ---------------------------------------------------------------------
+    // coger / take
+    // ---------------------------------------------------------------------
+
+    coger *:
+        ISCARRIED ITEM
+        PRINT have, ITEM
+        NOOK
+
+    coger *:
+        ISOVERWEIGHT ITEM
+        PRINT overweight, ITEM
+        NOOK
+
+    coger *:
+        GET ITEM
+        INC score 1
+        PRINT get-ok, ITEM
+        OK
+
+    // ---------------------------------------------------------------------
+    // dejar / drop
+    // ---------------------------------------------------------------------
+
+    dejar *:
+        NOT ISCARRIED ITEM
+        PRINT havent, ITEM
+        NOOK
+
+    dejar *:
+        DROP ITEM
+        DEC score 1
+        PRINT drop-ok, ITEM
+        OK
+
+    // ---------------------------------------------------------------------
+    // poner / wear  (and put into container, see below)
+    // ---------------------------------------------------------------------
+
+    poner *:
+        ISWORN ITEM
+        PRINT already-worn, ITEM
+        NOOK
+
+    poner *:
+        NOT ISCARRIED ITEM
+        PRINT havent, ITEM
+        NOOK
+
+    poner *:
+        WEAR ITEM
+        PRINT wear-ok, ITEM
+        OK
+
+    // ---------------------------------------------------------------------
+    // quitar / unwear
+    // ---------------------------------------------------------------------
+
+    quitar *:
+        NOT ISWORN ITEM
+        PRINT not-worn
+        NOOK
+
+    quitar *:
+        UNWEAR ITEM
+        PRINT unwear-ok, ITEM
+        OK
+
+    // ---------------------------------------------------------------------
+    // Containers: PUTIN / TAKEOUT  (specific to the bag).
+    // ---------------------------------------------------------------------
+
+    poner denario:
+        ISCARRIED ITEM
+        ISPRESENT bolsa
+        PUTIN ITEM bolsa
+        PRINT ok
+        OK
+
+    coger denario:
+        ISINSIDE ITEM bolsa
+        TAKEOUT ITEM bolsa
+        PRINT get-ok, ITEM
+        OK
+
+    // ---------------------------------------------------------------------
+    // Torch: light / extinguish — alternates the lit / unlit entities.
+    // ---------------------------------------------------------------------
+
+    abrir antorcha:
+        ISCARRIED ant-off
+        DESTROY ant-off
+        CREATE ant-on
+        GET ant-on
+        SET ant-on.on true
+        PRINT torch-on
+        OK
+
+    cerrar antorcha:
+        ISCARRIED ant-on
+        DESTROY ant-on
+        CREATE ant-off
+        GET ant-off
+        SET ant-on.on false
+        PRINT torch-off
+        OK
+
+    // ---------------------------------------------------------------------
+    // Examine the chest — empty vs non-empty.
+    // ---------------------------------------------------------------------
+
+    examinar cofre:
+        ISHERE cofre
+        ISEMPTY cofre
+        PRINT empty-bag
+        DONE
+
+    examinar cofre:
+        ISHERE cofre
+        PRINT have, ITEM
+        DONE
+
+    // ---------------------------------------------------------------------
+    // Swap two keys — exchanges their positions in the world.
+    // ---------------------------------------------------------------------
+
+    poner llave:
+        ISCARRIED llave1
+        SWAP llave1 llave2
+        PRINT ok
+        END
+
+    // ---------------------------------------------------------------------
+    // Generic examine — print the item's description.
+    // ---------------------------------------------------------------------
+
+    examinar *:
+        ISPRESENT ITEM
+        PRINT ITEM.desc
+        DONE
+
+    // ---------------------------------------------------------------------
+    // Catch-all.
+    // ---------------------------------------------------------------------
+
+    * *:
+        PRINT cant-do
+        DONE
+
+END TABLE
