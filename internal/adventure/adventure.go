@@ -10,6 +10,7 @@ import (
 	"github.com/jorgefuertes/thenewquill/internal/adventure/item"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/location"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/message"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/process"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/variable"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/word"
 	"github.com/jorgefuertes/thenewquill/internal/database"
@@ -26,6 +27,7 @@ type Adventure struct {
 	Words      *word.Service
 	Locations  *location.Service
 	Variables  *variable.Service
+	Tables     *process.Service
 	Blobs      *blob.Service
 }
 
@@ -43,6 +45,7 @@ func New() *Adventure {
 		Words:      word.NewService(d, sCfg),
 		Locations:  location.NewService(d),
 		Variables:  variable.NewService(d),
+		Tables:     process.NewService(d),
 		Blobs:      blob.NewService(d),
 	}
 }

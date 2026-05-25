@@ -27,11 +27,44 @@ const (
 	Cron
 )
 
+func AllowedTables() []TableKind {
+	return []TableKind{
+		Init,
+		Location,
+		Turn,
+		Item,
+		NPC,
+		Response,
+		Cron,
+	}
+}
+
+func (k TableKind) String() string {
+	switch k {
+	case Init:
+		return "init"
+	case Location:
+		return "location"
+	case Turn:
+		return "turn"
+	case Item:
+		return "item"
+	case NPC:
+		return "npc"
+	case Response:
+		return "response"
+	case Cron:
+		return "cron"
+	default:
+		return ""
+	}
+}
+
 type Table struct {
-	ID         uint32
-	LabelID    uint32
-	Kind       TableKind
-	ProcessIDs []uint32
+	ID      uint32
+	LabelID uint32
+	Kind    TableKind
+	Procs   []Process
 }
 
 var _ adapter.Storeable = &Table{}

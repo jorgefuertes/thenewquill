@@ -1,6 +1,8 @@
 package compiler
 
 import (
+	"fmt"
+
 	"github.com/jorgefuertes/thenewquill/internal/adventure"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 	cerr "github.com/jorgefuertes/thenewquill/internal/compiler/compiler_error"
@@ -17,6 +19,11 @@ func validateSection(a *adventure.Adventure, s *status.Status, k kind.Kind) erro
 		kind.Character: a.Characters.ValidateAll,
 		kind.Location:  a.Locations.ValidateAll,
 		kind.Blob:      a.Blobs.ValidateAll,
+		kind.Table:     a.Tables.ValidateAll,
+	}
+
+	if _, ok := validators[k]; !ok {
+		return fmt.Errorf("validateSection: I don't have a validator for kind %q", k.String())
 	}
 
 	if s.HasRunValidator(k) {

@@ -30,6 +30,24 @@ func (s *Service) ValidateAll() []error {
 				fmt.Errorf("%w: character %d %q", err, c.ID, s.db.GetLabelOrBlank(c.LabelID)),
 			)
 		}
+
+		// same label as item its not allowed
+		q := s.db.Query(database.FilterByKind(kind.Item), database.FilterByLabelID(c.LabelID))
+		if q.Exists() {
+			validationErrors = append(
+				validationErrors,
+				fmt.Errorf("%w: character %d %q", ErrItemHasSameLabel, c.ID, s.db.GetLabelOrBlank(c.LabelID)),
+			)
+		}
+
+		// same noun as item its not allowed
+		q = s.db.Query(database.FilterByKind(kind.Item), database.NewFilter("NounID", database.Equal, c.NounID))
+		if q.Exists() {
+			validationErrors = append(
+				validationErrors,
+				fmt.Errorf("%w: character %d %q", ErrItemHasSameNoun, c.ID, s.db.GetLabelOrBlank(c.LabelID)),
+			)
+		}
 	}
 
 	return validationErrors

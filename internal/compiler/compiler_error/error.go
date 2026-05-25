@@ -20,14 +20,13 @@ func (e CompilerError) Dump() {
 	o := NewOutput("COMPILATION ERROR")
 
 	if e.Is(ErrValidation) {
-		o = NewOutput("VALIDATION ERROR")
+		o = NewOutput("VALIDATION ERRORS")
 		for _, m := range e.msgs {
 			if m == "validation error" {
 				continue
 			}
 
 			o.addLine(-1, m)
-			o.addNL()
 		}
 
 		o.Print()

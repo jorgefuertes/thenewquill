@@ -7,6 +7,7 @@ import (
 	"github.com/jorgefuertes/thenewquill/internal/adventure/config"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/kind"
 	"github.com/jorgefuertes/thenewquill/internal/adventure/message"
+	"github.com/jorgefuertes/thenewquill/internal/adventure/process"
 	"github.com/jorgefuertes/thenewquill/internal/compiler/rg"
 )
 
@@ -191,4 +192,17 @@ func (l Line) AsBlob() (string, string, bool) {
 	}
 
 	return parts[1], parts[2], true
+}
+
+func (l Line) AsProcessHeader(table process.TableKind) (h1, h2 string, ok bool) {
+	if !rg.ProcHeader.MatchString(l.OptimizedText()) {
+		return "", "", false
+	}
+
+	m := rg.ProcHeader.FindStringSubmatch(l.OptimizedText())
+	h1 = m[1]
+	h2 = m[2]
+	ok = true
+
+	return
 }

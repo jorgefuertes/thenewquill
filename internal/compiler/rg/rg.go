@@ -43,6 +43,7 @@ var (
 	ItemWeight    = regexp.MustCompile(`^\s*(has weight|weight|weighs)\s+` + intOrFloatGroup + `\s*$`)
 	ItemMaxWeight = regexp.MustCompile(`^\s*(has max weight|max weight)\s+` + intOrFloatGroup + `\s*$`)
 	Blob          = regexp.MustCompile(`^\s*` + labelGroup + `:\s+(.+\/[^\/]+\.[^.]+)\s*$`)
+	ProcHeader    = regexp.MustCompile(`^\s*` + labelGroup + `\s{1}` + labelGroup + `:\s*$`)
 )
 
 func IsValidLabel(label string) bool {

@@ -16,6 +16,10 @@ compile-ao:
 	@mkdir -p tmp
 	@go run cmd/compiler/qc.go c -i internal/compiler/test/src/ao/ao.adv -o tmp/ao.db
 
+compile-happy:
+	@mkdir -p tmp
+	@go run cmd/compiler/qc.go c -i internal/compiler/test/src/happy/test.adv -o tmp/happy.db
+
 run-ao: compile-ao runtime
 	@./dist/quill tmp/ao.db
 
