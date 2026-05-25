@@ -33,3 +33,33 @@ func TestWord(t *testing.T) {
 	assert.Equal(t, kind.Word, kind.KindOf(w))
 	assert.Equal(t, word.Adjective, w.Type)
 }
+
+func TestWordVerbSynonymTruncation(t *testing.T) {
+	w := word.New(0, word.Verb, "examinar", "examina", "exam", "ex")
+	require.NotEmpty(t, w)
+
+	// verbs: "examinar" and "examina" both truncate to "exami", deduplicated
+	assert.Equal(t, []string{"exami", "exam", "ex"}, w.Synonyms)
+
+	// searching with long words truncates to 5 chars for verbs
+	assert.True(t, w.HasSynonym("examinar"))
+	assert.True(t, w.HasSynonym("examinando"))
+	assert.True(t, w.HasSynonym("exami"))
+	assert.True(t, w.HasSynonym("exam"))
+	assert.True(t, w.HasSynonym("ex"))
+	assert.False(t, w.HasSynonym("e"))
+}
+
+func TestWordNonVerbSynonymsNotTruncated(t *testing.T) {
+	n := word.New(0, word.Noun, "cuchillo", "navaja")
+	require.NotEmpty(t, n)
+
+	// nouns are NOT truncated
+	assert.Equal(t, []string{"cuchillo", "navaja"}, n.Synonyms)
+	assert.True(t, n.HasSynonym("cuchillo"))
+	assert.True(t, n.HasSynonym("navaja"))
+	assert.False(t, n.HasSynonym("cuchi"))
+
+	a := word.New(0, word.Adjective, "plateada", "brillante")
+	assert.Equal(t, []string{"plateada", "brillante"}, a.Synonyms)
+}

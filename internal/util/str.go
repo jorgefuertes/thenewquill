@@ -33,6 +33,15 @@ func ContainsString(list []string, needle string) bool {
 	return false
 }
 
+func TruncateRunes(s string, maxLen int) string {
+	runes := []rune(s)
+	if len(runes) > maxLen {
+		return string(runes[:maxLen])
+	}
+
+	return s
+}
+
 func NormalizeString(s string) string {
 	s = strings.ToLower(s)
 	s = removeAccents(s)

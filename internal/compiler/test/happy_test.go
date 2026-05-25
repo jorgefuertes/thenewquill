@@ -3,6 +3,7 @@ package compiler_test
 import (
 	"fmt"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/jorgefuertes/thenewquill/internal/adventure/character"
@@ -11,11 +12,38 @@ import (
 	"github.com/jorgefuertes/thenewquill/internal/adventure/word"
 	"github.com/jorgefuertes/thenewquill/internal/compiler"
 	"github.com/jorgefuertes/thenewquill/internal/database"
+	"github.com/jorgefuertes/thenewquill/internal/util"
 	"github.com/jorgefuertes/thenewquill/pkg/log"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+func truncatedVerbSyns(syns []string) []string {
+	seen := make(map[string]struct{}, len(syns))
+	result := make([]string, 0, len(syns))
+
+	for _, s := range syns {
+		s = util.TruncateRunes(strings.ToLower(s), word.MaxSynonymLen)
+		if _, ok := seen[s]; ok {
+			continue
+		}
+
+		seen[s] = struct{}{}
+		result = append(result, s)
+	}
+
+	return result
+}
+
+func loweredSyns(syns []string) []string {
+	result := make([]string, 0, len(syns))
+	for _, s := range syns {
+		result = append(result, strings.ToLower(s))
+	}
+
+	return result
+}
 
 func TestCompilerHappyPath(t *testing.T) {
 	log.SetLevel(log.InfoLevel)
@@ -157,9 +185,17 @@ func TestCompilerHappyPath(t *testing.T) {
 				require.NoError(t, err, "error finding word by label %q", labelName)
 				require.NotNil(t, w)
 				assert.Equal(t, tc.kind.String(), w.Type.String(), "word type doesn't match")
-				assert.Equal(t, tc.syns, w.Synonyms, "synonyms for %s doesn't match", labelName)
+				if tc.kind == word.Verb {
+					assert.Equal(t, truncatedVerbSyns(tc.syns), w.Synonyms, "synonyms for %s doesn't match", labelName)
+				} else {
+					assert.Equal(t, loweredSyns(tc.syns), w.Synonyms, "synonyms for %s doesn't match", labelName)
+				}
 				for _, syn := range tc.syns {
-					wFromSyn, err := a.Words.Get().WithSynonym(syn).First()
+					searchSyn := syn
+					if tc.kind == word.Verb {
+						searchSyn = util.TruncateRunes(strings.ToLower(syn), word.MaxSynonymLen)
+					}
+					wFromSyn, err := a.Words.Get().WithSynonym(searchSyn).First()
 					require.NoError(t, err, "cannot find word %q from synonym %q", labelName, syn)
 					assert.Equal(t, w, wFromSyn)
 					assert.True(t, w.Is(w.Type, syn))
